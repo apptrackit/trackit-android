@@ -242,17 +242,9 @@ fun HistoryItem(
             Spacer(modifier = Modifier.width(12.dp))
         }
 
-        // Person icon (you can replace this with your own icon)
-        Icon(
-            imageVector = Icons.Default.AccountCircle,
-            contentDescription = null,
-            tint = Color(0xFF2196F3),
-            modifier = Modifier.padding(end = 12.dp)
-        )
-
-        // Value
+        // Value with unit
         Text(
-            text = "${entry.value.toInt()}",
+            text = "${entry.value} $unit",
             color = Color.White,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
@@ -277,6 +269,7 @@ fun HistoryItem(
         }
     }
 }
+
 
 // Helper function to format date with optional time
 fun formatDate(timestamp: Long, includeTime: Boolean = false): String {
