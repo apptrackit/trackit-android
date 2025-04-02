@@ -26,7 +26,7 @@ class MetricsRepository(private val context: Context) {
             date = sharedPrefs.getLong("date", System.currentTimeMillis())
         )
     }
-    //d
+    //dd
     /*fun saveMetricHistory(metricName: String, value: Float, unit: String, date: Long) {
         val history = getMetricHistory(metricName).toMutableList()
         history.add(HistoryEntry(value, unit, date))
