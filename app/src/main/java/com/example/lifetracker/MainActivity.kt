@@ -1,5 +1,5 @@
 package com.example.lifetracker
-
+//ez is hibas?
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
