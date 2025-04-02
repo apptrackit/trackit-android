@@ -23,6 +23,9 @@ class HealthViewModel(private val repository: MetricsRepository) {
         repository.saveMetricHistory(metricName, value, unit, date)
     }
 
+    fun deleteHistoryEntry(metricName: String, entry: HistoryEntry) {
+        repository.deleteHistoryEntry(metricName, entry)
+    }
     fun getMetricHistory(metricName: String, unit: String): List<HistoryEntry> {
         return repository.getMetricHistory(metricName, unit)
     }

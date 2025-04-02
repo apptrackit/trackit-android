@@ -1,13 +1,20 @@
 package com.example.lifetracker.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.  DateRange
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,11 +25,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.components.DatePickerDialog
-import com.example.lifetracker.ui.components.HistoryItem
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.formatDate
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditMetricScreen(
     title: String,
@@ -44,6 +55,7 @@ fun EditMetricScreen(
     var textValue by remember { mutableStateOf(initialValue) }
     var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var isEditMode by remember { mutableStateOf(false) }
 
     val history = remember { mutableStateOf(viewModel.getMetricHistory(metricName, unit)) }
 
@@ -131,7 +143,6 @@ fun EditMetricScreen(
             Button(
                 onClick = {
                     onSave(textValue, selectedDate)
-                    // Refresh history after saving
                     history.value = viewModel.getMetricHistory(metricName, unit)
                 },
                 modifier = Modifier
@@ -144,23 +155,43 @@ fun EditMetricScreen(
                 Text("Save", fontSize = 16.sp)
             }
 
-            // History section
-            Text(
-                text = "History",
-                color = Color.White,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-            )
+            // History section header with Edit/Done button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "History",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
 
-            // Display history entries
+                Text(
+                    text = if (isEditMode) "Done" else "Edit",
+                    color = Color.Blue,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.clickable { isEditMode = !isEditMode }
+                )
+            }
+
+            // History items
             LazyColumn {
                 items(history.value) { entry ->
                     HistoryItem(
-                        date = entry.date,
-                        value = entry.value,
-                        unit = unit
+                        entry = entry,
+                        unit = unit,
+                        isEditMode = isEditMode,
+                        onDelete = {
+                            viewModel.deleteHistoryEntry(metricName, entry)
+                            history.value = viewModel.getMetricHistory(metricName, unit)
+                        }
                     )
+                    Divider(color = Color(0xFF333333), thickness = 1.dp)
                 }
             }
         }
@@ -176,4 +207,80 @@ fun EditMetricScreen(
             onDismiss = { showDatePicker = false }
         )
     }
+}
+
+@Composable
+fun HistoryItem(
+    entry: HistoryEntry,
+    unit: String,
+    isEditMode: Boolean,
+    onDelete: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Delete button (only visible in edit mode)
+        if (isEditMode) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .background(Color.Red, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .size(16.dp)
+                        .clickable { onDelete() }
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+        }
+
+        // Person icon (you can replace this with your own icon)
+        Icon(
+            imageVector = Icons.Default.AccountCircle,
+            contentDescription = null,
+            tint = Color(0xFF2196F3),
+            modifier = Modifier.padding(end = 12.dp)
+        )
+
+        // Value
+        Text(
+            text = "${entry.value.toInt()}",
+            color = Color.White,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
+        )
+
+        // Date
+        Text(
+            text = formatDate(entry.date, includeTime = true),
+            color = Color.Gray,
+            fontSize = 14.sp
+        )
+
+        // Arrow (only visible when not in edit mode)
+        if (!isEditMode) {
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowRight,
+                contentDescription = null,
+                tint = Color.Gray,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+    }
+}
+
+// Helper function to format date with optional time
+fun formatDate(timestamp: Long, includeTime: Boolean = false): String {
+    val pattern = if (includeTime) "MMM d 'at' H:mm" else "MMM dd, yyyy"
+    val formatter = SimpleDateFormat(pattern, Locale.getDefault())
+    return formatter.format(Date(timestamp))
 }

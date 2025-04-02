@@ -42,7 +42,11 @@ class MetricsRepository(private val context: Context) {
         val sharedPrefs = context.getSharedPreferences("health_metrics_history", Context.MODE_PRIVATE)
         val historyKey = "${metricName.lowercase()}_history"
         val currentHistory = sharedPrefs.getString(historyKey, "") ?: ""
+
+        // Check if entry already exists
         val newEntry = "$date:$value"
+        if (currentHistory.contains(newEntry)) return
+
         val updatedHistory = if (currentHistory.isEmpty()) newEntry else "$currentHistory|$newEntry"
 
         with(sharedPrefs.edit()) {
@@ -66,7 +70,23 @@ class MetricsRepository(private val context: Context) {
         }.sortedByDescending { it.date }
     }
 
+    fun deleteHistoryEntry(metricName: String, entry: HistoryEntry) {
+        val sharedPrefs = context.getSharedPreferences("health_metrics_history", Context.MODE_PRIVATE)
+        val historyKey = "${metricName.lowercase()}_history"
+        val historyString = sharedPrefs.getString(historyKey, "") ?: ""
 
+        if (historyString.isEmpty()) return
+
+        val entries = historyString.split("|").toMutableList()
+        val targetEntry = "${entry.date}:${entry.value}"
+
+        entries.removeAll { it == targetEntry }
+
+        with(sharedPrefs.edit()) {
+            putString(historyKey, entries.joinToString("|"))
+            apply()
+        }
+    }
     fun getMetricHistory(metricName: String): List<HistoryEntry> {
         // This is a placeholder. In a real app, you'd implement proper serialization/deserialization
         return emptyList()
