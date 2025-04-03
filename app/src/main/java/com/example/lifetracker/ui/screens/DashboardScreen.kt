@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import com.example.lifetracker.ui.components.ClickableMetricCard
 import com.example.lifetracker.ui.components.MetricCard
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
@@ -20,21 +20,43 @@ import com.example.lifetracker.utils.calculateBMI
 
 @Composable
 fun DashboardScreen(
-    navController: NavHostController,
+    navController: NavController,
     viewModel: HealthViewModel
 ) {
-    val metrics = viewModel.metrics
+    // Get latest values from history
+    val latestWeight = viewModel.getLatestHistoryEntry("Weight", "kg")
+    val latestHeight = viewModel.getLatestHistoryEntry("Height", "cm")
+    val latestBodyFat = viewModel.getLatestHistoryEntry("Body Fat", "%")
 
-    // Calculate BMI
-    val bmi = calculateBMI(metrics.weight, metrics.height)
-    val formattedBmi = String.format("%.1f", bmi)
+    // Use current metrics as fallback if history is empty
+    val metrics = viewModel.metrics
+    val weightValue = latestWeight ?: metrics.weight
+    val heightValue = latestHeight ?: metrics.height
+    val bodyFatValue = latestBodyFat ?: metrics.bodyFat
+
+    // Calculate BMI with null safety
+    val bmi = if (weightValue > 0 && heightValue > 0) {
+        calculateBMI(weightValue, heightValue)
+    } else {
+        0f
+    }
+
+    val formattedBmi = if (bmi > 0) String.format("%.1f", bmi) else "-"
+    val formattedWeight = if (weightValue > 0) String.format("%.1f", weightValue) else "-"
+    val formattedHeight = if (heightValue > 0) heightValue.toInt().toString() else "-"
+    val formattedBodyFat = if (bodyFatValue > 0) String.format("%.1f", bodyFatValue) else "-"
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
+        Text(
+            text = "Home",
+            color = Color.Gray,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -68,14 +90,14 @@ fun DashboardScreen(
                 ) {
                     ClickableMetricCard(
                         title = "Weight",
-                        value = String.format("%.1f", metrics.weight),
+                        value = formattedWeight,
                         unit = "kg",
                         onClick = { navController.navigate("edit_weight") },
                         modifier = Modifier.weight(1f)
                     )
                     ClickableMetricCard(
                         title = "Height",
-                        value = metrics.height.toInt().toString(),
+                        value = formattedHeight,
                         unit = "cm",
                         onClick = { navController.navigate("edit_height") },
                         modifier = Modifier.weight(1f)
@@ -96,7 +118,7 @@ fun DashboardScreen(
                     )
                     ClickableMetricCard(
                         title = "Body Fat",
-                        value = String.format("%.1f", metrics.bodyFat),
+                        value = formattedBodyFat,
                         unit = "%",
                         onClick = { navController.navigate("edit_bodyfat") },
                         modifier = Modifier.weight(1f)

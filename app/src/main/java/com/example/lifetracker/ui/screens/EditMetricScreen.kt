@@ -53,7 +53,7 @@ fun EditMetricScreen(
     }
 
     var textValue by remember { mutableStateOf(initialValue) }
-    var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
+    var selectedDate by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var isEditMode by remember { mutableStateOf(false) }
 

@@ -19,6 +19,15 @@ class HealthViewModel(private val repository: MetricsRepository) {
             repository.saveMetricHistory("Weight", it, "kg", date)
         }
     }
+    fun getLatestHistoryEntry(metricName: String, unit: String): Float? {
+        val history = getMetricHistory(metricName, unit)
+        return if (history.isNotEmpty()) {
+            history.maxByOrNull { it.date }?.value
+        } else {
+            null
+        }
+    }
+
     fun saveMetricHistory(metricName: String, value: Float, unit: String, date: Long) {
         repository.saveMetricHistory(metricName, value, unit, date)
     }
