@@ -3,7 +3,6 @@ package com.example.lifetracker.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavHost
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -37,7 +36,6 @@ fun LifeTrackerNavHost() {
                     val floatValue = value.toFloatOrNull() ?: 0f
                     viewModel.updateWeight(value, date)
                     viewModel.saveMetricHistory("Weight", floatValue, "kg", date)
-                    navController.popBackStack()
                 }
             )
         }
@@ -53,7 +51,6 @@ fun LifeTrackerNavHost() {
                     val floatValue = value.toFloatOrNull() ?: 0f
                     viewModel.updateHeight(value, date)
                     viewModel.saveMetricHistory("Height", floatValue, "cm", date)
-                    navController.popBackStack()
                 }
             )
         }
@@ -69,7 +66,6 @@ fun LifeTrackerNavHost() {
                     val floatValue = value.toFloatOrNull() ?: 0f
                     viewModel.updateBodyFat(value, date)
                     viewModel.saveMetricHistory("Body Fat", floatValue, "%", date)
-                    navController.popBackStack()
                 }
             )
         }

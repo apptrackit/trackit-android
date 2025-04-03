@@ -149,11 +149,13 @@ fun EditMetricScreen(
                     .fillMaxWidth()
                     .padding(vertical = 16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF1E1E1E)
+                    containerColor = Color(0xFF1E1E1E),
+                    contentColor = Color.White // Change text color to black for better contrast
                 )
             ) {
                 Text("Save", fontSize = 16.sp)
             }
+
 
             // History section header with Edit/Done button
             Row(
@@ -258,8 +260,8 @@ fun HistoryItem(
             fontSize = 14.sp
         )
 
-        // Arrow (only visible when not in edit mode)
-        if (!isEditMode) {
+        // Arrow (only visible when in edit mode)
+        if (isEditMode) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowRight,
                 contentDescription = null,

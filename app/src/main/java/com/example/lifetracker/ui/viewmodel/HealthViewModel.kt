@@ -3,7 +3,6 @@ package com.example.lifetracker.ui.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.example.lifetracker.data.model.HealthMetrics
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.data.repository.MetricsRepository
 
@@ -57,6 +56,4 @@ class HealthViewModel(private val repository: MetricsRepository) {
             repository.saveMetricHistory("Body Fat", it, "%", date)
         }
     }
-
-    fun getMetricHistory(metricName: String) = repository.getMetricHistory(metricName)
 }
