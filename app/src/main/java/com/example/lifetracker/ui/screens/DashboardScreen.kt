@@ -1,5 +1,6 @@
 package com.example.lifetracker.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -18,6 +19,7 @@ import com.example.lifetracker.ui.components.MetricCard
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.calculateBMI
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun DashboardScreen(
     navController: NavController,
@@ -51,13 +53,6 @@ fun DashboardScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = "Home",
-            color = Color.Gray,
-            fontSize = 14.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),

@@ -1,5 +1,6 @@
 package com.example.lifetracker.ui.screens
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,7 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,6 +29,8 @@ import androidx.navigation.NavController
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.formatDate
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun EditMetricScreen(
@@ -98,11 +104,14 @@ fun EditMetricScreen(
                 }
             }
 
+            // Graph
+            MetricHistoryChart(history = history.value, unit = unit)
+
             // History section header with Edit/Done button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp, bottom = 8.dp),
+                    .padding(top = 24.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -143,6 +152,64 @@ fun EditMetricScreen(
 }
 
 @Composable
+fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
+    if (history.isEmpty()) return
+
+    val sortedHistory = history.sortedBy { it.date }
+    val minValue = sortedHistory.minOf { it.value }
+    val maxValue = sortedHistory.maxOf { it.value }
+    val valueRange = maxValue - minValue
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(16.dp)
+    ) {
+        val width = size.width
+        val height = size.height
+        val xStep = width / (sortedHistory.size - 1)
+
+        // Draw axis
+        drawLine(Color.White, Offset(0f, height), Offset(width, height))
+        drawLine(Color.White, Offset(0f, 0f), Offset(0f, height))
+
+        // Draw data points and lines
+        val path = Path()
+        sortedHistory.forEachIndexed { index, entry ->
+            val x = index * xStep
+            val y = height - (entry.value - minValue) / valueRange * height
+
+            if (index == 0) {
+                path.moveTo(x, y)
+            } else {
+                path.lineTo(x, y)
+            }
+
+            drawCircle(Color.Blue, 4.dp.toPx(), Offset(x, y))
+        }
+
+        drawPath(path, Color.Blue, style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx()))
+
+        // Draw labels
+        val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
+        sortedHistory.forEachIndexed { index, entry ->
+            val x = index * xStep
+            drawContext.canvas.nativeCanvas.drawText(
+                dateFormat.format(Date(entry.date)),
+                x,
+                height + 20,
+                android.graphics.Paint().apply {
+                    color = android.graphics.Color.WHITE
+                    textSize = 12.sp.toPx()
+                    textAlign = android.graphics.Paint.Align.CENTER
+                }
+            )
+        }
+    }
+}
+
+@Composable
 fun HistoryItem(
     entry: HistoryEntry,
     unit: String,
@@ -174,7 +241,7 @@ fun HistoryItem(
             Spacer(modifier = Modifier.width(12.dp))
         }
 
-        // Value with unit (without the numbered circle)
+        // Value with unit
         Text(
             text = "${entry.value} $unit",
             color = Color.White,
