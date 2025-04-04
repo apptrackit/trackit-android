@@ -9,10 +9,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -49,7 +49,13 @@ fun EditMetricScreen(
     var isEditMode by remember { mutableStateOf(false) }
     var selectedTimeFilter by remember { mutableStateOf(TimeFilter.MONTH) }
 
-    val allHistory = viewModel.getMetricHistory(metricName, unit)
+    // Use a key to force recomposition when data changes
+    var refreshKey by remember { mutableStateOf(0) }
+
+    // Get history data with the refresh key as a dependency
+    val allHistory by remember(refreshKey, metricName, unit) {
+        mutableStateOf(viewModel.getMetricHistory(metricName, unit))
+    }
 
     // Filter history based on selected time period
     val filteredHistory = when (selectedTimeFilter) {
@@ -189,8 +195,8 @@ fun EditMetricScreen(
                         isEditMode = isEditMode,
                         onDelete = {
                             viewModel.deleteHistoryEntry(metricName, entry)
-                            // Force recomposition to update the list
-                            selectedTimeFilter = selectedTimeFilter
+                            // Increment the refresh key to force recomposition
+                            refreshKey++
                         }
                     )
                     Divider(color = Color(0xFF333333), thickness = 1.dp)
@@ -199,6 +205,7 @@ fun EditMetricScreen(
         }
     }
 }
+
 
 @Composable
 fun TimeFilterButton(
@@ -372,7 +379,7 @@ fun HistoryItem(
         if (isEditMode) {
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
                 tint = Color.Gray
             )
