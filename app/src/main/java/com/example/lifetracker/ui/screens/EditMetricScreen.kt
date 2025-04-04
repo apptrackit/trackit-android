@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -32,6 +33,10 @@ import com.example.lifetracker.utils.formatDate
 import java.text.SimpleDateFormat
 import java.util.*
 
+enum class TimeFilter {
+    WEEK, MONTH, YEAR
+}
+
 @Composable
 fun EditMetricScreen(
     title: String,
@@ -42,8 +47,25 @@ fun EditMetricScreen(
     onSave: (String, Long) -> Unit
 ) {
     var isEditMode by remember { mutableStateOf(false) }
+    var selectedTimeFilter by remember { mutableStateOf(TimeFilter.MONTH) }
 
-    val history = remember { mutableStateOf(viewModel.getMetricHistory(metricName, unit)) }
+    val allHistory = viewModel.getMetricHistory(metricName, unit)
+
+    // Filter history based on selected time period
+    val filteredHistory = when (selectedTimeFilter) {
+        TimeFilter.WEEK -> {
+            val weekAgo = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L
+            allHistory.filter { it.date >= weekAgo }
+        }
+        TimeFilter.MONTH -> {
+            val monthAgo = System.currentTimeMillis() - 30 * 24 * 60 * 60 * 1000L
+            allHistory.filter { it.date >= monthAgo }
+        }
+        TimeFilter.YEAR -> {
+            val yearAgo = System.currentTimeMillis() - 365 * 24 * 60 * 60 * 1000L
+            allHistory.filter { it.date >= yearAgo }
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -58,7 +80,7 @@ fun EditMetricScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 32.dp, top = 8.dp),
+                    .padding(bottom = 24.dp, top = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -104,8 +126,34 @@ fun EditMetricScreen(
                 }
             }
 
+            // Time filter buttons
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TimeFilterButton(
+                    text = "Week",
+                    isSelected = selectedTimeFilter == TimeFilter.WEEK,
+                    onClick = { selectedTimeFilter = TimeFilter.WEEK }
+                )
+
+                TimeFilterButton(
+                    text = "Month",
+                    isSelected = selectedTimeFilter == TimeFilter.MONTH,
+                    onClick = { selectedTimeFilter = TimeFilter.MONTH }
+                )
+
+                TimeFilterButton(
+                    text = "Year",
+                    isSelected = selectedTimeFilter == TimeFilter.YEAR,
+                    onClick = { selectedTimeFilter = TimeFilter.YEAR }
+                )
+            }
+
             // Graph
-            MetricHistoryChart(history = history.value, unit = unit)
+            MetricHistoryChart(history = filteredHistory, unit = unit)
 
             // History section header with Edit/Done button
             Row(
@@ -134,14 +182,15 @@ fun EditMetricScreen(
 
             // History items
             LazyColumn {
-                items(history.value) { entry ->
+                items(filteredHistory) { entry ->
                     HistoryItem(
                         entry = entry,
                         unit = unit,
                         isEditMode = isEditMode,
                         onDelete = {
                             viewModel.deleteHistoryEntry(metricName, entry)
-                            history.value = viewModel.getMetricHistory(metricName, unit)
+                            // Force recomposition to update the list
+                            selectedTimeFilter = selectedTimeFilter
                         }
                     )
                     Divider(color = Color(0xFF333333), thickness = 1.dp)
@@ -152,62 +201,124 @@ fun EditMetricScreen(
 }
 
 @Composable
+fun TimeFilterButton(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) Color(0xFF2196F3) else Color(0xFF333333),
+            contentColor = Color.White
+        ),
+        shape = RoundedCornerShape(8.dp),
+        modifier = Modifier.width(90.dp),
+        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = text,
+            fontSize = 13.sp,
+            maxLines = 1
+        )
+    }
+}
+
+@Composable
 fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
-    if (history.isEmpty()) return
+    if (history.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "No data available for selected period",
+                color = Color.Gray
+            )
+        }
+        return
+    }
 
     val sortedHistory = history.sortedBy { it.date }
     val minValue = sortedHistory.minOf { it.value }
     val maxValue = sortedHistory.maxOf { it.value }
-    val valueRange = maxValue - minValue
+    // Add a small buffer to the range to avoid division by zero and to make the graph look better
+    val valueRange = if (maxValue > minValue) maxValue - minValue + 0.1f else 1f
 
-    Canvas(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
-            .padding(16.dp)
+            .height(240.dp) // Increased height to accommodate labels below baseline
+            .padding(horizontal = 16.dp, vertical = 0.dp)
     ) {
-        val width = size.width
-        val height = size.height
-        val xStep = width / (sortedHistory.size - 1)
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp) // Chart area height
+        ) {
+            val width = size.width
+            val height = size.height
+            val xStep = if (sortedHistory.size > 1) width / (sortedHistory.size - 1) else width
 
-        // Draw axis
-        drawLine(Color.White, Offset(0f, height), Offset(width, height))
-        drawLine(Color.White, Offset(0f, 0f), Offset(0f, height))
+            // Draw axis
+            drawLine(Color.Gray, Offset(0f, height), Offset(width, height))
+            drawLine(Color.Gray, Offset(0f, 0f), Offset(0f, height))
 
-        // Draw data points and lines
-        val path = Path()
-        sortedHistory.forEachIndexed { index, entry ->
-            val x = index * xStep
-            val y = height - (entry.value - minValue) / valueRange * height
+            // Draw data points and lines
+            val path = Path()
+            sortedHistory.forEachIndexed { index, entry ->
+                val x = if (sortedHistory.size > 1) index * xStep else width / 2
+                val normalizedValue = (entry.value - minValue) / valueRange
+                val y = height - normalizedValue * height * 0.9f // Leave some margin at the top
 
-            if (index == 0) {
-                path.moveTo(x, y)
-            } else {
-                path.lineTo(x, y)
+                if (index == 0) {
+                    path.moveTo(x, y)
+                } else {
+                    path.lineTo(x, y)
+                }
+
+                drawCircle(Color(0xFF2196F3), 4.dp.toPx(), Offset(x, y))
             }
 
-            drawCircle(Color.Blue, 4.dp.toPx(), Offset(x, y))
+            drawPath(path, Color(0xFF2196F3), style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx()))
         }
 
-        drawPath(path, Color.Blue, style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx()))
+        // Draw date labels below the chart
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomStart)
+                .padding(top = 210.dp), // Position below the chart
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
 
-        // Draw labels
-        val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
-        sortedHistory.forEachIndexed { index, entry ->
-            val x = index * xStep
-            drawContext.canvas.nativeCanvas.drawText(
-                dateFormat.format(Date(entry.date)),
-                x,
-                height + 20,
-                android.graphics.Paint().apply {
-                    color = android.graphics.Color.WHITE
-                    textSize = 12.sp.toPx()
-                    textAlign = android.graphics.Paint.Align.CENTER
+            if (sortedHistory.size == 1) {
+                // Center the single date
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = dateFormat.format(Date(sortedHistory[0].date)),
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    )
                 }
-            )
+            } else {
+                // Distribute dates evenly
+                sortedHistory.forEach { entry ->
+                    Text(
+                        text = dateFormat.format(Date(entry.date)),
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    )
+                }
+            }
         }
     }
 }
+
 
 @Composable
 fun HistoryItem(
