@@ -120,7 +120,7 @@ fun DashboardScreen(
                         title = "Body Fat",
                         value = formattedBodyFat,
                         unit = "%",
-                        onClick = { navController.navigate("edit_bodyfat") },
+                        onClick = { navController.navigate("edit_body_fat") },
                         modifier = Modifier.weight(1f)
                     )
                 }

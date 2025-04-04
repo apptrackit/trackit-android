@@ -3,10 +3,11 @@ package com.example.lifetracker.ui.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.data.repository.MetricsRepository
 
-class HealthViewModel(private val repository: MetricsRepository) {
+class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
     var metrics by mutableStateOf(repository.loadMetrics())
         private set
 
@@ -16,6 +17,24 @@ class HealthViewModel(private val repository: MetricsRepository) {
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
             repository.saveMetricHistory("Weight", it, "kg", date)
+        }
+    }
+
+    fun updateHeight(value: String, date: Long) {
+        value.toFloatOrNull()?.let {
+            val newMetrics = metrics.copy(height = it, date = date)
+            metrics = newMetrics
+            repository.saveMetrics(newMetrics)
+            repository.saveMetricHistory("Height", it, "cm", date)
+        }
+    }
+
+    fun updateBodyFat(value: String, date: Long) {
+        value.toFloatOrNull()?.let {
+            val newMetrics = metrics.copy(bodyFat = it, date = date)
+            metrics = newMetrics
+            repository.saveMetrics(newMetrics)
+            repository.saveMetricHistory("Body Fat", it, "%", date)
         }
     }
 
@@ -35,39 +54,13 @@ class HealthViewModel(private val repository: MetricsRepository) {
     fun deleteHistoryEntry(metricName: String, entry: HistoryEntry) {
         repository.deleteHistoryEntry(metricName, entry)
     }
-    /*fun getMetricHistory(metricName: String, unit: String): List<HistoryEntry> {
-        return repository.getMetricHistory(metricName, unit)
-    }*/
 
-
-    fun updateHeight(value: String, date: Long) {
-        value.toFloatOrNull()?.let {
-            val newMetrics = metrics.copy(height = it, date = date)
-            metrics = newMetrics
-            repository.saveMetrics(newMetrics)
-            repository.saveMetricHistory("Height", it, "cm", date)
-        }
-    }
-
-    /*fun updateBodyFat(value: String, date: Long) {
-        value.toFloatOrNull()?.let {
-            val newMetrics = metrics.copy(bodyFat = it, date = date)
-            metrics = newMetrics
-            repository.saveMetrics(newMetrics)
-            repository.saveMetricHistory("Body Fat", it, "%", date)
-        }
-}*/
-    fun updateBodyFat(value: String, date: Long) {
-        value.toFloatOrNull()?.let { bodyFatValue ->
-            val newMetrics = metrics.copy(bodyFat = bodyFatValue, date = date)
-            metrics = newMetrics
-            repository.saveMetrics(newMetrics)
-            repository.saveMetricHistory("Body Fat", bodyFatValue, "%", date)
-        }
-    }
-
-    // Make sure this method handles null or empty values properly
     fun getMetricHistory(metricName: String, unit: String): List<HistoryEntry> {
-        return repository.getMetricHistory(metricName, unit)
+        return try {
+            repository.getMetricHistory(metricName, unit)
+        } catch (e: Exception) {
+            // Return empty list if there's an error retrieving history
+            emptyList()
+        }
     }
 }
