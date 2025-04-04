@@ -6,34 +6,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.  DateRange
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.lifetracker.data.model.HistoryEntry
-import com.example.lifetracker.ui.components.DatePickerDialog
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.formatDate
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditMetricScreen(
     title: String,
@@ -43,18 +35,6 @@ fun EditMetricScreen(
     viewModel: HealthViewModel,
     onSave: (String, Long) -> Unit
 ) {
-    val metrics = viewModel.metrics
-
-    val initialValue = when (metricName) {
-        "Weight" -> metrics.weight.toString()
-        "Height" -> metrics.height.toString()
-        "Body Fat" -> metrics.bodyFat.toString()
-        else -> ""
-    }
-
-    var textValue by remember { mutableStateOf(initialValue) }
-    var selectedDate by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    var showDatePicker by remember { mutableStateOf(false) }
     var isEditMode by remember { mutableStateOf(false) }
 
     val history = remember { mutableStateOf(viewModel.getMetricHistory(metricName, unit)) }
@@ -68,100 +48,61 @@ fun EditMetricScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Header with back button
+            // Header with back button, title, and plus button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp),
+                    .padding(bottom = 32.dp, top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { navController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White
+                // Back button and title
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+
+                    Text(
+                        text = title,
+                        color = Color.White,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 8.dp)
                     )
                 }
 
-                Text(
-                    text = title,
-                    color = Color.White,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-
-            // Input field
-            OutlinedTextField(
-                value = textValue,
-                onValueChange = { textValue = it },
-                label = { Text("Enter value") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF1E1E1E),
-                    unfocusedContainerColor = Color(0xFF1E1E1E),
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
-                )
-            )
-
-            // Date selector
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Date: ${formatDate(selectedDate)}",
-                    color = Color.White,
-                    modifier = Modifier.weight(1f)
-                )
-
-                IconButton(onClick = { showDatePicker = true }) {
+                // Plus button with improved styling
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .shadow(4.dp, CircleShape)
+                        .clip(CircleShape)
+                        .background(Color(0xFF1A1A1A))
+                        .clickable {
+                            navController.navigate("add_metric_data/$metricName/$unit/$title")
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = "Select Date",
-                        tint = Color.White
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Entry",
+                        tint = Color(0xFF2196F3),
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
-
-            if (unit.isNotEmpty()) {
-                Text(
-                    text = "Unit: $unit",
-                    color = Color.Gray,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-            }
-
-            // Save button
-            Button(
-                onClick = {
-                    onSave(textValue, selectedDate)
-                    history.value = viewModel.getMetricHistory(metricName, unit)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF1E1E1E),
-                    contentColor = Color.White // Change text color to black for better contrast
-                )
-            ) {
-                Text("Save", fontSize = 16.sp)
-            }
-
 
             // History section header with Edit/Done button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 24.dp, bottom = 8.dp),
+                    .padding(top = 8.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -172,6 +113,7 @@ fun EditMetricScreen(
                     fontWeight = FontWeight.Bold
                 )
 
+                // Edit/Done button
                 Text(
                     text = if (isEditMode) "Done" else "Edit",
                     color = Color.Blue,
@@ -198,17 +140,6 @@ fun EditMetricScreen(
             }
         }
     }
-
-    // Date picker dialog
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDateSelected = {
-                selectedDate = it
-                showDatePicker = false
-            },
-            onDismiss = { showDatePicker = false }
-        )
-    }
 }
 
 @Composable
@@ -229,53 +160,44 @@ fun HistoryItem(
             Box(
                 modifier = Modifier
                     .size(24.dp)
-                    .background(Color.Red, CircleShape),
+                    .background(Color.Red, CircleShape)
+                    .clickable { onDelete() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",
                     tint = Color.White,
-                    modifier = Modifier
-                        .size(16.dp)
-                        .clickable { onDelete() }
+                    modifier = Modifier.size(16.dp)
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
         }
 
-        // Value with unit
+        // Value with unit (without the numbered circle)
         Text(
             text = "${entry.value} $unit",
             color = Color.White,
-            fontSize = 20.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.weight(1f)
         )
 
         // Date
         Text(
-            text = formatDate(entry.date, includeTime = true),
+            text = formatDate(entry.date),
             color = Color.Gray,
             fontSize = 14.sp
         )
 
         // Arrow (only visible when in edit mode)
         if (isEditMode) {
+            Spacer(modifier = Modifier.width(8.dp))
             Icon(
                 imageVector = Icons.Default.KeyboardArrowRight,
                 contentDescription = null,
-                tint = Color.Gray,
-                modifier = Modifier.padding(start = 8.dp)
+                tint = Color.Gray
             )
         }
     }
-}
-
-
-// Helper function to format date with optional time
-fun formatDate(timestamp: Long, includeTime: Boolean = false): String {
-    val pattern = if (includeTime) "MMM d 'at' H:mm" else "MMM dd, yyyy"
-    val formatter = SimpleDateFormat(pattern, Locale.getDefault())
-    return formatter.format(Date(timestamp))
 }

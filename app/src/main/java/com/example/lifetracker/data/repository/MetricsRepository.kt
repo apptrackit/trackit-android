@@ -26,7 +26,6 @@ class MetricsRepository(private val context: Context) {
             date = sharedPrefs.getLong("date", System.currentTimeMillis())
         )
     }
-    //dd
     /*fun saveMetricHistory(metricName: String, value: Float, unit: String, date: Long) {
         val history = getMetricHistory(metricName).toMutableList()
         history.add(HistoryEntry(value, unit, date))
@@ -38,6 +37,7 @@ class MetricsRepository(private val context: Context) {
             apply()
         }
     }*/
+
     fun saveMetricHistory(metricName: String, value: Float, unit: String, date: Long) {
         val sharedPrefs = context.getSharedPreferences("health_metrics_history", Context.MODE_PRIVATE)
         val historyKey = "${metricName.lowercase()}_history"

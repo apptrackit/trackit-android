@@ -18,6 +18,7 @@ class HealthViewModel(private val repository: MetricsRepository) {
             repository.saveMetricHistory("Weight", it, "kg", date)
         }
     }
+
     fun getLatestHistoryEntry(metricName: String, unit: String): Float? {
         val history = getMetricHistory(metricName, unit)
         return if (history.isNotEmpty()) {
@@ -34,9 +35,9 @@ class HealthViewModel(private val repository: MetricsRepository) {
     fun deleteHistoryEntry(metricName: String, entry: HistoryEntry) {
         repository.deleteHistoryEntry(metricName, entry)
     }
-    fun getMetricHistory(metricName: String, unit: String): List<HistoryEntry> {
+    /*fun getMetricHistory(metricName: String, unit: String): List<HistoryEntry> {
         return repository.getMetricHistory(metricName, unit)
-    }
+    }*/
 
 
     fun updateHeight(value: String, date: Long) {
@@ -48,12 +49,25 @@ class HealthViewModel(private val repository: MetricsRepository) {
         }
     }
 
-    fun updateBodyFat(value: String, date: Long) {
+    /*fun updateBodyFat(value: String, date: Long) {
         value.toFloatOrNull()?.let {
             val newMetrics = metrics.copy(bodyFat = it, date = date)
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
             repository.saveMetricHistory("Body Fat", it, "%", date)
         }
+}*/
+    fun updateBodyFat(value: String, date: Long) {
+        value.toFloatOrNull()?.let { bodyFatValue ->
+            val newMetrics = metrics.copy(bodyFat = bodyFatValue, date = date)
+            metrics = newMetrics
+            repository.saveMetrics(newMetrics)
+            repository.saveMetricHistory("Body Fat", bodyFatValue, "%", date)
+        }
+    }
+
+    // Make sure this method handles null or empty values properly
+    fun getMetricHistory(metricName: String, unit: String): List<HistoryEntry> {
+        return repository.getMetricHistory(metricName, unit)
     }
 }
