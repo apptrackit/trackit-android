@@ -18,5 +18,6 @@ data class HealthMetrics(
 data class HistoryEntry(
     val value: Float,
     val unit: String,
-    val date: Long
+    val date: Long,
+    val metricName: String
 )

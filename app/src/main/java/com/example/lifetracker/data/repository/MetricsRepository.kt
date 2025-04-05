@@ -66,7 +66,7 @@ class MetricsRepository(private val context: Context) {
             val parts = entry.split(":")
             val date = parts[0].toLong()
             val value = parts[1].toFloat()
-            HistoryEntry(value, unit, date)
+            HistoryEntry(value, unit, date, metricName)
         }.sortedByDescending { it.date }
     }
 

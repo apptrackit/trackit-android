@@ -9,10 +9,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,7 +22,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -195,8 +194,12 @@ fun EditMetricScreen(
                         isEditMode = isEditMode,
                         onDelete = {
                             viewModel.deleteHistoryEntry(metricName, entry)
-                            // Increment the refresh key to force recomposition
                             refreshKey++
+                        },
+                        onEdit = { historyEntry ->
+                            navController.navigate(
+                                "edit_metric_data/$metricName/$unit/$title/${historyEntry.value}/${historyEntry.date}"
+                            )
                         }
                     )
                     Divider(color = Color(0xFF333333), thickness = 1.dp)
@@ -205,7 +208,6 @@ fun EditMetricScreen(
         }
     }
 }
-
 
 @Composable
 fun TimeFilterButton(
@@ -259,7 +261,7 @@ fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
         modifier = Modifier
             .fillMaxWidth()
             .height(240.dp) // Increased height to accommodate labels below baseline
-            .padding(horizontal = 16.dp, vertical = 0.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Canvas(
             modifier = Modifier
@@ -326,13 +328,13 @@ fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
     }
 }
 
-
 @Composable
 fun HistoryItem(
     entry: HistoryEntry,
     unit: String,
     isEditMode: Boolean,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEdit: (HistoryEntry) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -379,9 +381,10 @@ fun HistoryItem(
         if (isEditMode) {
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = Color.Gray
+                imageVector = Icons.Default.KeyboardArrowRight,
+                contentDescription = "Edit Entry",
+                tint = Color.Gray,
+                modifier = Modifier.clickable { onEdit(entry) }
             )
         }
     }
