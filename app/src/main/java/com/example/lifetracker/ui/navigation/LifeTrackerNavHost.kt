@@ -16,6 +16,7 @@ const val EDIT_WEIGHT_ROUTE = "edit_weight"
 const val EDIT_HEIGHT_ROUTE = "edit_height"
 const val EDIT_BODY_FAT_ROUTE = "edit_body_fat"
 const val ADD_METRIC_DATA_ROUTE = "add_metric_data/{metricName}/{unit}/{title}"
+const val VIEW_BMI_HISTORY_ROUTE = "view_bmi_history"
 
 // New route for editing existing entries
 const val EDIT_METRIC_DATA_ROUTE = "edit_metric_data/{metricName}/{unit}/{title}/{value}/{date}"
@@ -64,6 +65,10 @@ fun LifeTrackerNavHost(
                 viewModel = viewModel,
                 onSave = { value, date -> viewModel.updateBodyFat(value, date) }
             )
+        }
+
+        composable(VIEW_BMI_HISTORY_ROUTE) {
+            ViewBMIHistoryScreen(navController, viewModel)
         }
 
         // Route for adding new metric data

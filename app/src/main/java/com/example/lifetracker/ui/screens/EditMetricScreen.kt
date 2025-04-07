@@ -28,13 +28,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
+import com.example.lifetracker.utils.TimeFilter
 import com.example.lifetracker.utils.formatDate
 import java.text.SimpleDateFormat
 import java.util.*
-
-enum class TimeFilter {
-    WEEK, MONTH, YEAR
-}
 
 @Composable
 fun EditMetricScreen(

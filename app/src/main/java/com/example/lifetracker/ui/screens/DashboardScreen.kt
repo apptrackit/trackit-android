@@ -1,9 +1,7 @@
 package com.example.lifetracker.ui.screens
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,8 +12,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.lifetracker.ui.components.ClickableMetricCard
-import com.example.lifetracker.ui.components.MetricCard
+import com.example.lifetracker.ui.components.AddMetricButton
+import com.example.lifetracker.ui.components.AddMetricPopup
+import com.example.lifetracker.ui.components.ClickableMetricCardWithChart
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.calculateBMI
 
@@ -25,6 +24,9 @@ fun DashboardScreen(
     navController: NavController,
     viewModel: HealthViewModel
 ) {
+    // State for showing the popup
+    var showAddMetricPopup by remember { mutableStateOf(false) }
+    
     // Get latest values from history
     val latestWeight = viewModel.getLatestHistoryEntry("Weight", "kg")
     val latestHeight = viewModel.getLatestHistoryEntry("Height", "cm")
@@ -60,6 +62,12 @@ fun DashboardScreen(
         if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
     } else "No Data"
 
+    // Get history data for charts
+    val weightHistory = viewModel.getMetricHistory("Weight", "kg")
+    val heightHistory = viewModel.getMetricHistory("Height", "cm")
+    val bodyFatHistory = viewModel.getMetricHistory("Body Fat", "%")
+    val bmiHistory = viewModel.getMetricHistory("BMI", "")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -84,10 +92,8 @@ fun DashboardScreen(
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(Color.White, CircleShape)
+                    AddMetricButton(
+                        onClick = { showAddMetricPopup = true }
                     )
                 }
 
@@ -95,17 +101,19 @@ fun DashboardScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    ClickableMetricCard(
+                    ClickableMetricCardWithChart(
                         title = "Weight",
                         value = formattedWeight,
                         unit = "kg",
+                        history = weightHistory,
                         onClick = { navController.navigate("edit_weight") },
                         modifier = Modifier.weight(1f)
                     )
-                    ClickableMetricCard(
+                    ClickableMetricCardWithChart(
                         title = "Height",
                         value = formattedHeight,
                         unit = "cm",
+                        history = heightHistory,
                         onClick = { navController.navigate("edit_height") },
                         modifier = Modifier.weight(1f)
                     )
@@ -117,21 +125,32 @@ fun DashboardScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    MetricCard(
+                    ClickableMetricCardWithChart(
                         title = "BMI",
                         value = formattedBmi,
                         unit = "",
+                        history = bmiHistory,
+                        onClick = { navController.navigate("view_bmi_history") },
                         modifier = Modifier.weight(1f)
                     )
-                    ClickableMetricCard(
+                    ClickableMetricCardWithChart(
                         title = "Body Fat",
                         value = formattedBodyFat,
                         unit = "%",
+                        history = bodyFatHistory,
                         onClick = { navController.navigate("edit_body_fat") },
                         modifier = Modifier.weight(1f)
                     )
                 }
             }
         }
+    }
+    
+    // Show the popup when showAddMetricPopup is true
+    if (showAddMetricPopup) {
+        AddMetricPopup(
+            onDismiss = { showAddMetricPopup = false },
+            navController = navController
+        )
     }
 }

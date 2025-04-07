@@ -19,5 +19,7 @@ data class HistoryEntry(
     val value: Float,
     val unit: String,
     val date: Long,
-    val metricName: String
+    val metricName: String,
+    val weight: Float? = null,
+    val height: Float? = null
 )

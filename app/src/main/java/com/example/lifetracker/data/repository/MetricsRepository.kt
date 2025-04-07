@@ -38,14 +38,19 @@ class MetricsRepository(private val context: Context) {
         }
     }*/
 
-    fun saveMetricHistory(metricName: String, value: Float, unit: String, date: Long) {
+    fun saveMetricHistory(metricName: String, value: Float, unit: String, date: Long, weight: Float? = null, height: Float? = null) {
         val sharedPrefs = context.getSharedPreferences("health_metrics_history", Context.MODE_PRIVATE)
         val historyKey = "${metricName.lowercase()}_history"
         val currentHistory = sharedPrefs.getString(historyKey, "") ?: ""
 
         // Check if entry already exists
-        val newEntry = "$date:$value"
-        if (currentHistory.contains(newEntry)) return
+        val newEntry = if (weight != null && height != null) {
+            "$date:$value:$weight:$height"
+        } else {
+            "$date:$value"
+        }
+        
+        if (currentHistory.contains("$date:$value")) return
 
         val updatedHistory = if (currentHistory.isEmpty()) newEntry else "$currentHistory|$newEntry"
 
@@ -66,7 +71,15 @@ class MetricsRepository(private val context: Context) {
             val parts = entry.split(":")
             val date = parts[0].toLong()
             val value = parts[1].toFloat()
-            HistoryEntry(value, unit, date, metricName)
+            
+            // Check if weight and height are included
+            if (parts.size >= 4) {
+                val weight = parts[2].toFloat()
+                val height = parts[3].toFloat()
+                HistoryEntry(value, unit, date, metricName, weight, height)
+            } else {
+                HistoryEntry(value, unit, date, metricName)
+            }
         }.sortedByDescending { it.date }
     }
 
@@ -80,7 +93,7 @@ class MetricsRepository(private val context: Context) {
         val entries = historyString.split("|").toMutableList()
         val targetEntry = "${entry.date}:${entry.value}"
 
-        entries.removeAll { it == targetEntry }
+        entries.removeAll { it.startsWith(targetEntry) }
 
         with(sharedPrefs.edit()) {
             putString(historyKey, entries.joinToString("|"))
