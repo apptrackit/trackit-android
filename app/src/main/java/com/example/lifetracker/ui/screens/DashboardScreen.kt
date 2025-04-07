@@ -32,15 +32,39 @@ fun DashboardScreen(
     val latestHeight = viewModel.getLatestHistoryEntry("Height", "cm")
     val latestBodyFat = viewModel.getLatestHistoryEntry("Body Fat", "%")
 
-    // Use current metrics as fallback if history is empty
-    val metrics = viewModel.metrics
-    val weightValue = latestWeight ?: 0f
-    val heightValue = latestHeight ?: 0f
-    val bodyFatValue = latestBodyFat ?: 0f
+    // Get history data for charts
+    val weightHistory = viewModel.getMetricHistory("Weight", "kg")
+    val heightHistory = viewModel.getMetricHistory("Height", "cm")
+    val bodyFatHistory = viewModel.getMetricHistory("Body Fat", "%")
+    val bmiHistory = viewModel.getMetricHistory("BMI", "")
+
+    // Format values based on history
+    val formattedWeight = if (weightHistory.isEmpty()) "No Data" else {
+        val value = latestWeight ?: 0f
+        if (value > 0) {
+            val formatted = String.format("%.1f", value)
+            if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
+        } else "No Data"
+    }
+    
+    val formattedHeight = if (heightHistory.isEmpty()) "No Data" else {
+        val value = latestHeight ?: 0f
+        if (value > 0) value.toInt().toString() else "No Data"
+    }
+    
+    val formattedBodyFat = if (bodyFatHistory.isEmpty()) "No Data" else {
+        val value = latestBodyFat ?: 0f
+        if (value > 0) {
+            val formatted = String.format("%.1f", value)
+            if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
+        } else "No Data"
+    }
 
     // Calculate BMI with null safety
-    val bmi = if (weightValue > 0 && heightValue > 0) {
-        calculateBMI(weightValue, heightValue)
+    val bmi = if (weightHistory.isNotEmpty() && heightHistory.isNotEmpty() && 
+                 latestWeight != null && latestHeight != null && 
+                 latestWeight > 0 && latestHeight > 0) {
+        calculateBMI(latestWeight, latestHeight)
     } else {
         0f
     }
@@ -49,24 +73,6 @@ fun DashboardScreen(
         val formatted = String.format("%.1f", bmi)
         if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
     } else "No Data"
-    
-    val formattedWeight = if (weightValue > 0) {
-        val formatted = String.format("%.1f", weightValue)
-        if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
-    } else "No Data"
-    
-    val formattedHeight = if (heightValue > 0) heightValue.toInt().toString() else "No Data"
-    
-    val formattedBodyFat = if (bodyFatValue > 0) {
-        val formatted = String.format("%.1f", bodyFatValue)
-        if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
-    } else "No Data"
-
-    // Get history data for charts
-    val weightHistory = viewModel.getMetricHistory("Weight", "kg")
-    val heightHistory = viewModel.getMetricHistory("Height", "cm")
-    val bodyFatHistory = viewModel.getMetricHistory("Body Fat", "%")
-    val bmiHistory = viewModel.getMetricHistory("BMI", "")
 
     Surface(
         modifier = Modifier.fillMaxSize(),

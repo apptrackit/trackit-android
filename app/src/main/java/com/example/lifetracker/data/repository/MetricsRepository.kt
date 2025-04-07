@@ -20,9 +20,9 @@ class MetricsRepository(private val context: Context) {
     fun loadMetrics(): HealthMetrics {
         val sharedPrefs = context.getSharedPreferences("health_metrics", Context.MODE_PRIVATE)
         return HealthMetrics(
-            weight = sharedPrefs.getFloat("weight", 68.2f),
-            height = sharedPrefs.getFloat("height", 180f),
-            bodyFat = sharedPrefs.getFloat("bodyFat", 18.5f),
+            weight = sharedPrefs.getFloat("weight", 0f),
+            height = sharedPrefs.getFloat("height", 0f),
+            bodyFat = sharedPrefs.getFloat("bodyFat", 0f),
             date = sharedPrefs.getLong("date", System.currentTimeMillis())
         )
     }
@@ -43,20 +43,8 @@ class MetricsRepository(private val context: Context) {
         val historyKey = "${metricName.lowercase()}_history"
         val currentHistory = sharedPrefs.getString(historyKey, "") ?: ""
 
-        // Check if entry already exists for this date
-        val entries = currentHistory.split("|").filter { it.isNotEmpty() }
-        val existingEntry = entries.find { it.startsWith("$date:") }
-        
-        if (existingEntry != null) {
-            // Remove the existing entry
-            val updatedEntries = entries.filter { it != existingEntry }
-            val updatedHistory = updatedEntries.joinToString("|")
-            
-            with(sharedPrefs.edit()) {
-                putString(historyKey, updatedHistory)
-                apply()
-            }
-        }
+        // Split current history into entries and filter out empty ones
+        val entries = currentHistory.split("|").filter { it.isNotEmpty() }.toMutableList()
 
         // Create new entry
         val newEntry = if (weight != null && height != null) {
@@ -65,8 +53,14 @@ class MetricsRepository(private val context: Context) {
             "$date:$value"
         }
 
-        // Add new entry
-        val updatedHistory = if (currentHistory.isEmpty()) newEntry else "$currentHistory|$newEntry"
+        // Remove any existing entry with the same date
+        entries.removeAll { it.startsWith("$date:") }
+
+        // Add the new entry
+        entries.add(newEntry)
+
+        // Join entries back together and save
+        val updatedHistory = entries.joinToString("|")
 
         with(sharedPrefs.edit()) {
             putString(historyKey, updatedHistory)
