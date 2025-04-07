@@ -108,25 +108,6 @@ fun MainScreen(
                 }
             }
 
-            // Plus button
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = 80.dp)
-                    .padding(end = 16.dp),
-                contentAlignment = Alignment.BottomEnd
-            ) {
-                FloatingActionButton(
-                    onClick = { navController.navigate(ADD_ENTRY_ROUTE) },
-                    containerColor = Color(0xFF2196F3)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add Entry",
-                        tint = Color.White
-                    )
-                }
-            }
         }
     }
 }
