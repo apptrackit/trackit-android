@@ -10,15 +10,19 @@ import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.screens.*
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 
-// Existing routes
+// Main navigation routes
 const val DASHBOARD_ROUTE = "dashboard"
+const val NUTRITION_ROUTE = "nutrition"
+const val WORKOUT_ROUTE = "workout"
+const val PROGRESS_ROUTE = "progress"
+const val PROFILE_ROUTE = "profile"
+
+// Other routes
 const val EDIT_WEIGHT_ROUTE = "edit_weight"
 const val EDIT_HEIGHT_ROUTE = "edit_height"
 const val EDIT_BODY_FAT_ROUTE = "edit_body_fat"
 const val ADD_METRIC_DATA_ROUTE = "add_metric_data/{metricName}/{unit}/{title}"
 const val VIEW_BMI_HISTORY_ROUTE = "view_bmi_history"
-
-// New route for editing existing entries
 const val EDIT_METRIC_DATA_ROUTE = "edit_metric_data/{metricName}/{unit}/{title}/{value}/{date}"
 
 @Composable
@@ -32,6 +36,22 @@ fun LifeTrackerNavHost(
     ) {
         composable(DASHBOARD_ROUTE) {
             DashboardScreen(navController, viewModel)
+        }
+
+        composable(NUTRITION_ROUTE) {
+            NutritionScreen(navController, viewModel)
+        }
+
+        composable(WORKOUT_ROUTE) {
+            WorkoutScreen(navController, viewModel)
+        }
+
+        composable(PROGRESS_ROUTE) {
+            ProgressScreen(navController, viewModel)
+        }
+
+        composable(PROFILE_ROUTE) {
+            ProfileScreen(navController, viewModel)
         }
 
         composable(EDIT_WEIGHT_ROUTE) {
@@ -71,7 +91,6 @@ fun LifeTrackerNavHost(
             ViewBMIHistoryScreen(navController, viewModel)
         }
 
-        // Route for adding new metric data
         composable(
             route = ADD_METRIC_DATA_ROUTE,
             arguments = listOf(
@@ -100,7 +119,6 @@ fun LifeTrackerNavHost(
             )
         }
 
-        // New route for editing existing metric data
         composable(
             route = EDIT_METRIC_DATA_ROUTE,
             arguments = listOf(

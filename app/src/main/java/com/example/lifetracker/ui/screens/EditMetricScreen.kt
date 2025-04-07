@@ -294,7 +294,7 @@ fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
                 drawCircle(Color(0xFF2196F3), 4.dp.toPx(), Offset(x, y))
             }
 
-            drawPath(path, Color(0xFF2196F3), style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx()))
+            drawPath(path, Color(0xFF2196F3), style = androidx.compose.ui.graphics.drawscope.Stroke(3.dp.toPx()))
         }
 
         // Draw date labels below the chart

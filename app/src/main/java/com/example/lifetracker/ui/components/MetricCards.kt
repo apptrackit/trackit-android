@@ -29,7 +29,7 @@ fun ClickableMetricCard(
 ) {
     Card(
         modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
     ) {
         MetricCardContent(title, value, unit)
@@ -47,7 +47,7 @@ fun ClickableMetricCardWithChart(
 ) {
     Card(
         modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
     ) {
         MetricCardContentWithChart(title, value, unit, history)
@@ -63,7 +63,7 @@ fun MetricCard(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
     ) {
         MetricCardContent(title, value, unit)
@@ -74,14 +74,15 @@ fun MetricCard(
 fun MetricCardContent(title: String, value: String, unit: String) {
     Column(
         modifier = Modifier
-            .padding(12.dp)
+            .padding(16.dp)
             .height(80.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
             text = title,
             color = Color.White,
-            fontSize = 14.sp
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
         )
         Row(
             verticalAlignment = Alignment.Bottom,
@@ -98,7 +99,7 @@ fun MetricCardContent(title: String, value: String, unit: String) {
                 Text(
                     text = unit,
                     color = Color.White,
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
                 )
             }
@@ -110,14 +111,15 @@ fun MetricCardContent(title: String, value: String, unit: String) {
 fun MetricCardContentWithChart(title: String, value: String, unit: String, history: List<HistoryEntry>) {
     Column(
         modifier = Modifier
-            .padding(12.dp)
+            .padding(16.dp)
             .height(80.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
             text = title,
             color = Color.White,
-            fontSize = 14.sp
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
         )
         
         if (history.isEmpty() || value == "No Data") {
@@ -137,7 +139,7 @@ fun MetricCardContentWithChart(title: String, value: String, unit: String, histo
                     Text(
                         text = unit,
                         color = Color.White,
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
                     )
                 }
@@ -161,7 +163,7 @@ fun MetricCardContentWithChart(title: String, value: String, unit: String, histo
                     Text(
                         text = unit,
                         color = Color.White,
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
                     )
                 }
@@ -223,8 +225,8 @@ fun MetricCardChart(history: List<HistoryEntry>) {
         // Draw the path with a semi-transparent color
         drawPath(
             path = path,
-            color = Color(0x802196F3), // Semi-transparent blue
-            style = androidx.compose.ui.graphics.drawscope.Stroke(1.5f)
+            color = Color(0x4D2196F3), // More transparent blue
+            style = androidx.compose.ui.graphics.drawscope.Stroke(2.5f)
         )
         
         // Draw data points
@@ -239,8 +241,8 @@ fun MetricCardChart(history: List<HistoryEntry>) {
             val y = height - normalizedValue * height * 0.9f
             
             drawCircle(
-                color = Color(0x802196F3), // Semi-transparent blue
-                radius = 2f,
+                color = Color(0x4D2196F3), // More transparent blue
+                radius = 3f,
                 center = Offset(x, y)
             )
         }

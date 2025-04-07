@@ -68,35 +68,39 @@ fun DashboardScreen(
     val bodyFatHistory = viewModel.getMetricHistory("Body Fat", "%")
     val bmiHistory = viewModel.getMetricHistory("BMI", "")
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Black
     ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.Black)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Dashboard",
-                        color = Color.White,
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    AddMetricButton(
-                        onClick = { showAddMetricPopup = true }
-                    )
-                }
+            // Header with title and add button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Dashboard",
+                    color = Color.White,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                AddMetricButton(
+                    onClick = { showAddMetricPopup = true }
+                )
+            }
 
+            // Metric cards grid
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -118,8 +122,6 @@ fun DashboardScreen(
                         modifier = Modifier.weight(1f)
                     )
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

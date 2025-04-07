@@ -35,6 +35,8 @@ fun AddMetricDataScreen(
     var textValue by remember { mutableStateOf("") }
     var selectedDate by remember { mutableStateOf(System.currentTimeMillis()) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -72,7 +74,10 @@ fun AddMetricDataScreen(
             // Input field
             OutlinedTextField(
                 value = textValue,
-                onValueChange = { textValue = it },
+                onValueChange = { 
+                    textValue = it
+                    showError = false
+                },
                 label = { Text("Enter value") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier
@@ -83,8 +88,18 @@ fun AddMetricDataScreen(
                     unfocusedContainerColor = Color(0xFF1E1E1E),
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White
-                )
+                ),
+                isError = showError
             )
+            
+            if (showError) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                )
+            }
 
             // Date selector
             Row(
@@ -119,6 +134,27 @@ fun AddMetricDataScreen(
             // Save button
             Button(
                 onClick = {
+                    // Validate input
+                    if (textValue.isEmpty()) {
+                        showError = true
+                        errorMessage = "Please enter a value"
+                        return@Button
+                    }
+                    
+                    val floatValue = textValue.toFloatOrNull()
+                    if (floatValue == null) {
+                        showError = true
+                        errorMessage = "Please enter a valid number"
+                        return@Button
+                    }
+                    
+                    if (floatValue <= 0) {
+                        showError = true
+                        errorMessage = "Value must be greater than 0"
+                        return@Button
+                    }
+                    
+                    // If validation passes, save the value
                     onSave(textValue, selectedDate)
                     navController.popBackStack()
                 },

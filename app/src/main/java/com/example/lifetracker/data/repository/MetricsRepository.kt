@@ -43,15 +43,29 @@ class MetricsRepository(private val context: Context) {
         val historyKey = "${metricName.lowercase()}_history"
         val currentHistory = sharedPrefs.getString(historyKey, "") ?: ""
 
-        // Check if entry already exists
+        // Check if entry already exists for this date
+        val entries = currentHistory.split("|").filter { it.isNotEmpty() }
+        val existingEntry = entries.find { it.startsWith("$date:") }
+        
+        if (existingEntry != null) {
+            // Remove the existing entry
+            val updatedEntries = entries.filter { it != existingEntry }
+            val updatedHistory = updatedEntries.joinToString("|")
+            
+            with(sharedPrefs.edit()) {
+                putString(historyKey, updatedHistory)
+                apply()
+            }
+        }
+
+        // Create new entry
         val newEntry = if (weight != null && height != null) {
             "$date:$value:$weight:$height"
         } else {
             "$date:$value"
         }
-        
-        if (currentHistory.contains("$date:$value")) return
 
+        // Add new entry
         val updatedHistory = if (currentHistory.isEmpty()) newEntry else "$currentHistory|$newEntry"
 
         with(sharedPrefs.edit()) {
@@ -67,20 +81,31 @@ class MetricsRepository(private val context: Context) {
 
         if (historyString.isEmpty()) return emptyList()
 
-        return historyString.split("|").map { entry ->
-            val parts = entry.split(":")
-            val date = parts[0].toLong()
-            val value = parts[1].toFloat()
-            
-            // Check if weight and height are included
-            if (parts.size >= 4) {
-                val weight = parts[2].toFloat()
-                val height = parts[3].toFloat()
-                HistoryEntry(value, unit, date, metricName, weight, height)
-            } else {
-                HistoryEntry(value, unit, date, metricName)
-            }
-        }.sortedByDescending { it.date }
+        return try {
+            historyString.split("|")
+                .filter { it.isNotEmpty() }
+                .mapNotNull { entry ->
+                    try {
+                        val parts = entry.split(":")
+                        val date = parts[0].toLong()
+                        val value = parts[1].toFloat()
+                        
+                        // Check if weight and height are included
+                        if (parts.size >= 4) {
+                            val weight = parts[2].toFloat()
+                            val height = parts[3].toFloat()
+                            HistoryEntry(value, unit, date, metricName, weight, height)
+                        } else {
+                            HistoryEntry(value, unit, date, metricName)
+                        }
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                .sortedByDescending { it.date }
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     fun deleteHistoryEntry(metricName: String, entry: HistoryEntry) {
