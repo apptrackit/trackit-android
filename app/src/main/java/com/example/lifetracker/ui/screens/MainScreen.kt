@@ -98,7 +98,8 @@ fun MainScreen(
                         onNavigateToViewBMIHistory = {
                             navController.navigate(VIEW_BMI_HISTORY_ROUTE)
                         },
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        navController = navController
                     )
                     1 -> NutritionScreen(navController = navController, viewModel = viewModel)
                     2 -> WorkoutScreen(navController = navController, viewModel = viewModel)

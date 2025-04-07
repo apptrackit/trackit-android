@@ -23,7 +23,8 @@ import com.example.lifetracker.utils.calculateBMI
 fun DashboardScreen(
     onNavigateToEditMetric: (String) -> Unit,
     onNavigateToViewBMIHistory: () -> Unit,
-    viewModel: HealthViewModel
+    viewModel: HealthViewModel,
+    navController: NavController
 ) {
     // State for showing the popup
     var showAddMetricPopup by remember { mutableStateOf(false) }
@@ -159,7 +160,8 @@ fun DashboardScreen(
     if (showAddMetricPopup) {
         AddMetricPopup(
             onDismiss = { showAddMetricPopup = false },
-            onNavigateToEditMetric = onNavigateToEditMetric
+            onNavigateToEditMetric = onNavigateToEditMetric,
+            navController = navController
         )
     }
 }

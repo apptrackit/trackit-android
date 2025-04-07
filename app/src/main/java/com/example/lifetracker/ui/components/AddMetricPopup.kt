@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
 
 @Composable
 fun AddMetricButton(
@@ -38,7 +39,8 @@ fun AddMetricButton(
 @Composable
 fun AddMetricPopup(
     onDismiss: () -> Unit,
-    onNavigateToEditMetric: (String) -> Unit
+    onNavigateToEditMetric: (String) -> Unit,
+    navController: NavController
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -71,7 +73,7 @@ fun AddMetricPopup(
                         .fillMaxWidth()
                         .background(Color(0xFF2A2A2A), RoundedCornerShape(8.dp))
                         .clickable { 
-                            onNavigateToEditMetric("Weight")
+                            navController.navigate("add_metric_data/Weight/kg/Weight")
                             onDismiss()
                         }
                         .padding(16.dp),
@@ -92,7 +94,7 @@ fun AddMetricPopup(
                         .fillMaxWidth()
                         .background(Color(0xFF2A2A2A), RoundedCornerShape(8.dp))
                         .clickable { 
-                            onNavigateToEditMetric("Height")
+                            navController.navigate("add_metric_data/Height/cm/Height")
                             onDismiss()
                         }
                         .padding(16.dp),
@@ -113,7 +115,7 @@ fun AddMetricPopup(
                         .fillMaxWidth()
                         .background(Color(0xFF2A2A2A), RoundedCornerShape(8.dp))
                         .clickable { 
-                            onNavigateToEditMetric("Body Fat")
+                            navController.navigate("add_metric_data/Body Fat/%/Body Fat")
                             onDismiss()
                         }
                         .padding(16.dp),
