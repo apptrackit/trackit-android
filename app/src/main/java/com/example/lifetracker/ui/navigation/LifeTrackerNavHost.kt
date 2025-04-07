@@ -17,42 +17,10 @@ fun LifeTrackerNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = DASHBOARD_ROUTE
+        startDestination = "main"
     ) {
-        composable(DASHBOARD_ROUTE) {
-            DashboardScreen(
-                onNavigateToEditMetric = { metricName ->
-                    when (metricName) {
-                        "Weight" -> navController.navigate(EDIT_WEIGHT_ROUTE)
-                        "Height" -> navController.navigate(EDIT_HEIGHT_ROUTE)
-                        "Body Fat" -> navController.navigate(EDIT_BODY_FAT_ROUTE)
-                    }
-                },
-                onNavigateToViewBMIHistory = {
-                    navController.navigate(VIEW_BMI_HISTORY_ROUTE)
-                },
-                viewModel = viewModel
-            )
-        }
-
-        composable(NUTRITION_ROUTE) {
-            NutritionScreen(navController = navController, viewModel = viewModel)
-        }
-
-        composable(WORKOUT_ROUTE) {
-            WorkoutScreen(navController = navController, viewModel = viewModel)
-        }
-
-        composable(PROGRESS_ROUTE) {
-            ProgressScreen(navController = navController, viewModel = viewModel)
-        }
-
-        composable(PROFILE_ROUTE) {
-            ProfileScreen(navController = navController, viewModel = viewModel)
-        }
-
-        composable(SETTINGS_ROUTE) {
-            SettingsScreen(navController = navController, viewModel = viewModel)
+        composable("main") {
+            MainScreen(navController = navController, viewModel = viewModel)
         }
 
         composable(EDIT_WEIGHT_ROUTE) {
