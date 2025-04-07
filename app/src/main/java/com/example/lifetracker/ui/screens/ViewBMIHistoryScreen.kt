@@ -47,6 +47,17 @@ fun ViewBMIHistoryScreen(
         }
     }
 
+    // Calculate BMI statistics
+    val bmiStats = if (filteredHistory.isNotEmpty()) {
+        val values = filteredHistory.map { it.value }
+        val avg = values.average()
+        val min = values.minOrNull() ?: 0f
+        val max = values.maxOrNull() ?: 0f
+        Triple(min, avg, max)
+    } else {
+        Triple(0f, 0.0, 0f)
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Black
@@ -60,7 +71,7 @@ fun ViewBMIHistoryScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp),
+                    .padding(bottom = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { navController.popBackStack() }) {
@@ -78,6 +89,56 @@ fun ViewBMIHistoryScreen(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 8.dp)
                 )
+            }
+
+            // BMI Stats Card
+            if (filteredHistory.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF1E1E1E)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "BMI Statistics",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            StatItem(
+                                label = "Min",
+                                value = String.format("%.1f", bmiStats.first).let { 
+                                    if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                }
+                            )
+                            StatItem(
+                                label = "Avg",
+                                value = String.format("%.1f", bmiStats.second).let { 
+                                    if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                }
+                            )
+                            StatItem(
+                                label = "Max",
+                                value = String.format("%.1f", bmiStats.third).let { 
+                                    if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             // Time filter buttons
@@ -107,7 +168,47 @@ fun ViewBMIHistoryScreen(
             }
 
             // Graph
-            MetricHistoryChart(history = filteredHistory, unit = "")
+            if (filteredHistory.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF1E1E1E)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "BMI Trend",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+                        
+                        MetricHistoryChart(history = filteredHistory, unit = "")
+                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .background(Color(0xFF1E1E1E), RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No BMI data available",
+                        color = Color(0xFF444444),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Light
+                    )
+                }
+            }
 
             // History section header
             Text(
@@ -115,17 +216,52 @@ fun ViewBMIHistoryScreen(
                 color = Color.White,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
             )
 
             // History items
-            LazyColumn {
-                items(filteredHistory) { entry ->
-                    BMIHistoryItem(entry = entry)
-                    Divider(color = Color(0xFF333333), thickness = 1.dp)
+            if (filteredHistory.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No history entries for this period",
+                        color = Color(0xFF444444),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Light
+                    )
+                }
+            } else {
+                LazyColumn {
+                    items(filteredHistory) { entry ->
+                        BMIHistoryItem(entry = entry)
+                        Divider(color = Color(0xFF333333), thickness = 1.dp)
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun StatItem(label: String, value: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = label,
+            color = Color(0xFF888888),
+            fontSize = 12.sp
+        )
+        Text(
+            text = value,
+            color = Color.White,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
