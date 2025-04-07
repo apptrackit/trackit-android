@@ -41,7 +41,9 @@ fun HistoryItem(
             )
 
             Text(
-                text = "${String.format("%.1f", value)} $unit",
+                text = "${String.format("%.1f", value).let { 
+                    if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                }} $unit",
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold

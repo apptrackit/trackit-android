@@ -32,9 +32,9 @@ fun DashboardScreen(
 
     // Use current metrics as fallback if history is empty
     val metrics = viewModel.metrics
-    val weightValue = latestWeight ?: metrics.weight
-    val heightValue = latestHeight ?: metrics.height
-    val bodyFatValue = latestBodyFat ?: metrics.bodyFat
+    val weightValue = latestWeight ?: 0f
+    val heightValue = latestHeight ?: 0f
+    val bodyFatValue = latestBodyFat ?: 0f
 
     // Calculate BMI with null safety
     val bmi = if (weightValue > 0 && heightValue > 0) {
@@ -43,10 +43,22 @@ fun DashboardScreen(
         0f
     }
 
-    val formattedBmi = if (bmi > 0) String.format("%.1f", bmi) else "-"
-    val formattedWeight = if (weightValue > 0) String.format("%.1f", weightValue) else "-"
-    val formattedHeight = if (heightValue > 0) heightValue.toInt().toString() else "-"
-    val formattedBodyFat = if (bodyFatValue > 0) String.format("%.1f", bodyFatValue) else "-"
+    val formattedBmi = if (bmi > 0) {
+        val formatted = String.format("%.1f", bmi)
+        if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
+    } else "No Data"
+    
+    val formattedWeight = if (weightValue > 0) {
+        val formatted = String.format("%.1f", weightValue)
+        if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
+    } else "No Data"
+    
+    val formattedHeight = if (heightValue > 0) heightValue.toInt().toString() else "No Data"
+    
+    val formattedBodyFat = if (bodyFatValue > 0) {
+        val formatted = String.format("%.1f", bodyFatValue)
+        if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
+    } else "No Data"
 
     Column(
         modifier = Modifier

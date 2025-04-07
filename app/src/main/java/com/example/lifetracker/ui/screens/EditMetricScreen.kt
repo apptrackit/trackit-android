@@ -240,12 +240,17 @@ fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .padding(16.dp),
+                .padding(16.dp)
+                .background(Color(0xFF1E1E1E), RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "No data available for selected period",
-                color = Color.Gray
+                text = "No Data",
+                color = Color(0xFF444444),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Light,
+                maxLines = 1,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
         return
@@ -363,7 +368,9 @@ fun HistoryItem(
 
         // Value with unit
         Text(
-            text = "${entry.value} $unit",
+            text = "${String.format("%.1f", entry.value).let { 
+                if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+            }} $unit",
             color = Color.White,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,

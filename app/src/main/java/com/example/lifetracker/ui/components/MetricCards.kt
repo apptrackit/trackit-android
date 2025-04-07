@@ -24,7 +24,7 @@ fun ClickableMetricCard(
 ) {
     Card(
         modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
     ) {
         MetricCardContent(title, value, unit)
@@ -40,7 +40,7 @@ fun MetricCard(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
     ) {
         MetricCardContent(title, value, unit)
@@ -50,28 +50,32 @@ fun MetricCard(
 @Composable
 fun MetricCardContent(title: String, value: String, unit: String) {
     Column(
-        modifier = Modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier
+            .padding(12.dp)
+            .height(80.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
             text = title,
             color = Color.White,
-            fontSize = 15.sp
+            fontSize = 14.sp
         )
         Row(
-            verticalAlignment = Alignment.Bottom
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(
                 text = value,
-                color = Color.White,
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold
+                color = if (value == "No Data") Color(0xFF555555) else Color.White,
+                fontSize = if (value == "No Data") 14.sp else 32.sp,
+                fontWeight = if (value == "No Data") FontWeight.Normal else FontWeight.Bold,
+                modifier = Modifier.padding(bottom = if (value == "No Data") 0.dp else 2.dp)
             )
-            if (unit.isNotEmpty()) {
+            if (unit.isNotEmpty() && value != "No Data") {
                 Text(
                     text = unit,
                     color = Color.White,
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
                 )
             }
