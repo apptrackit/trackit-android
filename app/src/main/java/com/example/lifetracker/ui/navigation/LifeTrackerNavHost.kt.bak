@@ -10,6 +10,22 @@ import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.screens.*
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 
+// Main navigation routes
+const val DASHBOARD_ROUTE = "dashboard"
+const val NUTRITION_ROUTE = "nutrition"
+const val WORKOUT_ROUTE = "workout"
+const val PROGRESS_ROUTE = "progress"
+const val PROFILE_ROUTE = "profile"
+
+// Other routes
+const val EDIT_WEIGHT_ROUTE = "edit_weight"
+const val EDIT_HEIGHT_ROUTE = "edit_height"
+const val EDIT_BODY_FAT_ROUTE = "edit_body_fat"
+const val ADD_METRIC_DATA_ROUTE = "add_metric_data/{metricName}/{unit}/{title}"
+const val VIEW_BMI_HISTORY_ROUTE = "view_bmi_history"
+const val EDIT_METRIC_DATA_ROUTE = "edit_metric_data/{metricName}/{unit}/{title}/{value}/{date}"
+const val ADD_ENTRY_ROUTE = "add_entry"
+
 @Composable
 fun LifeTrackerNavHost(
     navController: NavHostController,
@@ -62,7 +78,7 @@ fun LifeTrackerNavHost(
                 unit = "kg",
                 navController = navController,
                 viewModel = viewModel,
-                onSave = { value, date -> viewModel.updateWeight(value.toString(), date) }
+                onSave = { value, date -> viewModel.updateWeight(value.toFloat(), date) }
             )
         }
 
@@ -73,7 +89,7 @@ fun LifeTrackerNavHost(
                 unit = "cm",
                 navController = navController,
                 viewModel = viewModel,
-                onSave = { value, date -> viewModel.updateHeight(value.toString(), date) }
+                onSave = { value, date -> viewModel.updateHeight(value.toFloat(), date) }
             )
         }
 
@@ -84,7 +100,7 @@ fun LifeTrackerNavHost(
                 unit = "%",
                 navController = navController,
                 viewModel = viewModel,
-                onSave = { value, date -> viewModel.updateBodyFat(value.toString(), date) }
+                onSave = { value, date -> viewModel.updateBodyFat(value.toFloat(), date) }
             )
         }
 
@@ -112,9 +128,9 @@ fun LifeTrackerNavHost(
                 viewModel = viewModel,
                 onSave = { value, date ->
                     when (metricName) {
-                        "Weight" -> viewModel.updateWeight(value.toString(), date)
-                        "Height" -> viewModel.updateHeight(value.toString(), date)
-                        "Body Fat" -> viewModel.updateBodyFat(value.toString(), date)
+                        "Weight" -> viewModel.updateWeight(value.toFloat(), date)
+                        "Height" -> viewModel.updateHeight(value.toFloat(), date)
+                        "Body Fat" -> viewModel.updateBodyFat(value.toFloat(), date)
                     }
                 }
             )
@@ -156,9 +172,9 @@ fun LifeTrackerNavHost(
 
                     // Add the updated entry
                     when (metricName) {
-                        "Weight" -> viewModel.updateWeight(newValue.toString(), newDate)
-                        "Height" -> viewModel.updateHeight(newValue.toString(), newDate)
-                        "Body Fat" -> viewModel.updateBodyFat(newValue.toString(), newDate)
+                        "Weight" -> viewModel.updateWeight(newValue.toFloat(), newDate)
+                        "Height" -> viewModel.updateHeight(newValue.toFloat(), newDate)
+                        "Body Fat" -> viewModel.updateBodyFat(newValue.toFloat(), newDate)
                     }
                 }
             )
@@ -171,8 +187,9 @@ fun LifeTrackerNavHost(
                 unit = "kg",
                 navController = navController,
                 viewModel = viewModel,
-                onSave = { value, date -> viewModel.updateWeight(value.toString(), date) }
+                onSave = { value, date -> viewModel.updateWeight(value.toFloat(), date) }
             )
         }
     }
-} 
+}
+

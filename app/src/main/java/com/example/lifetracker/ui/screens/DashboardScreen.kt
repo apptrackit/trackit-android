@@ -21,7 +21,8 @@ import com.example.lifetracker.utils.calculateBMI
 @SuppressLint("DefaultLocale")
 @Composable
 fun DashboardScreen(
-    navController: NavController,
+    onNavigateToEditMetric: (String) -> Unit,
+    onNavigateToViewBMIHistory: () -> Unit,
     viewModel: HealthViewModel
 ) {
     // State for showing the popup
@@ -116,7 +117,7 @@ fun DashboardScreen(
                         value = formattedWeight,
                         unit = "kg",
                         history = weightHistory,
-                        onClick = { navController.navigate("edit_weight") },
+                        onClick = { onNavigateToEditMetric("Weight") },
                         modifier = Modifier.weight(1f)
                     )
                     ClickableMetricCardWithChart(
@@ -124,7 +125,7 @@ fun DashboardScreen(
                         value = formattedHeight,
                         unit = "cm",
                         history = heightHistory,
-                        onClick = { navController.navigate("edit_height") },
+                        onClick = { onNavigateToEditMetric("Height") },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -138,7 +139,7 @@ fun DashboardScreen(
                         value = formattedBmi,
                         unit = "",
                         history = bmiHistory,
-                        onClick = { navController.navigate("view_bmi_history") },
+                        onClick = { onNavigateToViewBMIHistory() },
                         modifier = Modifier.weight(1f)
                     )
                     ClickableMetricCardWithChart(
@@ -146,7 +147,7 @@ fun DashboardScreen(
                         value = formattedBodyFat,
                         unit = "%",
                         history = bodyFatHistory,
-                        onClick = { navController.navigate("edit_body_fat") },
+                        onClick = { onNavigateToEditMetric("Body Fat") },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -158,7 +159,7 @@ fun DashboardScreen(
     if (showAddMetricPopup) {
         AddMetricPopup(
             onDismiss = { showAddMetricPopup = false },
-            navController = navController
+            onNavigateToEditMetric = onNavigateToEditMetric
         )
     }
 }

@@ -1,0 +1,174 @@
+package com.example.lifetracker.ui.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.lifetracker.data.model.HistoryEntry
+import com.example.lifetracker.ui.viewmodel.HealthViewModel
+import com.example.lifetracker.utils.TimeFilter
+import com.example.lifetracker.utils.formatDate
+
+@Composable
+fun ViewBMIHistoryScreen(
+    navController: NavController,
+    viewModel: HealthViewModel
+) {
+    var selectedTimeFilter by remember { mutableStateOf(TimeFilter.MONTH) }
+
+    // Get BMI history
+    val bmiHistory = viewModel.getMetricHistory("BMI", "")
+
+    // Filter history based on selected time period
+    val filteredHistory = when (selectedTimeFilter) {
+        TimeFilter.WEEK -> {
+            val weekAgo = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L
+            bmiHistory.filter { it.date >= weekAgo }
+        }
+        TimeFilter.MONTH -> {
+            val monthAgo = System.currentTimeMillis() - 30 * 24 * 60 * 60 * 1000L
+            bmiHistory.filter { it.date >= monthAgo }
+        }
+        TimeFilter.YEAR -> {
+            val yearAgo = System.currentTimeMillis() - 365 * 24 * 60 * 60 * 1000L
+            bmiHistory.filter { it.date >= yearAgo }
+        }
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Black
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // Header with back button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+
+                Text(
+                    text = "BMI History",
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+
+            // Time filter buttons
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TimeFilterButton(
+                    text = "Week",
+                    isSelected = selectedTimeFilter == TimeFilter.WEEK,
+                    onClick = { selectedTimeFilter = TimeFilter.WEEK }
+                )
+
+                TimeFilterButton(
+                    text = "Month",
+                    isSelected = selectedTimeFilter == TimeFilter.MONTH,
+                    onClick = { selectedTimeFilter = TimeFilter.MONTH }
+                )
+
+                TimeFilterButton(
+                    text = "Year",
+                    isSelected = selectedTimeFilter == TimeFilter.YEAR,
+                    onClick = { selectedTimeFilter = TimeFilter.YEAR }
+                )
+            }
+
+            // Graph
+            MetricHistoryChart(history = filteredHistory, unit = "")
+
+            // History section header
+            Text(
+                text = "History",
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+            )
+
+            // History items
+            LazyColumn {
+                items(filteredHistory) { entry ->
+                    BMIHistoryItem(entry = entry)
+                    Divider(color = Color(0xFF333333), thickness = 1.dp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BMIHistoryItem(entry: HistoryEntry) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // BMI value with calculation details
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // BMI value
+            Text(
+                text = String.format("%.1f", entry.value).let { 
+                    if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                },
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+            
+            // Calculation details (weight and height)
+            if (entry.weight != null && entry.height != null) {
+                Text(
+                    text = " (${String.format("%.1f", entry.weight).let { 
+                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                    }} kg, ${entry.height.toInt()} cm)",
+                    color = Color(0xFF888888),
+                    fontSize = 10.sp
+                )
+            }
+        }
+
+        // Date
+        Text(
+            text = formatDate(entry.date),
+            color = Color.Gray,
+            fontSize = 14.sp
+        )
+    }
+} 
