@@ -445,30 +445,6 @@ fun ProgressScreen(
                             )
                         }
                     }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
-                        color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
-                                title = "XXX",
-                                value = "Coming soon",
-                                unit = "",
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
                 }
             }
         }
@@ -501,7 +477,7 @@ private fun MetricCardNoChart(
                 color = Color.White,
                 fontSize = 16.sp
             )
-            if (unit.isNotEmpty()) {
+            if (unit.isNotEmpty() && value != "No Data") {
                 Text(
                     text = " $unit",
                     color = Color.Gray,
