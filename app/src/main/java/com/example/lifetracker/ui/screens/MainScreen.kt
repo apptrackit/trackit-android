@@ -103,7 +103,20 @@ fun MainScreen(
                     )
                     1 -> NutritionScreen(navController = navController, viewModel = viewModel)
                     2 -> WorkoutScreen(navController = navController, viewModel = viewModel)
-                    3 -> ProgressScreen(navController = navController, viewModel = viewModel)
+                    3 -> ProgressScreen(
+                        onNavigateToEditMetric = { metricName ->
+                            when (metricName) {
+                                "Weight" -> navController.navigate(EDIT_WEIGHT_ROUTE)
+                                "Height" -> navController.navigate(EDIT_HEIGHT_ROUTE)
+                                "Body Fat" -> navController.navigate(EDIT_BODY_FAT_ROUTE)
+                            }
+                        },
+                        onNavigateToViewBMIHistory = {
+                            navController.navigate(VIEW_BMI_HISTORY_ROUTE)
+                        },
+                        viewModel = viewModel,
+                        navController = navController
+                    )
                     4 -> ProfileScreen(navController = navController, viewModel = viewModel)
                 }
             }
@@ -116,4 +129,4 @@ private data class NavigationItem(
     val route: String,
     val icon: ImageVector,
     val label: String
-) 
+)

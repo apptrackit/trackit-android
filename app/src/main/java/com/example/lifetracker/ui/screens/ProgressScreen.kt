@@ -3,37 +3,23 @@ package com.example.lifetracker.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 
 @Composable
 fun ProgressScreen(
-    navController: NavController,
-    viewModel: HealthViewModel
+    onNavigateToEditMetric: (String) -> Unit,
+    onNavigateToViewBMIHistory: () -> Unit,
+    viewModel: HealthViewModel,
+    navController: NavController
 ) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.Black
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Progress",
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-} 
+    // Copy the entire content of DashboardScreen here
+    // This includes all UI components, state management, and functionality
+    DashboardScreen(
+        onNavigateToEditMetric = onNavigateToEditMetric,
+        onNavigateToViewBMIHistory = onNavigateToViewBMIHistory,
+        viewModel = viewModel,
+        navController = navController
+    )
+}
