@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.lazy.LazyColumn
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -96,160 +97,377 @@ fun ProgressScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Header with title and add button
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Progress",
-                    color = Color.White,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            // Header with title
+            Text(
+                text = "Progress",
+                color = Color.White,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
 
-            // Metric cards grid
-            Column(
+            // Replace Column with LazyColumn for scrolling
+            LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),  // increased spacing
+                contentPadding = PaddingValues(vertical = 8.dp)  // padding at top and bottom
             ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),  // reduced height
-                    color = Color(0xFF1A1A1A),
-                    shape = RoundedCornerShape(12.dp)  // rounded corners
-                ) {
-                    Row(
+                item {
+                    Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)  // rounded corners
                     ) {
-                        MetricCardNoChart(
-                            title = "Weight",
-                            value = formattedWeight,
-                            unit = "kg",
-                            modifier = Modifier.weight(1f)
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Edit Weight",
+                        Row(
                             modifier = Modifier
-                                .padding(start = 8.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null  // removes ripple effect
-                                ) { onNavigateToEditMetric("Weight") },
-                            tint = Color.White
-                        )
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "Weight",
+                                value = formattedWeight,
+                                unit = "kg",
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.Default.ArrowForward,
+                                contentDescription = "Edit Weight",
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null  // removes ripple effect
+                                    ) { onNavigateToEditMetric("Weight") },
+                                tint = Color.White
+                            )
+                        }
                     }
-                }
 
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),  // reduced height
-                    color = Color(0xFF1A1A1A),
-                    shape = RoundedCornerShape(12.dp)  // rounded corners
-                ) {
-                    Row(
+                    Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)  // rounded corners
                     ) {
-                        MetricCardNoChart(
-                            title = "Height",
-                            value = formattedHeight,
-                            unit = "cm",
-                            modifier = Modifier.weight(1f)
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Edit Height",
+                        Row(
                             modifier = Modifier
-                                .padding(start = 8.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null  // removes ripple effect
-                                ) { onNavigateToEditMetric("Height") },
-                            tint = Color.White
-                        )
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "Height",
+                                value = formattedHeight,
+                                unit = "cm",
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.Default.ArrowForward,
+                                contentDescription = "Edit Height",
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null  // removes ripple effect
+                                    ) { onNavigateToEditMetric("Height") },
+                                tint = Color.White
+                            )
+                        }
                     }
-                }
 
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),  // reduced height
-                    color = Color(0xFF1A1A1A),
-                    shape = RoundedCornerShape(12.dp)  // rounded corners
-                ) {
-                    Row(
+                    Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)  // rounded corners
                     ) {
-                        MetricCardNoChart(
-                            title = "BMI",
-                            value = formattedBmi,
-                            unit = "",
-                            modifier = Modifier.weight(1f)
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "View BMI History",
+                        Row(
                             modifier = Modifier
-                                .padding(start = 8.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null  // removes ripple effect
-                                ) { onNavigateToViewBMIHistory() },
-                            tint = Color.White
-                        )
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "BMI",
+                                value = formattedBmi,
+                                unit = "",
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.Default.ArrowForward,
+                                contentDescription = "View BMI History",
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null  // removes ripple effect
+                                    ) { onNavigateToViewBMIHistory() },
+                                tint = Color.White
+                            )
+                        }
                     }
-                }
 
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),  // reduced height
-                    color = Color(0xFF1A1A1A),
-                    shape = RoundedCornerShape(12.dp)  // rounded corners
-                ) {
-                    Row(
+                    Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)  // rounded corners
                     ) {
-                        MetricCardNoChart(
-                            title = "Body Fat",
-                            value = formattedBodyFat,
-                            unit = "%",
-                            modifier = Modifier.weight(1f)
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Edit Body Fat",
+                        Row(
                             modifier = Modifier
-                                .padding(start = 8.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null  // removes ripple effect
-                                ) { onNavigateToEditMetric("Body Fat") },
-                            tint = Color.White
-                        )
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "Body Fat",
+                                value = formattedBodyFat,
+                                unit = "%",
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.Default.ArrowForward,
+                                contentDescription = "Edit Body Fat",
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null  // removes ripple effect
+                                    ) { onNavigateToEditMetric("Body Fat") },
+                                tint = Color.White
+                            )
+                        }
+                    }
+
+                    // Additional dummy metrics
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "XXX",
+                                value = "Coming soon",
+                                unit = "",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "XXX",
+                                value = "Coming soon",
+                                unit = "",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "XXX",
+                                value = "Coming soon",
+                                unit = "",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "XXX",
+                                value = "Coming soon",
+                                unit = "",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "XXX",
+                                value = "Coming soon",
+                                unit = "",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "XXX",
+                                value = "Coming soon",
+                                unit = "",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "XXX",
+                                value = "Coming soon",
+                                unit = "",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "XXX",
+                                value = "Coming soon",
+                                unit = "",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .padding(vertical = 4.dp),  // added padding to each card
+                        color = Color(0xFF1A1A1A),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricCardNoChart(
+                                title = "XXX",
+                                value = "Coming soon",
+                                unit = "",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
             }
