@@ -17,6 +17,10 @@ import com.example.lifetracker.ui.components.AddMetricPopup
 import com.example.lifetracker.ui.components.ClickableMetricCardWithChart
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.calculateBMI
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -101,56 +105,157 @@ fun ProgressScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Dashboard",
+                    text = "Progress",
                     color = Color.White,
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold
-                )
-                AddMetricButton(
-                    onClick = { showAddMetricPopup = true }
                 )
             }
 
             // Metric cards grid
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)  // reduced spacing
             ) {
-                ClickableMetricCardWithChart(
-                    title = "Weight",
-                    value = formattedWeight,
-                    unit = "kg",
-                    history = weightHistory,
-                    onClick = { onNavigateToEditMetric("Weight") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),  // fixed height constraint
+                    color = Color(0xFF1A1A1A)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ClickableMetricCardWithChart(
+                            title = "Weight",
+                            value = formattedWeight,
+                            unit = "kg",
+                            history = weightHistory,
+                            onClick = { },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "Edit Weight",
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null  // removes ripple effect
+                                ) { onNavigateToEditMetric("Weight") },
+                            tint = Color.White
+                        )
+                    }
+                }
 
-                ClickableMetricCardWithChart(
-                    title = "Height",
-                    value = formattedHeight,
-                    unit = "cm",
-                    history = heightHistory,
-                    onClick = { onNavigateToEditMetric("Height") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),  // fixed height constraint
+                    color = Color(0xFF1A1A1A)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ClickableMetricCardWithChart(
+                            title = "Height",
+                            value = formattedHeight,
+                            unit = "cm",
+                            history = heightHistory,
+                            onClick = { },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "Edit Height",
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null  // removes ripple effect
+                                ) { onNavigateToEditMetric("Height") },
+                            tint = Color.White
+                        )
+                    }
+                }
 
-                ClickableMetricCardWithChart(
-                    title = "BMI",
-                    value = formattedBmi,
-                    unit = "",
-                    history = bmiHistory,
-                    onClick = { onNavigateToViewBMIHistory() },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),  // fixed height constraint
+                    color = Color(0xFF1A1A1A)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ClickableMetricCardWithChart(
+                            title = "BMI",
+                            value = formattedBmi,
+                            unit = "",
+                            history = bmiHistory,
+                            onClick = { },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "View BMI History",
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null  // removes ripple effect
+                                ) { onNavigateToViewBMIHistory() },
+                            tint = Color.White
+                        )
+                    }
+                }
 
-                ClickableMetricCardWithChart(
-                    title = "Body Fat",
-                    value = formattedBodyFat,
-                    unit = "%",
-                    history = bodyFatHistory,
-                    onClick = { onNavigateToEditMetric("Body Fat") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),  // fixed height constraint
+                    color = Color(0xFF1A1A1A)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ClickableMetricCardWithChart(
+                            title = "Body Fat",
+                            value = formattedBodyFat,
+                            unit = "%",
+                            history = bodyFatHistory,
+                            onClick = { },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "Edit Body Fat",
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null  // removes ripple effect
+                                ) { onNavigateToEditMetric("Body Fat") },
+                            tint = Color.White
+                        )
+                    }
+                }
             }
         }
     }
