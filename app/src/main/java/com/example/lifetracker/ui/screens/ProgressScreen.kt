@@ -115,27 +115,26 @@ fun ProgressScreen(
             // Metric cards grid
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)  // reduced spacing
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp),  // fixed height constraint
-                    color = Color(0xFF1A1A1A)
+                        .height(64.dp),  // reduced height
+                    color = Color(0xFF1A1A1A),
+                    shape = RoundedCornerShape(12.dp)  // rounded corners
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        ClickableMetricCardWithChart(
+                        MetricCardNoChart(
                             title = "Weight",
                             value = formattedWeight,
                             unit = "kg",
-                            history = weightHistory,
-                            onClick = { },
                             modifier = Modifier.weight(1f)
                         )
                         Icon(
@@ -155,22 +154,21 @@ fun ProgressScreen(
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp),  // fixed height constraint
-                    color = Color(0xFF1A1A1A)
+                        .height(64.dp),  // reduced height
+                    color = Color(0xFF1A1A1A),
+                    shape = RoundedCornerShape(12.dp)  // rounded corners
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        ClickableMetricCardWithChart(
+                        MetricCardNoChart(
                             title = "Height",
                             value = formattedHeight,
                             unit = "cm",
-                            history = heightHistory,
-                            onClick = { },
                             modifier = Modifier.weight(1f)
                         )
                         Icon(
@@ -190,22 +188,21 @@ fun ProgressScreen(
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp),  // fixed height constraint
-                    color = Color(0xFF1A1A1A)
+                        .height(64.dp),  // reduced height
+                    color = Color(0xFF1A1A1A),
+                    shape = RoundedCornerShape(12.dp)  // rounded corners
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        ClickableMetricCardWithChart(
+                        MetricCardNoChart(
                             title = "BMI",
                             value = formattedBmi,
                             unit = "",
-                            history = bmiHistory,
-                            onClick = { },
                             modifier = Modifier.weight(1f)
                         )
                         Icon(
@@ -225,22 +222,21 @@ fun ProgressScreen(
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp),  // fixed height constraint
-                    color = Color(0xFF1A1A1A)
+                        .height(64.dp),  // reduced height
+                    color = Color(0xFF1A1A1A),
+                    shape = RoundedCornerShape(12.dp)  // rounded corners
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        ClickableMetricCardWithChart(
+                        MetricCardNoChart(
                             title = "Body Fat",
                             value = formattedBodyFat,
                             unit = "%",
-                            history = bodyFatHistory,
-                            onClick = { },
                             modifier = Modifier.weight(1f)
                         )
                         Icon(
@@ -256,6 +252,43 @@ fun ProgressScreen(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable 
+private fun MetricCardNoChart(
+    title: String,
+    value: String,
+    unit: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            color = Color.Gray,
+            fontSize = 16.sp
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Text(
+                text = value,
+                color = Color.White,
+                fontSize = 16.sp
+            )
+            if (unit.isNotEmpty()) {
+                Text(
+                    text = " $unit",
+                    color = Color.Gray,
+                    fontSize = 16.sp
+                )
             }
         }
     }
