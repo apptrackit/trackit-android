@@ -116,49 +116,41 @@ fun ProgressScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    ClickableMetricCardWithChart(
-                        title = "Weight",
-                        value = formattedWeight,
-                        unit = "kg",
-                        history = weightHistory,
-                        onClick = { onNavigateToEditMetric("Weight") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    ClickableMetricCardWithChart(
-                        title = "Height",
-                        value = formattedHeight,
-                        unit = "cm",
-                        history = heightHistory,
-                        onClick = { onNavigateToEditMetric("Height") },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                ClickableMetricCardWithChart(
+                    title = "Weight",
+                    value = formattedWeight,
+                    unit = "kg",
+                    history = weightHistory,
+                    onClick = { onNavigateToEditMetric("Weight") },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    ClickableMetricCardWithChart(
-                        title = "BMI",
-                        value = formattedBmi,
-                        unit = "",
-                        history = bmiHistory,
-                        onClick = { onNavigateToViewBMIHistory() },
-                        modifier = Modifier.weight(1f)
-                    )
-                    ClickableMetricCardWithChart(
-                        title = "Body Fat",
-                        value = formattedBodyFat,
-                        unit = "%",
-                        history = bodyFatHistory,
-                        onClick = { onNavigateToEditMetric("Body Fat") },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                ClickableMetricCardWithChart(
+                    title = "Height",
+                    value = formattedHeight,
+                    unit = "cm",
+                    history = heightHistory,
+                    onClick = { onNavigateToEditMetric("Height") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                ClickableMetricCardWithChart(
+                    title = "BMI",
+                    value = formattedBmi,
+                    unit = "",
+                    history = bmiHistory,
+                    onClick = { onNavigateToViewBMIHistory() },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                ClickableMetricCardWithChart(
+                    title = "Body Fat",
+                    value = formattedBodyFat,
+                    unit = "%",
+                    history = bodyFatHistory,
+                    onClick = { onNavigateToEditMetric("Body Fat") },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
