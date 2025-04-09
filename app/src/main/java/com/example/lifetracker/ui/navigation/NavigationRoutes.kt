@@ -3,7 +3,7 @@ package com.example.lifetracker.ui.navigation
 // Main navigation routes
 const val DASHBOARD_ROUTE = "dashboard"
 const val NUTRITION_ROUTE = "nutrition"
-const val WORKOUT_ROUTE = "workout"
+const val PHOTOS_ROUTE = "photos"
 const val PROGRESS_ROUTE = "progress"
 const val PROFILE_ROUTE = "profile"
 const val SETTINGS_ROUTE = "settings"

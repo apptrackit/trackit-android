@@ -37,7 +37,7 @@ fun MainScreen(
     val pages = listOf(
         NavigationItem(DASHBOARD_ROUTE, FontAwesomeIcons.Home, "Dashboard"),
         NavigationItem(NUTRITION_ROUTE, FontAwesomeIcons.List, "Nutrition"),
-        NavigationItem(WORKOUT_ROUTE, FontAwesomeIcons.Dumbbell, "Workout"),
+        NavigationItem(PHOTOS_ROUTE, FontAwesomeIcons.Images, "Photos"),
         NavigationItem(PROGRESS_ROUTE, FontAwesomeIcons.ChartLine, "Progress"),
         NavigationItem(PROFILE_ROUTE, FontAwesomeIcons.User, "Profile")
     )
@@ -111,7 +111,7 @@ fun MainScreen(
                         navController = navController
                     )
                     1 -> NutritionScreen(navController = navController, viewModel = viewModel)
-                    2 -> WorkoutScreen(navController = navController, viewModel = viewModel)
+                    2 -> PhotosScreen(navController = navController, viewModel = viewModel)
                     3 -> ProgressScreen(
                         onNavigateToEditMetric = { metricName ->
                             when (metricName) {

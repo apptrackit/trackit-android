@@ -13,7 +13,7 @@ import androidx.navigation.NavController
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 
 @Composable
-fun WorkoutScreen(
+fun PhotosScreen(
     navController: NavController,
     viewModel: HealthViewModel
 ) {
@@ -29,7 +29,7 @@ fun WorkoutScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Workout",
+                text = "Photos",
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
