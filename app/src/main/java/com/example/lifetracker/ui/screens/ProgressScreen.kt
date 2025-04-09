@@ -109,339 +109,154 @@ fun ProgressScreen(
             // Replace Column with LazyColumn for scrolling
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp),  // increased spacing
-                contentPadding = PaddingValues(vertical = 8.dp)  // padding at top and bottom
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(vertical = 8.dp)
             ) {
+                // BODY MEASUREMENTS Section
                 item {
+                    Text(
+                        text = "BODY MEASUREMENTS",
+                        color = Color.Gray,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
+                    )
+                    
                     Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
+                        modifier = Modifier.fillMaxWidth(),
                         color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)  // rounded corners
+                        shape = MaterialTheme.shapes.medium
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            // Weight measurement
+                            MetricRowWithArrow(
                                 title = "Weight",
                                 value = formattedWeight,
                                 unit = "kg",
-                                modifier = Modifier.weight(1f)
+                                onClick = { onNavigateToEditMetric("Weight") }
                             )
-                            Icon(
-                                imageVector = Icons.Default.ArrowForward,
-                                contentDescription = "Edit Weight",
-                                modifier = Modifier
-                                    .padding(start = 8.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null  // removes ripple effect
-                                    ) { onNavigateToEditMetric("Weight") },
-                                tint = Color.White
-                            )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
-                        color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)  // rounded corners
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
+                            
+                            // Height measurement
+                            MetricRowWithArrow(
                                 title = "Height",
                                 value = formattedHeight,
                                 unit = "cm",
-                                modifier = Modifier.weight(1f)
+                                onClick = { onNavigateToEditMetric("Height") }
                             )
-                            Icon(
-                                imageVector = Icons.Default.ArrowForward,
-                                contentDescription = "Edit Height",
-                                modifier = Modifier
-                                    .padding(start = 8.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null  // removes ripple effect
-                                    ) { onNavigateToEditMetric("Height") },
-                                tint = Color.White
-                            )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
-                        color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)  // rounded corners
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
-                                title = "BMI",
-                                value = formattedBmi,
-                                unit = "",
-                                modifier = Modifier.weight(1f)
-                            )
-                            Icon(
-                                imageVector = Icons.Default.ArrowForward,
-                                contentDescription = "View BMI History",
-                                modifier = Modifier
-                                    .padding(start = 8.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null  // removes ripple effect
-                                    ) { onNavigateToViewBMIHistory() },
-                                tint = Color.White
-                            )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
-                        color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)  // rounded corners
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
+                            
+                            // Body Fat measurement
+                            MetricRowWithArrow(
                                 title = "Body Fat",
                                 value = formattedBodyFat,
                                 unit = "%",
-                                modifier = Modifier.weight(1f)
+                                onClick = { onNavigateToEditMetric("Body Fat") }
                             )
-                            Icon(
-                                imageVector = Icons.Default.ArrowForward,
-                                contentDescription = "Edit Body Fat",
-                                modifier = Modifier
-                                    .padding(start = 8.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null  // removes ripple effect
-                                    ) { onNavigateToEditMetric("Body Fat") },
-                                tint = Color.White
+                            
+                            // Waist measurement
+                            MetricRowWithArrow(
+                                title = "Waist",
+                                value = viewModel.getLatestHistoryEntry("Waist", "cm")?.toString() ?: "No Data",
+                                unit = "cm",
+                                onClick = { onNavigateToEditMetric("Waist") }
                             )
-                        }
-                    }
-
-                    // Additional dummy metrics
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
-                        color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
-                                title = "XXX",
-                                value = "Coming soon",
-                                unit = "",
-                                modifier = Modifier.weight(1f)
+                            
+                            // Bicep measurement
+                            MetricRowWithArrow(
+                                title = "Bicep",
+                                value = viewModel.getLatestHistoryEntry("Bicep", "cm")?.toString() ?: "No Data",
+                                unit = "cm",
+                                onClick = { onNavigateToEditMetric("Bicep") }
                             )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
-                        color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
-                                title = "XXX",
-                                value = "Coming soon",
-                                unit = "",
-                                modifier = Modifier.weight(1f)
+                            
+                            // Chest measurement
+                            MetricRowWithArrow(
+                                title = "Chest",
+                                value = viewModel.getLatestHistoryEntry("Chest", "cm")?.toString() ?: "No Data",
+                                unit = "cm",
+                                onClick = { onNavigateToEditMetric("Chest") }
+                            )
+                            
+                            // Thigh measurement
+                            MetricRowWithArrow(
+                                title = "Thigh",
+                                value = viewModel.getLatestHistoryEntry("Thigh", "cm")?.toString() ?: "No Data",
+                                unit = "cm",
+                                onClick = { onNavigateToEditMetric("Thigh") }
+                            )
+                            
+                            // Shoulder measurement
+                            MetricRowWithArrow(
+                                title = "Shoulder",
+                                value = viewModel.getLatestHistoryEntry("Shoulder", "cm")?.toString() ?: "No Data",
+                                unit = "cm",
+                                onClick = { onNavigateToEditMetric("Shoulder") }
                             )
                         }
                     }
-
+                }
+                
+                // CALCULATED Section
+                item {
+                    Text(
+                        text = "CALCULATED",
+                        color = Color.Gray,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(bottom = 8.dp, top = 16.dp)
+                    )
+                    
                     Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
+                        modifier = Modifier.fillMaxWidth(),
                         color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = MaterialTheme.shapes.medium
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
-                                title = "XXX",
-                                value = "Coming soon",
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            // BMI
+                            MetricRowWithArrow(
+                                title = "BMI",
+                                value = formattedBmi,
                                 unit = "",
-                                modifier = Modifier.weight(1f)
+                                onClick = { onNavigateToViewBMIHistory() }
                             )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
-                        color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
-                                title = "XXX",
-                                value = "Coming soon",
-                                unit = "",
-                                modifier = Modifier.weight(1f)
+                            
+                            // Lean Body Mass
+                            MetricRowWithArrow(
+                                title = "Lean Body Mass",
+                                value = "58.2",
+                                unit = "kg",
+                                onClick = { /* No action */ }
                             )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
-                        color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
-                                title = "XXX",
-                                value = "Coming soon",
-                                unit = "",
-                                modifier = Modifier.weight(1f)
+                            
+                            // Fat Mass
+                            MetricRowWithArrow(
+                                title = "Fat Mass",
+                                value = "10.3",
+                                unit = "kg",
+                                onClick = { /* No action */ }
                             )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
-                        color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
-                                title = "XXX",
-                                value = "Coming soon",
+                            
+                            // Fat-Free Mass Index
+                            MetricRowWithArrow(
+                                title = "Fat-Free Mass Index",
+                                value = "19.0",
                                 unit = "",
-                                modifier = Modifier.weight(1f)
+                                onClick = { /* No action */ }
                             )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
-                        color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
-                                title = "XXX",
-                                value = "Coming soon",
-                                unit = "",
-                                modifier = Modifier.weight(1f)
+                            
+                            // Basal Metabolic Rate
+                            MetricRowWithArrow(
+                                title = "Basal Metabolic Rate",
+                                value = "1628",
+                                unit = "kcal",
+                                onClick = { /* No action */ }
                             )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp)
-                            .padding(vertical = 4.dp),  // added padding to each card
-                        color = Color(0xFF1A1A1A),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricCardNoChart(
-                                title = "XXX",
-                                value = "Coming soon",
-                                unit = "",
-                                modifier = Modifier.weight(1f)
+                            
+                            // Body Surface Area
+                            MetricRowWithArrow(
+                                title = "Body Surface Area",
+                                value = "1.8",
+                                unit = "m²",
+                                onClick = { /* No action */ }
                             )
                         }
                     }
@@ -449,6 +264,48 @@ fun ProgressScreen(
             }
         }
     }
+}
+
+@Composable
+private fun MetricRowWithArrow(
+    title: String,
+    value: String,
+    unit: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp, horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            color = Color.White,
+            fontSize = 16.sp
+        )
+        
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = if (unit.isEmpty()) value else "$value $unit",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Icon(
+                imageVector = Icons.Default.ArrowForward,
+                contentDescription = "Edit $title",
+                modifier = Modifier.padding(start = 8.dp),
+                tint = Color.White
+            )
+        }
+    }
+    Divider(color = Color(0xFF333333), thickness = 0.5.dp)
 }
 
 @Composable 

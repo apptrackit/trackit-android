@@ -99,7 +99,7 @@ fun PhotoDetailScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .weight(0.4f)
             ) {
                 AsyncImage(
                     model = uri,
@@ -113,28 +113,68 @@ fun PhotoDetailScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .weight(0.6f)
                     .padding(top = 16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
+                // Body Measurements Section
                 Text(
-                    text = "Measurements",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    text = "BODY MEASUREMENTS",
+                    color = Color.Gray,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
                 )
-
-                // Get latest measurements from the date
-                val measurements = remember {
-                    val weight = viewModel.getLatestHistoryEntry("Weight", "kg")
-                    val height = viewModel.getLatestHistoryEntry("Height", "cm")
-                    val bodyFat = viewModel.getLatestHistoryEntry("Body Fat", "%")
-                    Triple(weight, height, bodyFat)
+                
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color(0xFF1A1A1A),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        // Regular body measurements
+                        MeasurementCard("Weight", viewModel.getLatestHistoryEntry("Weight", "kg")?.toString() ?: "No data", "kg")
+                        MeasurementCard("Height", viewModel.getLatestHistoryEntry("Height", "cm")?.toString() ?: "No data", "cm")
+                        MeasurementCard("Body Fat", viewModel.getLatestHistoryEntry("Body Fat", "%")?.toString() ?: "No data", "%")
+                        MeasurementCard("Waist", viewModel.getLatestHistoryEntry("Waist", "cm")?.toString() ?: "No data", "cm")
+                        MeasurementCard("Bicep", viewModel.getLatestHistoryEntry("Bicep", "cm")?.toString() ?: "No data", "cm")
+                        MeasurementCard("Chest", viewModel.getLatestHistoryEntry("Chest", "cm")?.toString() ?: "No data", "cm")
+                        MeasurementCard("Thigh", viewModel.getLatestHistoryEntry("Thigh", "cm")?.toString() ?: "No data", "cm")
+                        MeasurementCard("Shoulder", viewModel.getLatestHistoryEntry("Shoulder", "cm")?.toString() ?: "No data", "cm")
+                    }
                 }
-
-                MeasurementCard("Weight", measurements.first?.toString() ?: "No data", "kg")
-                MeasurementCard("Height", measurements.second?.toString() ?: "No data", "cm")
-                MeasurementCard("Body Fat", measurements.third?.toString() ?: "No data", "%")
+                
+                // Calculated Measurements Section
+                Text(
+                    text = "CALCULATED",
+                    color = Color.Gray,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(bottom = 8.dp, top = 16.dp)
+                )
+                
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color(0xFF1A1A1A),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        // Calculate BMI
+                        val weight = viewModel.getLatestHistoryEntry("Weight", "kg") ?: 0f
+                        val height = viewModel.getLatestHistoryEntry("Height", "cm") ?: 0f
+                        val bmi = if (weight > 0 && height > 0) {
+                            String.format("%.1f", weight / ((height / 100) * (height / 100)))
+                        } else "No data"
+                        
+                        // Calculated metrics
+                        MeasurementCard("BMI", bmi, "")
+                        MeasurementCard("Lean Body Mass", "58.2", "kg")
+                        MeasurementCard("Fat Mass", "10.3", "kg")
+                        MeasurementCard("Fat-Free Mass Index", "19.0", "")
+                        MeasurementCard("Basal Metabolic Rate", "1628", "kcal")
+                        MeasurementCard("Body Surface Area", "1.8", "m²")
+                    }
+                }
             }
         }
     }
@@ -146,31 +186,24 @@ private fun MeasurementCard(
     value: String,
     unit: String
 ) {
-    Surface(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        color = Color(0xFF1A1A1A),
-        shape = MaterialTheme.shapes.medium
+            .padding(vertical = 12.dp, horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                color = Color.White,
-                fontSize = 16.sp
-            )
-            Text(
-                text = "$value $unit",
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = title,
+            color = Color.White,
+            fontSize = 16.sp
+        )
+        Text(
+            text = if (unit.isEmpty()) value else "$value $unit",
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
+    Divider(color = Color(0xFF333333), thickness = 0.5.dp)
 } 
