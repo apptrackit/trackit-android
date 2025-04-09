@@ -15,6 +15,7 @@ object FontAwesomeIcons {
     val Dumbbell = FaIcons.Dumbbell
     val ChartLine = FaIcons.ChartLine
     val User = FaIcons.User
+    val Plus = FaIcons.Plus
 }
 
 @Composable

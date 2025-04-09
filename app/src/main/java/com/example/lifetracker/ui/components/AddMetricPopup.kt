@@ -16,6 +16,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.example.lifetracker.ui.theme.FontAwesomeIcon
+import com.example.lifetracker.ui.theme.FontAwesomeIcons
+import com.guru.fontawesomecomposelib.FaIconType.SolidIcon
+import com.guru.fontawesomecomposelib.FaIcons
 
 @Composable
 fun AddMetricButton(
@@ -24,14 +28,13 @@ fun AddMetricButton(
     Box(
         modifier = Modifier
             .size(32.dp)
-            .background(Color.White, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Icon(
-            imageVector = Icons.Default.Add,
-            contentDescription = "Add Metric",
-            tint = Color(0xFF2196F3)
+        FontAwesomeIcon(
+            icon = FontAwesomeIcons.Plus,
+            tint = Color(0xFFFFFFFF),
+            modifier = Modifier.size(16.dp)
         )
     }
 }
@@ -134,7 +137,7 @@ fun AddMetricPopup(
                 Button(
                     onClick = onDismiss,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2A2A2A)
+                        containerColor = Color(0xFFFFFFFF)
                     )
                 ) {
                     Text("Cancel")
@@ -142,4 +145,4 @@ fun AddMetricPopup(
             }
         }
     }
-} 
+}
