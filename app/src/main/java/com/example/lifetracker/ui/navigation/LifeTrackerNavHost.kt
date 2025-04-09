@@ -142,5 +142,24 @@ fun LifeTrackerNavHost(
                 onSave = { value, date -> viewModel.updateWeight(value.toString(), date) }
             )
         }
+
+        composable(
+            route = "photo_detail/{uri}",
+            arguments = listOf(
+                navArgument("uri") { 
+                    type = NavType.StringType
+                    nullable = false 
+                }
+            )
+        ) { backStackEntry ->
+            val uri = backStackEntry.arguments?.getString("uri")
+            if (uri != null) {
+                PhotoDetailScreen(
+                    navController = navController,
+                    viewModel = viewModel,
+                    photoUri = uri
+                )
+            }
+        }
     }
 } 
