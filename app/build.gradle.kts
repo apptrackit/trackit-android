@@ -40,6 +40,7 @@ android {
 }
 
 dependencies {
+    implementation("com.github.Gurupreet:FontAwesomeCompose:1.0.0")
     implementation (libs.material3)
     implementation (libs.androidx.material3)
     implementation (libs.androidx.foundation)

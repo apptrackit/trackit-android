@@ -5,22 +5,22 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.lifetracker.ui.navigation.*
+import com.example.lifetracker.ui.theme.FontAwesomeIcons
+import com.example.lifetracker.ui.theme.FontAwesomeIcon
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.google.accompanist.pager.*
+import com.guru.fontawesomecomposelib.FaIcons
+import com.guru.fontawesomecomposelib.FaIconType
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPagerApi::class)
@@ -35,11 +35,11 @@ fun MainScreen(
     val currentRoute = navBackStackEntry?.destination?.route
 
     val pages = listOf(
-        NavigationItem(DASHBOARD_ROUTE, Icons.Default.Home, "Dashboard"),
-        NavigationItem(NUTRITION_ROUTE, Icons.Default.List, "Nutrition"),
-        NavigationItem(WORKOUT_ROUTE, Icons.Default.Star, "Workout"),
-        NavigationItem(PROGRESS_ROUTE, Icons.Default.Info, "Progress"),
-        NavigationItem(PROFILE_ROUTE, Icons.Default.Person, "Profile")
+        NavigationItem(DASHBOARD_ROUTE, FontAwesomeIcons.Home, "Dashboard"),
+        NavigationItem(NUTRITION_ROUTE, FontAwesomeIcons.List, "Nutrition"),
+        NavigationItem(WORKOUT_ROUTE, FontAwesomeIcons.Dumbbell, "Workout"),
+        NavigationItem(PROGRESS_ROUTE, FontAwesomeIcons.ChartLine, "Progress"),
+        NavigationItem(PROFILE_ROUTE, FontAwesomeIcons.User, "Profile")
     )
 
     Scaffold(
@@ -50,7 +50,7 @@ fun MainScreen(
             ) {
                 pages.forEachIndexed { index, item ->
                     NavigationBarItem(
-                        icon = { Icon(item.icon, contentDescription = item.label) },
+                        icon = { FontAwesomeIcon(icon = item.icon) },
                         label = { 
                             Text(
                                 text = item.label,
@@ -127,6 +127,6 @@ fun MainScreen(
 
 private data class NavigationItem(
     val route: String,
-    val icon: ImageVector,
+    val icon: FaIconType.SolidIcon,
     val label: String
 )
