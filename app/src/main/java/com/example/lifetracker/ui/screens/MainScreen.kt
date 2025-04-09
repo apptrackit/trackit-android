@@ -46,20 +46,23 @@ fun MainScreen(
         bottomBar = {
             NavigationBar(
                 containerColor = Color(0xFF1A1A1A),
-                tonalElevation = 8.dp
+                tonalElevation = 8.dp,
+                modifier = Modifier.height(64.dp)  // Increased height
             ) {
                 pages.forEachIndexed { index, item ->
                     NavigationBarItem(
                         icon = { 
                             FontAwesomeIcon(
                                 icon = item.icon, 
-                                tint = if (pagerState.currentPage == index) Color(0xFF2196F3) else Color.White
+                                tint = if (pagerState.currentPage == index) Color(0xFF2196F3) else Color.White,
+                                modifier = Modifier.size(20.dp)  // Adjusted icon size
                             ) 
                         },
                         label = { 
                             Text(
                                 text = item.label,
-                                fontSize = 12.sp,
+                                fontSize = 11.sp,
+                                letterSpacing = 0.3.sp,
                                 maxLines = 1
                             ) 
                         },
@@ -72,10 +75,11 @@ fun MainScreen(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color(0xFF2196F3),
                             selectedTextColor = Color(0xFF2196F3),
-                            unselectedIconColor = Color.White,
-                            unselectedTextColor = Color.White,
+                            unselectedIconColor = Color.White.copy(alpha = 0.8f),
+                            unselectedTextColor = Color.White.copy(alpha = 0.8f),
                             indicatorColor = Color(0xFF1A1A1A)
-                        )
+                        ),
+                        modifier = Modifier.padding(vertical = 8.dp)
                     )
                 }
             }

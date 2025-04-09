@@ -25,7 +25,7 @@ fun FontAwesomeIcon(
 ) {
     FaIcon(
         faIcon = icon,
-        size = 24.dp,
+        size = 20.dp,  // Changed from 24.dp to match navigation
         tint = tint,
         modifier = modifier
     )
