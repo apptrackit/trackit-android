@@ -90,7 +90,31 @@ fun ViewBMIHistoryScreen(
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
+            // Time filter buttons
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TimeFilterButton(
+                    text = "Week",
+                    isSelected = selectedTimeFilter == TimeFilter.WEEK,
+                    onClick = { selectedTimeFilter = TimeFilter.WEEK }
+                )
 
+                TimeFilterButton(
+                    text = "Month",
+                    isSelected = selectedTimeFilter == TimeFilter.MONTH,
+                    onClick = { selectedTimeFilter = TimeFilter.MONTH }
+                )
+
+                TimeFilterButton(
+                    text = "Year",
+                    isSelected = selectedTimeFilter == TimeFilter.YEAR,
+                    onClick = { selectedTimeFilter = TimeFilter.YEAR }
+                )
+            }
             // BMI Stats Card
             if (filteredHistory.isNotEmpty()) {
                 Card(
@@ -141,31 +165,7 @@ fun ViewBMIHistoryScreen(
                 }
             }
 
-            // Time filter buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                TimeFilterButton(
-                    text = "Week",
-                    isSelected = selectedTimeFilter == TimeFilter.WEEK,
-                    onClick = { selectedTimeFilter = TimeFilter.WEEK }
-                )
 
-                TimeFilterButton(
-                    text = "Month",
-                    isSelected = selectedTimeFilter == TimeFilter.MONTH,
-                    onClick = { selectedTimeFilter = TimeFilter.MONTH }
-                )
-
-                TimeFilterButton(
-                    text = "Year",
-                    isSelected = selectedTimeFilter == TimeFilter.YEAR,
-                    onClick = { selectedTimeFilter = TimeFilter.YEAR }
-                )
-            }
 
             // Graph
             if (filteredHistory.isNotEmpty()) {

@@ -68,139 +68,195 @@ fun EditMetricScreen(
             allHistory.filter { it.date >= yearAgo }
         }
     }
-
+    val entryStats = if (filteredHistory.isNotEmpty()) {
+        val values = filteredHistory.map { it.value }
+        val avg = values.average()
+        val min = values.minOrNull() ?: 0f
+        val max = values.maxOrNull() ?: 0f
+        Triple(min, avg, max)
+    } else {
+        Triple(0f, 0.0, 0f)
+    }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Black
     ) {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Header with back button, title, and plus button
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp, top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Back button and title
+            item {
+                // Header with back button, title, and plus button
                 Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 24.dp, top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
+                    // Back button and title
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
+                        }
+
+                        Text(
+                            text = title,
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 8.dp)
                         )
                     }
 
-                    Text(
-                        text = title,
-                        color = Color.White,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
+                    // Plus button with improved styling
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .shadow(4.dp, CircleShape)
+                            .clip(CircleShape)
+                            .background(Color(0xFF1A1A1A))
+                            .clickable {
+                                navController.navigate("add_metric_data/$metricName/$unit/$title")
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add Entry",
+                            tint = Color(0xFF2196F3),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
 
-                // Plus button with improved styling
-                Box(
+                // Time filter buttons
+                Row(
                     modifier = Modifier
-                        .size(40.dp)
-                        .shadow(4.dp, CircleShape)
-                        .clip(CircleShape)
-                        .background(Color(0xFF1A1A1A))
-                        .clickable {
-                            navController.navigate("add_metric_data/$metricName/$unit/$title")
-                        },
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add Entry",
-                        tint = Color(0xFF2196F3),
-                        modifier = Modifier.size(24.dp)
+                    TimeFilterButton(
+                        text = "Week",
+                        isSelected = selectedTimeFilter == TimeFilter.WEEK,
+                        onClick = { selectedTimeFilter = TimeFilter.WEEK }
+                    )
+
+                    TimeFilterButton(
+                        text = "Month",
+                        isSelected = selectedTimeFilter == TimeFilter.MONTH,
+                        onClick = { selectedTimeFilter = TimeFilter.MONTH }
+                    )
+
+                    TimeFilterButton(
+                        text = "Year",
+                        isSelected = selectedTimeFilter == TimeFilter.YEAR,
+                        onClick = { selectedTimeFilter = TimeFilter.YEAR }
                     )
                 }
-            }
 
-            // Time filter buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                TimeFilterButton(
-                    text = "Week",
-                    isSelected = selectedTimeFilter == TimeFilter.WEEK,
-                    onClick = { selectedTimeFilter = TimeFilter.WEEK }
-                )
-
-                TimeFilterButton(
-                    text = "Month",
-                    isSelected = selectedTimeFilter == TimeFilter.MONTH,
-                    onClick = { selectedTimeFilter = TimeFilter.MONTH }
-                )
-
-                TimeFilterButton(
-                    text = "Year",
-                    isSelected = selectedTimeFilter == TimeFilter.YEAR,
-                    onClick = { selectedTimeFilter = TimeFilter.YEAR }
-                )
-            }
-
-            // Graph
-            MetricHistoryChart(history = filteredHistory, unit = unit)
-
-            // History section header with Edit/Done button
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp, bottom = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "History",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                // Edit/Done button
-                Text(
-                    text = if (isEditMode) "Done" else "Edit",
-                    color = Color.Blue,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.clickable { isEditMode = !isEditMode }
-                )
-            }
-
-            // History items
-            LazyColumn {
-                items(filteredHistory) { entry ->
-                    HistoryItem(
-                        entry = entry,
-                        unit = unit,
-                        isEditMode = isEditMode,
-                        onDelete = {
-                            viewModel.deleteHistoryEntry(metricName, entry)
-                            refreshKey++
-                        },
-                        onEdit = { historyEntry ->
-                            navController.navigate(
-                                "edit_metric_data/$metricName/$unit/$title/${historyEntry.value}/${historyEntry.date}"
+                if (filteredHistory.isNotEmpty()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF1E1E1E)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                text = "BMI Statistics",
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 12.dp)
                             )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                StatItem(
+                                    label = "Min",
+                                    value = String.format("%.1f", entryStats.first).let {
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it
+                                    }
+                                )
+                                StatItem(
+                                    label = "Avg",
+                                    value = String.format("%.1f", entryStats.second).let {
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it
+                                    }
+                                )
+                                StatItem(
+                                    label = "Max",
+                                    value = String.format("%.1f", entryStats.third).let {
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it
+                                    }
+                                )
+                            }
                         }
-                    )
-                    Divider(color = Color(0xFF333333), thickness = 1.dp)
+                    }
                 }
+
+                // Graph
+                MetricHistoryChart(history = filteredHistory, unit = unit)
+
+                // History section header with Edit/Done button
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp, bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "History",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    // Edit/Done button
+                    Text(
+                        text = if (isEditMode) "Done" else "Edit",
+                        color = Color.Blue,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.clickable { isEditMode = !isEditMode }
+                    )
+                }
+            }
+
+            items(filteredHistory) { entry ->
+                HistoryItem(
+                    entry = entry,
+                    unit = unit,
+                    isEditMode = isEditMode,
+                    onDelete = {
+                        viewModel.deleteHistoryEntry(metricName, entry)
+                        refreshKey++
+                    },
+                    onEdit = { historyEntry ->
+                        navController.navigate(
+                            "edit_metric_data/$metricName/$unit/$title/${historyEntry.value}/${historyEntry.date}"
+                        )
+                    }
+                )
+                Divider(color = Color(0xFF333333), thickness = 1.dp)
             }
         }
     }
@@ -329,6 +385,8 @@ fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
         }
     }
 }
+
+
 
 @Composable
 fun HistoryItem(
