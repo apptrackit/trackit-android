@@ -50,7 +50,12 @@ fun MainScreen(
             ) {
                 pages.forEachIndexed { index, item ->
                     NavigationBarItem(
-                        icon = { FontAwesomeIcon(icon = item.icon) },
+                        icon = { 
+                            FontAwesomeIcon(
+                                icon = item.icon, 
+                                tint = if (pagerState.currentPage == index) Color(0xFF2196F3) else Color.White
+                            ) 
+                        },
                         label = { 
                             Text(
                                 text = item.label,
@@ -67,8 +72,8 @@ fun MainScreen(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color(0xFF2196F3),
                             selectedTextColor = Color(0xFF2196F3),
-                            unselectedIconColor = Color.Gray,
-                            unselectedTextColor = Color.Gray,
+                            unselectedIconColor = Color.White,
+                            unselectedTextColor = Color.White,
                             indicatorColor = Color(0xFF1A1A1A)
                         )
                     )
