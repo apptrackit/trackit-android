@@ -12,6 +12,11 @@ class MetricsRepository(private val context: Context) {
             putFloat("weight", metrics.weight)
             putFloat("height", metrics.height)
             putFloat("bodyFat", metrics.bodyFat)
+            putFloat("waist", metrics.waist)
+            putFloat("bicep", metrics.bicep)
+            putFloat("chest", metrics.chest)
+            putFloat("thigh", metrics.thigh)
+            putFloat("shoulder", metrics.shoulder)
             putLong("date", metrics.date)
             apply()
         }
@@ -23,6 +28,11 @@ class MetricsRepository(private val context: Context) {
             weight = sharedPrefs.getFloat("weight", 0f),
             height = sharedPrefs.getFloat("height", 0f),
             bodyFat = sharedPrefs.getFloat("bodyFat", 0f),
+            waist = sharedPrefs.getFloat("waist", 0f),
+            bicep = sharedPrefs.getFloat("bicep", 0f),
+            chest = sharedPrefs.getFloat("chest", 0f),
+            thigh = sharedPrefs.getFloat("thigh", 0f),
+            shoulder = sharedPrefs.getFloat("shoulder", 0f),
             date = sharedPrefs.getLong("date", System.currentTimeMillis())
         )
     }

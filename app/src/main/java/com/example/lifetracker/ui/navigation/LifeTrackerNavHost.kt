@@ -56,6 +56,39 @@ fun LifeTrackerNavHost(
             )
         }
 
+        composable(
+            route = EDIT_METRIC_ROUTE,
+            arguments = listOf(
+                navArgument("metricName") { type = NavType.StringType },
+                navArgument("unit") { type = NavType.StringType },
+                navArgument("title") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val metricName = backStackEntry.arguments?.getString("metricName") ?: ""
+            val unit = backStackEntry.arguments?.getString("unit") ?: ""
+            val title = backStackEntry.arguments?.getString("title") ?: ""
+            
+            EditMetricScreen(
+                title = title,
+                metricName = metricName,
+                unit = unit,
+                navController = navController,
+                viewModel = viewModel,
+                onSave = { value, date ->
+                    when (metricName) {
+                        "Weight" -> viewModel.updateWeight(value.toString(), date)
+                        "Height" -> viewModel.updateHeight(value.toString(), date)
+                        "Body Fat" -> viewModel.updateBodyFat(value.toString(), date)
+                        "Waist" -> viewModel.updateWaist(value.toString(), date)
+                        "Bicep" -> viewModel.updateBicep(value.toString(), date)
+                        "Chest" -> viewModel.updateChest(value.toString(), date)
+                        "Thigh" -> viewModel.updateThigh(value.toString(), date)
+                        "Shoulder" -> viewModel.updateShoulder(value.toString(), date)
+                    }
+                }
+            )
+        }
+
         composable(VIEW_BMI_HISTORY_ROUTE) {
             ViewBMIHistoryScreen(navController = navController, viewModel = viewModel)
         }
@@ -83,6 +116,11 @@ fun LifeTrackerNavHost(
                         "Weight" -> viewModel.updateWeight(value.toString(), date)
                         "Height" -> viewModel.updateHeight(value.toString(), date)
                         "Body Fat" -> viewModel.updateBodyFat(value.toString(), date)
+                        "Waist" -> viewModel.updateWaist(value.toString(), date)
+                        "Bicep" -> viewModel.updateBicep(value.toString(), date)
+                        "Chest" -> viewModel.updateChest(value.toString(), date)
+                        "Thigh" -> viewModel.updateThigh(value.toString(), date)
+                        "Shoulder" -> viewModel.updateShoulder(value.toString(), date)
                     }
                 }
             )
@@ -127,6 +165,11 @@ fun LifeTrackerNavHost(
                         "Weight" -> viewModel.updateWeight(newValue.toString(), newDate)
                         "Height" -> viewModel.updateHeight(newValue.toString(), newDate)
                         "Body Fat" -> viewModel.updateBodyFat(newValue.toString(), newDate)
+                        "Waist" -> viewModel.updateWaist(newValue.toString(), newDate)
+                        "Bicep" -> viewModel.updateBicep(newValue.toString(), newDate)
+                        "Chest" -> viewModel.updateChest(newValue.toString(), newDate)
+                        "Thigh" -> viewModel.updateThigh(newValue.toString(), newDate)
+                        "Shoulder" -> viewModel.updateShoulder(newValue.toString(), newDate)
                     }
                 }
             )

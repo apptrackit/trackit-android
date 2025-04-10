@@ -58,6 +58,52 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             repository.saveMetricHistory("Body Fat", it, "%", date)
         }
     }
+    
+    // New methods for additional body measurements
+    fun updateWaist(value: String, date: Long) {
+        value.toFloatOrNull()?.let {
+            val newMetrics = metrics.copy(waist = it, date = date)
+            metrics = newMetrics
+            repository.saveMetrics(newMetrics)
+            repository.saveMetricHistory("Waist", it, "cm", date)
+        }
+    }
+    
+    fun updateBicep(value: String, date: Long) {
+        value.toFloatOrNull()?.let {
+            val newMetrics = metrics.copy(bicep = it, date = date)
+            metrics = newMetrics
+            repository.saveMetrics(newMetrics)
+            repository.saveMetricHistory("Bicep", it, "cm", date)
+        }
+    }
+    
+    fun updateChest(value: String, date: Long) {
+        value.toFloatOrNull()?.let {
+            val newMetrics = metrics.copy(chest = it, date = date)
+            metrics = newMetrics
+            repository.saveMetrics(newMetrics)
+            repository.saveMetricHistory("Chest", it, "cm", date)
+        }
+    }
+    
+    fun updateThigh(value: String, date: Long) {
+        value.toFloatOrNull()?.let {
+            val newMetrics = metrics.copy(thigh = it, date = date)
+            metrics = newMetrics
+            repository.saveMetrics(newMetrics)
+            repository.saveMetricHistory("Thigh", it, "cm", date)
+        }
+    }
+    
+    fun updateShoulder(value: String, date: Long) {
+        value.toFloatOrNull()?.let {
+            val newMetrics = metrics.copy(shoulder = it, date = date)
+            metrics = newMetrics
+            repository.saveMetrics(newMetrics)
+            repository.saveMetricHistory("Shoulder", it, "cm", date)
+        }
+    }
 
     fun getLatestHistoryEntry(metricName: String, unit: String): Float? {
         val history = getMetricHistory(metricName, unit)
@@ -128,7 +174,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
      * Ensures that all metrics have proper history entries.
      * This is called when the app starts to make sure all metrics have history.
      */
-    fun ensureAllMetricsHaveHistory() {
+    fun ensureMetricHistory() {
         // Check if height has history entries
         val heightHistory = getMetricHistory("Height", "cm")
         if (heightHistory.isEmpty() && metrics.height > 0) {

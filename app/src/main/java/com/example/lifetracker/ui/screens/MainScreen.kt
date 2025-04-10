@@ -102,6 +102,36 @@ fun MainScreen(
                                 "Weight" -> navController.navigate(EDIT_WEIGHT_ROUTE)
                                 "Height" -> navController.navigate(EDIT_HEIGHT_ROUTE)
                                 "Body Fat" -> navController.navigate(EDIT_BODY_FAT_ROUTE)
+                                "Waist" -> navController.navigate(
+                                    EDIT_METRIC_ROUTE
+                                        .replace("{metricName}", metricName)
+                                        .replace("{unit}", "cm")
+                                        .replace("{title}", "Waist")
+                                )
+                                "Bicep" -> navController.navigate(
+                                    EDIT_METRIC_ROUTE
+                                        .replace("{metricName}", metricName)
+                                        .replace("{unit}", "cm")
+                                        .replace("{title}", "Bicep")
+                                )
+                                "Chest" -> navController.navigate(
+                                    EDIT_METRIC_ROUTE
+                                        .replace("{metricName}", metricName)
+                                        .replace("{unit}", "cm")
+                                        .replace("{title}", "Chest")
+                                )
+                                "Thigh" -> navController.navigate(
+                                    EDIT_METRIC_ROUTE
+                                        .replace("{metricName}", metricName)
+                                        .replace("{unit}", "cm")
+                                        .replace("{title}", "Thigh")
+                                )
+                                "Shoulder" -> navController.navigate(
+                                    EDIT_METRIC_ROUTE
+                                        .replace("{metricName}", metricName)
+                                        .replace("{unit}", "cm")
+                                        .replace("{title}", "Shoulder")
+                                )
                             }
                         },
                         onNavigateToViewBMIHistory = {
@@ -118,6 +148,36 @@ fun MainScreen(
                                 "Weight" -> navController.navigate(EDIT_WEIGHT_ROUTE)
                                 "Height" -> navController.navigate(EDIT_HEIGHT_ROUTE)
                                 "Body Fat" -> navController.navigate(EDIT_BODY_FAT_ROUTE)
+                                "Waist" -> navController.navigate(
+                                    EDIT_METRIC_ROUTE
+                                        .replace("{metricName}", metricName)
+                                        .replace("{unit}", "cm")
+                                        .replace("{title}", "Waist")
+                                )
+                                "Bicep" -> navController.navigate(
+                                    EDIT_METRIC_ROUTE
+                                        .replace("{metricName}", metricName)
+                                        .replace("{unit}", "cm")
+                                        .replace("{title}", "Bicep")
+                                )
+                                "Chest" -> navController.navigate(
+                                    EDIT_METRIC_ROUTE
+                                        .replace("{metricName}", metricName)
+                                        .replace("{unit}", "cm")
+                                        .replace("{title}", "Chest")
+                                )
+                                "Thigh" -> navController.navigate(
+                                    EDIT_METRIC_ROUTE
+                                        .replace("{metricName}", metricName)
+                                        .replace("{unit}", "cm")
+                                        .replace("{title}", "Thigh")
+                                )
+                                "Shoulder" -> navController.navigate(
+                                    EDIT_METRIC_ROUTE
+                                        .replace("{metricName}", metricName)
+                                        .replace("{unit}", "cm")
+                                        .replace("{title}", "Shoulder")
+                                )
                             }
                         },
                         onNavigateToViewBMIHistory = {
