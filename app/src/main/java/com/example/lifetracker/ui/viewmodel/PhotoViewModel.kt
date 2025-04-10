@@ -242,7 +242,7 @@ class PhotoViewModel : ViewModel() {
         }
     }
 
-    private fun applyFilter() {
+    fun applyFilter() {
         filteredPhotos = if (selectedCategory == null) {
             photos
         } else {

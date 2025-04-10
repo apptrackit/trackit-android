@@ -53,7 +53,6 @@ fun PhotosScreen(
 ) {
     val context = LocalContext.current
     val photoViewModel = remember { PhotoViewModel() }
-    var showCategoryOptions by remember { mutableStateOf(false) }
     
     // Permission launcher
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -95,6 +94,11 @@ fun PhotosScreen(
     // Load photos when screen is first shown
     LaunchedEffect(Unit) {
         photoViewModel.loadPhotos(context)
+    }
+    
+    // Watch for category changes and apply filter
+    LaunchedEffect(photoViewModel.selectedCategory) {
+        photoViewModel.applyFilter()
     }
     
     // Category selection dialog for new photos
@@ -182,76 +186,18 @@ fun PhotosScreen(
                     fontWeight = FontWeight.Bold
                 )
                 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Add photo button
+                FloatingActionButton(
+                    onClick = {
+                        galleryLauncher.launch("image/*")
+                    },
+                    containerColor = Color(0xFF000000)
                 ) {
-                    // Filter by category dropdown
-                    Box {
-                        OutlinedButton(
-                            onClick = { showCategoryOptions = !showCategoryOptions },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = Color(0xFF1A1A1A),
-                                contentColor = Color.White
-                            ),
-                            border = ButtonDefaults.outlinedButtonBorder.copy(
-                                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFF444444))
-                            ),
-                            modifier = Modifier.height(40.dp)
-                        ) {
-                            Text(
-                                text = photoViewModel.selectedCategory?.displayName ?: "All Categories",
-                                fontSize = 14.sp
-                            )
-                            Icon(
-                                Icons.Default.ArrowDropDown,
-                                contentDescription = "Select Category",
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                        
-                        DropdownMenu(
-                            expanded = showCategoryOptions,
-                            onDismissRequest = { showCategoryOptions = false },
-                            modifier = Modifier.background(Color(0xFF1A1A1A))
-                        ) {
-                            // All categories option
-                            DropdownMenuItem(
-                                text = { Text("All Categories", color = Color.White) },
-                                onClick = {
-                                    photoViewModel.selectedCategory = null
-                                    showCategoryOptions = false
-                                }
-                            )
-                            
-                            Divider(color = Color(0xFF333333))
-                            
-                            // Category options
-                            PhotoCategory.values().forEach { category ->
-                                DropdownMenuItem(
-                                    text = { Text(category.displayName, color = Color.White) },
-                                    onClick = {
-                                        photoViewModel.selectedCategory = category
-                                        showCategoryOptions = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                    
-                    // Add photo button
-                    FloatingActionButton(
-                        onClick = {
-                            galleryLauncher.launch("image/*")
-                        },
-                        containerColor = Color(0xFF000000)
-                    ) {
-                        FontAwesomeIcon(
-                            icon = FontAwesomeIcons.Plus,
-                            tint = Color(0xFFFFFFFF),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
+                    FontAwesomeIcon(
+                        icon = FontAwesomeIcons.Plus,
+                        tint = Color(0xFFFFFFFF),
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
             
