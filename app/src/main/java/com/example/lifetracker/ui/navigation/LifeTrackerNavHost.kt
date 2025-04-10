@@ -229,5 +229,24 @@ fun LifeTrackerNavHost(
                 )
             }
         }
+        
+        composable(
+            route = PHOTO_CATEGORY_ROUTE,
+            arguments = listOf(
+                navArgument("uri") { 
+                    type = NavType.StringType
+                    nullable = false 
+                }
+            )
+        ) { backStackEntry ->
+            val uri = backStackEntry.arguments?.getString("uri")
+            if (uri != null) {
+                PhotoCategoryScreen(
+                    navController = navController,
+                    viewModel = viewModel,
+                    photoUri = uri
+                )
+            }
+        }
     }
 } 
