@@ -114,6 +114,30 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Gets the history entry closest to the provided date.
+     * Useful for comparing metrics at specific dates (e.g. for photo comparison).
+     */
+    fun getHistoryEntryAtDate(metricName: String, unit: String, targetDate: Long): Float? {
+        val history = getMetricHistory(metricName, unit)
+        if (history.isEmpty()) return null
+        
+        // Find entries within a 24-hour window of the target date
+        val window = 24 * 60 * 60 * 1000L // 24 hours in milliseconds
+        val entriesInWindow = history.filter { 
+            targetDate - window <= it.date && it.date <= targetDate + window 
+        }
+        
+        // If entries exist in window, get the one closest to the target date
+        if (entriesInWindow.isNotEmpty()) {
+            return entriesInWindow.minByOrNull { Math.abs(it.date - targetDate) }?.value
+        }
+        
+        // If no entries in window, get the entry closest to the target date
+        // This is a fallback and might return entries far from the target date
+        return history.minByOrNull { Math.abs(it.date - targetDate) }?.value
+    }
+
     fun saveMetricHistory(metricName: String, value: Float, unit: String, date: Long) {
         repository.saveMetricHistory(metricName, value, unit, date)
     }

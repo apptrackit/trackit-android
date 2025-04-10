@@ -204,5 +204,30 @@ fun LifeTrackerNavHost(
                 )
             }
         }
+        
+        composable(
+            route = PHOTO_COMPARE_ROUTE,
+            arguments = listOf(
+                navArgument("mainUri") { 
+                    type = NavType.StringType
+                    nullable = false 
+                },
+                navArgument("compareUri") { 
+                    type = NavType.StringType
+                    nullable = false 
+                }
+            )
+        ) { backStackEntry ->
+            val mainUri = backStackEntry.arguments?.getString("mainUri")
+            val compareUri = backStackEntry.arguments?.getString("compareUri")
+            if (mainUri != null && compareUri != null) {
+                PhotoCompareScreen(
+                    navController = navController,
+                    viewModel = viewModel,
+                    mainPhotoUri = mainUri,
+                    comparePhotoUri = compareUri
+                )
+            }
+        }
     }
 } 

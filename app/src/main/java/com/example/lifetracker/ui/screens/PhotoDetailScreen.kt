@@ -2,12 +2,20 @@ package com.example.lifetracker.ui.screens
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,8 +26,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.lifetracker.ui.navigation.PHOTO_COMPARE_ROUTE
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.ui.viewmodel.PhotoViewModel
 import java.io.File
@@ -35,6 +45,14 @@ fun PhotoDetailScreen(
     val context = LocalContext.current
     val photoViewModel = remember { PhotoViewModel() }
     
+    // For photo selection dialog
+    var showPhotoSelectionDialog by remember { mutableStateOf(false) }
+    
+    // Load all photos for comparison dialog
+    LaunchedEffect(Unit) {
+        photoViewModel.loadPhotos(context)
+    }
+    
     // Decode the URL-encoded path
     val decodedPath = try {
         java.net.URLDecoder.decode(photoUri, "UTF-8")
@@ -49,6 +67,99 @@ fun PhotoDetailScreen(
         SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(file.lastModified()))
     } catch (e: Exception) {
         "Unknown date"
+    }
+
+    // Photo selection dialog
+    if (showPhotoSelectionDialog) {
+        Dialog(onDismissRequest = { showPhotoSelectionDialog = false }) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.8f),
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFF1A1A1A)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Select Photo to Compare",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        IconButton(onClick = { showPhotoSelectionDialog = false }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                    
+                    // Grid of photos
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(photoViewModel.photos.filter { it.path != uri.path }) { compareUri ->
+                            val compareFile = File(compareUri.path ?: "")
+                            val compareDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                                .format(Date(compareFile.lastModified()))
+                            
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        showPhotoSelectionDialog = false
+                                        
+                                        // Navigate to comparison screen
+                                        val mainPath = uri.path ?: return@clickable
+                                        val comparePath = compareUri.path ?: return@clickable
+                                        
+                                        val encodedMainPath = java.net.URLEncoder.encode(mainPath, "UTF-8")
+                                        val encodedComparePath = java.net.URLEncoder.encode(comparePath, "UTF-8")
+                                        
+                                        navController.navigate(
+                                            PHOTO_COMPARE_ROUTE
+                                                .replace("{mainUri}", encodedMainPath)
+                                                .replace("{compareUri}", encodedComparePath)
+                                        )
+                                    }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .aspectRatio(1f)
+                                        .fillMaxWidth()
+                                ) {
+                                    AsyncImage(
+                                        model = compareUri,
+                                        contentDescription = "Photo",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                                Text(
+                                    text = compareDate,
+                                    color = Color.White,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     Surface(
@@ -81,17 +192,30 @@ fun PhotoDetailScreen(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
-                IconButton(
-                    onClick = {
-                        photoViewModel.deletePhoto(context, uri)
-                        navController.popBackStack()
+                Row {
+                    // Compare button
+                    IconButton(onClick = { 
+                        showPhotoSelectionDialog = true 
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = "Compare",
+                            tint = Color(0xFF2196F3)
+                        )
                     }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = Color.Red
-                    )
+                    // Delete button
+                    IconButton(
+                        onClick = {
+                            photoViewModel.deletePhoto(context, uri)
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = Color.Red
+                        )
+                    }
                 }
             }
 
