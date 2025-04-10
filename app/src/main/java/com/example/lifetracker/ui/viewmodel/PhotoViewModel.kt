@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -18,9 +19,16 @@ import java.util.*
 class PhotoViewModel : ViewModel() {
     var photos by mutableStateOf<List<Uri>>(emptyList())
         private set
+    private var isLoading by mutableStateOf(false)
 
     fun loadPhotos(context: Context) {
+        if (isLoading) return
+        
         viewModelScope.launch {
+            isLoading = true
+            // Add a small delay to prevent immediate loading when quickly swiping
+            delay(300)
+            
             withContext(Dispatchers.IO) {
                 val photosDir = File(context.filesDir, "photos")
                 if (!photosDir.exists()) {
@@ -29,6 +37,7 @@ class PhotoViewModel : ViewModel() {
                 val photoFiles: Array<File> = photosDir.listFiles() ?: emptyArray()
                 photos = photoFiles.sortedByDescending { it.lastModified() }.map { Uri.fromFile(it) }
             }
+            isLoading = false
         }
     }
 
