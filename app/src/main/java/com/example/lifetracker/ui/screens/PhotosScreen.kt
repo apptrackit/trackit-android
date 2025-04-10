@@ -30,6 +30,8 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.lifetracker.ui.navigation.PHOTO_DETAIL_ROUTE
+import com.example.lifetracker.ui.theme.FontAwesomeIcon
+import com.example.lifetracker.ui.theme.FontAwesomeIcons
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.ui.viewmodel.PhotoViewModel
 import java.io.File
@@ -113,12 +115,13 @@ fun PhotosScreen(
                         onClick = {
                             galleryLauncher.launch("image/*")
                         },
-                        containerColor = Color(0xFF2196F3)
+                        containerColor = Color(0xFF000000)
+
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add Photo",
-                            tint = Color.White
+                        FontAwesomeIcon(
+                            icon = FontAwesomeIcons.Plus,
+                            tint = Color(0xFFFFFFFF),
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
