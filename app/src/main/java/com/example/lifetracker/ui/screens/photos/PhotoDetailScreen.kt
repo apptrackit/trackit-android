@@ -47,6 +47,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import android.util.Log
+import androidx.compose.ui.graphics.SolidColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -151,10 +152,10 @@ fun PhotoDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Photo Details") },
+                title = { Text("") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, "Back")
+                        Icon(Icons.Default.ArrowBack, "Back", tint = Color.White)
                     }
                 },
                 actions = {
@@ -174,13 +175,13 @@ fun PhotoDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF121212),
+                    containerColor = Color(0xFF000000),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
             )
         },
-        containerColor = Color(0xFF121212)
+        containerColor = Color(0xFF000000)
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -191,14 +192,12 @@ fun PhotoDetailScreen(
                     end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
                     bottom = paddingValues.calculateBottomPadding()
                 )
-                .verticalScroll(rememberScrollState())
         ) {
             // Photo display
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(400.dp)
-                    .padding(16.dp)
+                    .fillMaxHeight(0.6f)
             ) {
                 AsyncImage(
                     model = uri,
@@ -209,7 +208,7 @@ fun PhotoDetailScreen(
 
                 // Category badge
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(4.dp),
                     color = Color(0x99000000),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -226,7 +225,7 @@ fun PhotoDetailScreen(
                 // Metrics overlay
                 if (metricEntries.isNotEmpty()) {
                     Surface(
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(4.dp),
                         color = Color(0x99000000),
                         modifier = Modifier
                             .align(Alignment.BottomStart)
@@ -258,33 +257,89 @@ fun PhotoDetailScreen(
                 }
             }
 
-            // Date
-            Text(
-                text = date,
-                color = Color(0xFFB3B3B3),
-                fontSize = 14.sp,
-                modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
-            )
+            // Bottom section
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                // Date
+                Text(
+                    text = date,
+                    color = Color(0xFFB3B3B3),
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
 
-            // Detailed metrics section
-            if (metricEntries.isNotEmpty()) {
-                Card(
+                // Action Buttons
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF1E1E1E)
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Category button
+                    OutlinedButton(
+                        onClick = {
+                            val path = uri.path ?: return@OutlinedButton
+                            val encodedPath = java.net.URLEncoder.encode(path, "UTF-8")
+                            navController.navigate(
+                                PHOTO_CATEGORY_ROUTE.replace("{uri}", encodedPath)
+                            )
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.White
+                        ),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            brush = SolidColor(Color(0xFF2A2A2A))
+                        )
+                    ) {
+                        Text("CATEGORY")
+                    }
+
+                    // Notes button
+                    OutlinedButton(
+                        onClick = { showMetadataDialog = true },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.White
+                        ),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            brush = SolidColor(Color(0xFF2A2A2A))
+                        )
+                    ) {
+                        Text("NOTES")
+                    }
+                }
+
+                // Compare button
+                OutlinedButton(
+                    onClick = { showPhotoSelectionDialog = true },
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White
+                    ),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        brush = SolidColor(Color(0xFF2A2A2A))
                     )
                 ) {
+                    Text("COMPARE")
+                }
+
+                // Detailed metrics section
+                if (metricEntries.isNotEmpty()) {
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
                     ) {
                         Text(
-                            text = "DETAILED METRICS",
+                            text = "METRICS",
                             color = Color(0xFFB3B3B3),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 16.dp)
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
 
                         // Basic metrics
@@ -311,17 +366,11 @@ fun PhotoDetailScreen(
                         }
 
                         if (bodyMeasurements.isNotEmpty()) {
-                            Divider(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                color = Color(0xFF2A2A2A)
-                            )
-
                             Text(
-                                text = "BODY MEASUREMENTS",
+                                text = "MEASUREMENTS",
                                 color = Color(0xFFB3B3B3),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier.padding(bottom = 8.dp, top = 4.dp)
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                             )
 
                             bodyMeasurements.forEach { (metric, entry) ->
@@ -335,63 +384,6 @@ fun PhotoDetailScreen(
                     }
                 }
             }
-
-            // Action Buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Category button
-                Button(
-                    onClick = {
-                        val path = uri.path ?: return@Button
-                        val encodedPath = java.net.URLEncoder.encode(path, "UTF-8")
-                        navController.navigate(
-                            PHOTO_CATEGORY_ROUTE.replace("{uri}", encodedPath)
-                        )
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2A2A2A),
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text("CHANGE CATEGORY")
-                }
-
-                // Notes button
-                Button(
-                    onClick = { showMetadataDialog = true },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2A2A2A),
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text("ADD NOTES")
-                }
-            }
-
-            // Compare button
-            Button(
-                onClick = { showPhotoSelectionDialog = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF2A2A2A),
-                    contentColor = Color.White
-                )
-            ) {
-                Icon(
-                    Icons.Default.Info,
-                    contentDescription = "Compare",
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text("COMPARE WITH OTHER PHOTOS")
-            }
         }
     }
 }
@@ -401,27 +393,23 @@ private fun MetricRow(
     title: String,
     value: String
 ) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                color = Color.White,
-                fontSize = 16.sp
-            )
-            Text(
-                text = value,
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        Divider(color = Color(0xFF2A2A2A), thickness = 0.5.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            color = Color.White,
+            fontSize = 12.sp
+        )
+        Text(
+            text = value,
+            color = Color.White,
+            fontSize = 12.sp
+        )
     }
 }
 
@@ -438,8 +426,8 @@ private fun PhotoSelectionDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.8f),
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xFF1A1A1A)
+            shape = RoundedCornerShape(8.dp),
+            color = Color(0xFF000000)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
@@ -453,10 +441,9 @@ private fun PhotoSelectionDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Select Photo to Compare",
+                        text = "COMPARE",
                         color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 14.sp
                     )
                     IconButton(onClick = onDismiss) {
                         Icon(
@@ -480,8 +467,8 @@ private fun PhotoSelectionDialog(
                     ) {
                         Text(
                             text = "No other photos of type '${category.displayName}' to compare with",
-                            color = Color.White,
-                            fontSize = 16.sp,
+                            color = Color(0xFFB3B3B3),
+                            fontSize = 14.sp,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -519,7 +506,6 @@ private fun PhotoSelectionDialog(
                                     modifier = Modifier
                                         .aspectRatio(1f)
                                         .fillMaxWidth()
-                                        .background(Color(0xFF111111))
                                 ) {
                                     AsyncImage(
                                         model = compareUri,
@@ -530,7 +516,7 @@ private fun PhotoSelectionDialog(
                                 }
                                 Text(
                                     text = compareDate,
-                                    color = Color.White,
+                                    color = Color(0xFFB3B3B3),
                                     fontSize = 12.sp,
                                     modifier = Modifier.padding(top = 4.dp)
                                 )
@@ -558,8 +544,8 @@ private fun MetadataDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.9f),
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xFF1A1A1A)
+            shape = RoundedCornerShape(8.dp),
+            color = Color(0xFF000000)
         ) {
             Column(
                 modifier = Modifier
@@ -575,10 +561,9 @@ private fun MetadataDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Add Notes",
+                        text = "NOTES",
                         color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 14.sp
                     )
                     IconButton(onClick = onDismiss) {
                         Icon(
@@ -590,12 +575,6 @@ private fun MetadataDialog(
                 }
                 
                 // Notes input
-                Text(
-                    text = "NOTES",
-                    color = Color.LightGray,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                )
                 TextField(
                     value = notes,
                     onValueChange = { notes = it },
@@ -604,18 +583,18 @@ private fun MetadataDialog(
                         .heightIn(min = 100.dp)
                         .padding(bottom = 16.dp),
                     colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = Color(0xFF333333),
-                        focusedContainerColor = Color(0xFF333333),
+                        unfocusedContainerColor = Color(0xFF1A1A1A),
+                        focusedContainerColor = Color(0xFF1A1A1A),
                         unfocusedTextColor = Color.White,
                         focusedTextColor = Color.White,
-                        cursorColor = Color(0xFF2196F3),
-                        focusedIndicatorColor = Color(0xFF2196F3),
-                        unfocusedIndicatorColor = Color(0xFF666666)
+                        cursorColor = Color(0xFFB3B3B3),
+                        focusedIndicatorColor = Color(0xFFB3B3B3),
+                        unfocusedIndicatorColor = Color(0xFF2A2A2A)
                     )
                 )
                 
                 // Save button
-                Button(
+                OutlinedButton(
                     onClick = {
                         // Save only notes
                         val newMetadata = PhotoMetadata(
@@ -626,14 +605,15 @@ private fun MetadataDialog(
                         onDismiss()
                     },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4CAF50),
+                        .fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = Color.White
+                    ),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        brush = SolidColor(Color(0xFF2A2A2A))
                     )
                 ) {
-                    Text("SAVE NOTES")
+                    Text("SAVE")
                 }
             }
         }
