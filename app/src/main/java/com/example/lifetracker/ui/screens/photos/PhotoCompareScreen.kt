@@ -8,13 +8,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-//import androidx.compose.material.icons.filled.Compare
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -26,12 +28,28 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.lifetracker.data.model.PhotoCategory
 import com.example.lifetracker.data.model.PhotoMetadata
+import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.ui.viewmodel.PhotoViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import android.util.Log
+import kotlin.math.abs
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.graphicsLayer
+
+// Custom icon mapping to avoid missing Material icons
+private object CustomIcons {
+    val Scale = Icons.Outlined.Person // Fallback icon
+    val FitnessCenter = Icons.Outlined.Person
+    val Straighten = Icons.Outlined.Person
+    val Height = Icons.Outlined.Person
+    val DirectionsWalk = Icons.Outlined.Person
+    val AccessibilityNew = Icons.Outlined.Person
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -139,7 +157,7 @@ fun PhotoCompareScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Compare ${mainCategory.displayName}") },
+                title = { Text("Progress Photos") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, "Back")
@@ -152,250 +170,125 @@ fun PhotoCompareScreen(
                 )
             )
         },
-        containerColor = Color.Black
+        containerColor = Color(0xFF000000)
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-                    top = paddingValues.calculateTopPadding(),
-                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
-                    bottom = paddingValues.calculateBottomPadding()
-                )
                 .verticalScroll(rememberScrollState())
+                .padding(paddingValues)
         ) {
-            // Tip card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF2196F3).copy(alpha = 0.1f)
+                    containerColor = Color(0xFF1A1A1A)
                 )
             ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.Info,
-                        contentDescription = "Info",
-                        tint = Color(0xFF2196F3),
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text(
-                        text = "TIPS FOR COMPARISON",
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-                Text(
-                    text = "Look for changes in body composition, muscle definition, and overall shape rather than just weight.",
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-
-            // Photos comparison
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Main photo
                 Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier.padding(16.dp)
                 ) {
-                    Box(
+                    Text(
+                        text = "Comparison",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    // Photos
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .aspectRatio(0.75f)
+                            .padding(horizontal = 4.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        AsyncImage(
-                            model = mainUri,
-                            contentDescription = "Main Photo",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                        
-                        // Metrics overlay for main photo
-                        if (mainMetricEntries.isNotEmpty()) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0x88000000),
-                                modifier = Modifier
-                                    .align(Alignment.BottomStart)
-                                    .padding(8.dp)
-                                    .fillMaxWidth(0.9f)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(8.dp)
-                                ) {
-                                    // Basic metrics (Weight, Height, Body Fat)
-                                    val basicMetrics = mainMetricEntries.filter { (metric, _) ->
-                                        metric in listOf("Weight", "Body Fat")
-                                    }
-                                    basicMetrics.forEach { (metric, entry) ->
-                                        val (value, unit) = entry
-                                        Text(
-                                            text = "$metric: ${formatMetricValue(metric, value.value, unit)}",
-                                            color = Color.White,
-                                            fontSize = 12.sp,
-                                            modifier = Modifier.padding(vertical = 2.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Text(
-                        text = mainDate,
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
-
-                // Compare photo
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(0.75f)
-                    ) {
-                        AsyncImage(
-                            model = compareUri,
-                            contentDescription = "Compare Photo",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                        
-                        // Metrics overlay for compare photo
-                        if (compareMetricEntries.isNotEmpty()) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0x88000000),
-                                modifier = Modifier
-                                    .align(Alignment.BottomStart)
-                                    .padding(8.dp)
-                                    .fillMaxWidth(0.9f)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(8.dp)
-                                ) {
-                                    // Basic metrics (Weight, Height, Body Fat)
-                                    val basicMetrics = compareMetricEntries.filter { (metric, _) ->
-                                        metric in listOf("Weight", "Body Fat")
-                                    }
-                                    basicMetrics.forEach { (metric, entry) ->
-                                        val (value, unit) = entry
-                                        Text(
-                                            text = "$metric: ${formatMetricValue(metric, value.value, unit)}",
-                                            color = Color.White,
-                                            fontSize = 12.sp,
-                                            modifier = Modifier.padding(vertical = 2.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Text(
-                        text = compareDate,
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
-            }
-
-            // Metrics Comparison
-            if (mainMetricEntries.isNotEmpty() || compareMetricEntries.isNotEmpty()) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF1A1A1A)
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "METRICS COMPARISON",
-                            color = Color(0xFF2196F3),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-
-                        // Combine metrics from both photos
-                        val allMetrics = (mainMetricEntries.map { it.first } + compareMetricEntries.map { it.first }).distinct()
-                        
-                        allMetrics.forEach { metricName ->
-                            val mainEntry = mainMetricEntries.find { it.first == metricName }
-                            val compareEntry = compareMetricEntries.find { it.first == metricName }
+                        // Before photo
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(3f/4f)
+                                .clip(RoundedCornerShape(4.dp))
+                        ) {
+                            var scale by remember { mutableStateOf(1f) }
+                            var offset by remember { mutableStateOf(Offset.Zero) }
                             
-                            if (mainEntry != null || compareEntry != null) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = metricName,
-                                        color = Color.White,
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.width(100.dp)
+                            AsyncImage(
+                                model = mainUri,
+                                contentDescription = "Before Photo",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer(
+                                        scaleX = scale,
+                                        scaleY = scale,
+                                        translationX = offset.x.coerceIn(-200f, 200f),
+                                        translationY = offset.y.coerceIn(-200f, 200f)
                                     )
-                                    
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    
-                                    // Old value (main photo)
-                                    Text(
-                                        text = mainEntry?.let { 
-                                            val (value, unit) = it.second
-                                            formatMetricValue(metricName, value.value, unit)
-                                        } ?: "-",
-                                        color = Color.White,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.width(90.dp)
+                                    .pointerInput(Unit) {
+                                        detectTransformGestures(
+                                            onGesture = { centroid: Offset, pan: Offset, zoom: Float, rotation: Float ->
+                                                scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                                offset += pan
+                                                // Constrain offset based on scale
+                                                val maxOffset = 200f * (scale - 0.5f)
+                                                offset = Offset(
+                                                    offset.x.coerceIn(-maxOffset, maxOffset),
+                                                    offset.y.coerceIn(-maxOffset, maxOffset)
+                                                )
+                                            }
+                                        )
+                                    },
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+
+                        // After photo
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(3f/4f)
+                                .clip(RoundedCornerShape(4.dp))
+                        ) {
+                            var scale by remember { mutableStateOf(1f) }
+                            var offset by remember { mutableStateOf(Offset.Zero) }
+                            
+                            AsyncImage(
+                                model = compareUri,
+                                contentDescription = "After Photo",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer(
+                                        scaleX = scale,
+                                        scaleY = scale,
+                                        translationX = offset.x.coerceIn(-200f, 200f),
+                                        translationY = offset.y.coerceIn(-200f, 200f)
                                     )
-                                    
-                                    Icon(
-                                        imageVector = Icons.Default.ArrowBack,
-                                        contentDescription = "to",
-                                        tint = Color.Gray,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    
-                                    // New value (compare photo)
-                                    Text(
-                                        text = compareEntry?.let { 
-                                            val (value, unit) = it.second
-                                            formatMetricValue(metricName, value.value, unit)
-                                        } ?: "-",
-                                        color = Color.White,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.width(90.dp)
-                                    )
-                                }
-                                Divider(color = Color(0xFF333333), thickness = 0.5.dp)
-                            }
+                                    .pointerInput(Unit) {
+                                        detectTransformGestures(
+                                            onGesture = { centroid: Offset, pan: Offset, zoom: Float, rotation: Float ->
+                                                scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                                offset += pan
+                                                // Constrain offset based on scale
+                                                val maxOffset = 200f * (scale - 0.5f)
+                                                offset = Offset(
+                                                    offset.x.coerceIn(-maxOffset, maxOffset),
+                                                    offset.y.coerceIn(-maxOffset, maxOffset)
+                                                )
+                                            }
+                                        )
+                                    },
+                                contentScale = ContentScale.Fit
+                            )
                         }
                     }
+                    
+                    // Metrics comparison
+                    MetricsComparison(
+                        mainMetricEntries = mainMetricEntries,
+                        compareMetricEntries = compareMetricEntries,
+                        modifier = Modifier.padding(top = 24.dp)
+                    )
                 }
             }
         }
@@ -510,5 +403,146 @@ private fun calculateDifference(valueLeft: String, valueRight: String): Triple<S
         Triple(diffText, diffColor, sign)
     } catch (e: Exception) {
         null
+    }
+}
+
+@Composable
+private fun MetricsComparison(
+    mainMetricEntries: List<Pair<String, Pair<HistoryEntry, String>>>,
+    compareMetricEntries: List<Pair<String, Pair<HistoryEntry, String>>>,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        // Define all possible metrics in order
+        val allMetrics = listOf(
+            "Weight" to "kg",
+            "Height" to "cm",
+            "Body Fat" to "%",
+            "Waist" to "cm",
+            "Bicep" to "cm",
+            "Chest" to "cm",
+            "Thigh" to "cm",
+            "Shoulder" to "cm"
+        )
+        
+        allMetrics.forEach { (metricName, unit) ->
+            val mainEntry = mainMetricEntries.find { it.first == metricName }
+            val compareEntry = compareMetricEntries.find { it.first == metricName }
+            
+            MetricRow(
+                metricName = metricName,
+                beforeValue = mainEntry?.second?.first?.value,
+                afterValue = compareEntry?.second?.first?.value,
+                unit = unit
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+    }
+}
+
+@Composable
+internal fun MetricRow(
+    metricName: String,
+    beforeValue: Float?,
+    afterValue: Float?,
+    unit: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Icon based on metric type
+        Icon(
+            imageVector = when (metricName) {
+                "Weight" -> CustomIcons.Scale
+                "Body Fat" -> Icons.Outlined.Person
+                "Bicep" -> CustomIcons.FitnessCenter
+                "Chest" -> CustomIcons.Straighten
+                "Waist" -> CustomIcons.Height
+                "Thigh" -> CustomIcons.DirectionsWalk
+                "Shoulder" -> CustomIcons.AccessibilityNew
+                else -> CustomIcons.Straighten
+            },
+            contentDescription = metricName,
+            tint = Color.White,
+            modifier = Modifier
+                .size(24.dp)
+                .padding(end = 12.dp)
+        )
+        
+        // Metric name
+        Text(
+            text = metricName,
+            color = Color.White,
+            fontSize = 16.sp,
+            modifier = Modifier.weight(1f)
+        )
+        
+        // Values and difference
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Before value
+            Text(
+                text = beforeValue?.let { formatValue(it, unit) } ?: "-",
+                color = Color.Gray,
+                fontSize = 16.sp
+            )
+            
+            Icon(
+                imageVector = Icons.Default.ArrowForward,
+                contentDescription = "to",
+                tint = Color.Gray,
+                modifier = Modifier.size(16.dp)
+            )
+            
+            // After value
+            Text(
+                text = afterValue?.let { formatValue(it, unit) } ?: "-",
+                color = Color.Gray,
+                fontSize = 16.sp
+            )
+            
+            // Difference indicator
+            if (beforeValue != null && afterValue != null) {
+                val difference = afterValue - beforeValue
+                val formattedDiff = String.format("%.1f", abs(difference))
+                val color = when {
+                    difference > 0 -> Color(0xFF4CAF50) // Green
+                    difference < 0 -> Color(0xFFE57373) // Red
+                    else -> Color.Gray
+                }
+                val sign = when {
+                    difference > 0 -> "+"
+                    difference < 0 -> "-"
+                    else -> ""
+                }
+                
+                Text(
+                    text = "$sign$formattedDiff",
+                    color = color,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .background(
+                            color = color.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
+        }
+    }
+}
+
+private fun formatValue(value: Float, unit: String): String {
+    return when {
+        unit == "cm" -> String.format("%.1f", value)
+        unit == "kg" -> String.format("%.1f", value)
+        unit == "%" -> String.format("%.1f", value)
+        else -> String.format("%.1f", value)
     }
 } 

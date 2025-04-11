@@ -47,6 +47,14 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import android.util.Log
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.graphicsLayer
+import com.example.lifetracker.data.model.HistoryEntry
+import com.example.lifetracker.ui.screens.photos.MetricRow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,6 +95,36 @@ fun PhotoDetailScreen(
         "Unknown date"
     }
 
+    // Calculate metric entries
+    val photoDate = file.lastModified()
+    val metrics = listOf(
+        "Weight" to "kg",
+        "Height" to "cm",
+        "Body Fat" to "%",
+        "Waist" to "cm",
+        "Bicep" to "cm",
+        "Chest" to "cm",
+        "Thigh" to "cm",
+        "Shoulder" to "cm"
+    )
+
+    // Get the latest entry before or on the photo date for each metric
+    val metricEntries = metrics.map { (metric, unit) ->
+        val history = viewModel.getMetricHistory(metric, unit)
+        val entriesBeforePhoto = history.filter { it.date <= photoDate }
+        val latestEntry = entriesBeforePhoto.maxByOrNull { it.date }
+        
+        Log.d("PhotoMetrics", "Metric: $metric, Found entries: ${entriesBeforePhoto.size}, Latest: ${latestEntry?.value}")
+        
+        metric to (latestEntry to unit)
+    }
+    
+    if (metricEntries.isEmpty()) {
+        Log.d("PhotoMetrics", "No metrics found for photo date ${Date(photoDate)}")
+    } else {
+        Log.d("PhotoMetrics", "Found ${metricEntries.size} metrics for photo date ${Date(photoDate)}")
+    }
+
     // Photo selection dialog
     if (showPhotoSelectionDialog) {
         PhotoSelectionDialog(
@@ -111,267 +149,235 @@ fun PhotoDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Photo Details") },
+                title = { Text("") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, "Back")
+                        Icon(Icons.Default.ArrowBack, "Back", tint = Color.White)
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            if (photo != null) {
+                                photoViewModel.deletePhoto(context, photo)
+                                navController.popBackStack()
+                            }
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete Photo",
+                            tint = Color(0xFFE57373)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF1A1A1A),
+                    containerColor = Color(0xFF000000),
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 )
             )
         },
-        containerColor = Color.Black
+        containerColor = Color(0xFF000000)
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(
                     start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                     top = paddingValues.calculateTopPadding(),
                     end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
                     bottom = paddingValues.calculateBottomPadding()
                 )
-                .verticalScroll(rememberScrollState())
         ) {
             // Photo display
-            val photoDate = file.lastModified()
-            val metrics = listOf(
-                "Weight" to "kg",
-                "Height" to "cm",
-                "Body Fat" to "%",
-                "Waist" to "cm",
-                "Bicep" to "cm",
-                "Chest" to "cm",
-                "Thigh" to "cm",
-                "Shoulder" to "cm"
-            )
-
-            // Get the latest entry before or on the photo date for each metric
-            val metricEntries = metrics.mapNotNull { (metric, unit) ->
-                val history = viewModel.getMetricHistory(metric, unit)
-                if (history.isEmpty()) return@mapNotNull null
-                
-                // Find entries recorded before or on the photo date
-                val entriesBeforePhoto = history.filter { it.date <= photoDate }
-                
-                if (entriesBeforePhoto.isNotEmpty()) {
-                    // Get the latest entry before or on the photo date
-                    val latestEntry = entriesBeforePhoto.maxByOrNull { it.date }
-                    if (latestEntry != null) {
-                        Log.d("PhotoMetrics", "Found metric $metric with value ${latestEntry.value} for photo date ${Date(photoDate)}")
-                        metric to (latestEntry to unit)
-                    } else null
-                } else {
-                    Log.d("PhotoMetrics", "No entries before photo date ${Date(photoDate)} for metric $metric")
-                    null
-                }
-            }
-            
-            if (metricEntries.isEmpty()) {
-                Log.d("PhotoMetrics", "No metrics found for photo date ${Date(photoDate)}")
-            } else {
-                Log.d("PhotoMetrics", "Found ${metricEntries.size} metrics for photo date ${Date(photoDate)}")
-            }
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
-                    .padding(16.dp)
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(4.dp))
             ) {
+                var scale by remember { mutableStateOf(1f) }
+                var offset by remember { mutableStateOf(Offset.Zero) }
+                
                 AsyncImage(
                     model = uri,
                     contentDescription = "Photo",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-
-                // Category badge
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color(0x88000000),
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = category.displayName,
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
-
-                // Metrics overlay
-                if (metricEntries.isNotEmpty()) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0x88000000),
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(8.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(8.dp)
-                        ) {
-                            // Basic metrics (Weight, Height, Body Fat)
-                            val basicMetrics = metricEntries.filter { (metric, _) ->
-                                metric in listOf("Weight", "Height", "Body Fat")
-                            }
-                            basicMetrics.forEach { (metric, entry) ->
-                                val (value, unit) = entry
-                                Text(
-                                    text = if (unit == "cm" && metric != "Height") {
-                                        String.format("%s: %.1f %s", metric, value.value, unit)
-                                    } else if (metric == "Height") {
-                                        String.format("%s: %d %s", metric, value.value.toInt(), unit)
-                                    } else {
-                                        String.format("%s: %.1f%s", metric, value.value, unit)
-                                    },
-                                    color = Color.White,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.padding(vertical = 2.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Date
-            Text(
-                text = date,
-                color = Color.Gray,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
-            )
-
-            // Detailed metrics section
-            if (metricEntries.isNotEmpty()) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF1A1A1A)
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "DETAILED METRICS",
-                            color = Color(0xFF2196F3),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 16.dp)
+                        .fillMaxSize()
+                        .graphicsLayer(
+                            scaleX = scale,
+                            scaleY = scale,
+                            translationX = offset.x.coerceIn(-200f, 200f),
+                            translationY = offset.y.coerceIn(-200f, 200f)
                         )
-
-                        // Basic metrics (Weight, Height, Body Fat)
-                        val basicMetrics = metricEntries.filter { (metric, _) ->
-                            metric in listOf("Weight", "Height", "Body Fat")
-                        }
-                        basicMetrics.forEach { (metric, entry) ->
-                            val (value, unit) = entry
-                            MetricRow(
-                                title = metric,
-                                value = if (unit == "cm" && metric != "Height") {
-                                    String.format("%.1f %s", value.value, unit)
-                                } else if (metric == "Height") {
-                                    String.format("%d %s", value.value.toInt(), unit)
-                                } else {
-                                    String.format("%.1f%s", value.value, unit)
+                        .pointerInput(Unit) {
+                            detectTransformGestures(
+                                onGesture = { centroid: Offset, pan: Offset, zoom: Float, rotation: Float ->
+                                    scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                    offset += pan
+                                    val maxOffset = 200f * (scale - 0.5f)
+                                    offset = Offset(
+                                        offset.x.coerceIn(-maxOffset, maxOffset),
+                                        offset.y.coerceIn(-maxOffset, maxOffset)
+                                    )
                                 }
                             )
-                        }
+                        },
+                    contentScale = ContentScale.Fit
+                )
+            }
 
-                        // Body measurements
-                        val bodyMeasurements = metricEntries.filter { (metric, _) ->
-                            metric in listOf("Waist", "Bicep", "Chest", "Thigh", "Shoulder")
-                        }
-
-                        if (bodyMeasurements.isNotEmpty()) {
-                            Divider(
-                                modifier = Modifier.padding(vertical = 8.dp),
-                                color = Color(0xFF333333)
-                            )
-
-                            Text(
-                                text = "BODY MEASUREMENTS",
-                                color = Color.LightGray,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                modifier = Modifier.padding(bottom = 8.dp, top = 4.dp)
-                            )
-
-                            bodyMeasurements.forEach { (metric, entry) ->
-                                val (value, unit) = entry
-                                MetricRow(
-                                    title = metric,
-                                    value = String.format("%.1f %s", value.value, unit)
-                                )
-                            }
-                        }
-                    }
-                }
+            // Date and Category
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = date,
+                    color = Color(0xFFB3B3B3),
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = category.displayName,
+                    color = Color(0xFFB3B3B3),
+                    fontSize = 14.sp
+                )
             }
 
             // Action Buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Category button
-                Button(
+                OutlinedButton(
                     onClick = {
-                        val path = uri.path ?: return@Button
+                        val path = uri.path ?: return@OutlinedButton
                         val encodedPath = java.net.URLEncoder.encode(path, "UTF-8")
                         navController.navigate(
                             PHOTO_CATEGORY_ROUTE.replace("{uri}", encodedPath)
                         )
                     },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFFB600)
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White
+                    ),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        brush = SolidColor(Color(0xFF2A2A2A))
                     )
                 ) {
-                    Text("CHANGE CATEGORY")
+                    Text("CATEGORY")
                 }
 
                 // Notes button
-                Button(
+                OutlinedButton(
                     onClick = { showMetadataDialog = true },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2196F3)
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White
+                    ),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        brush = SolidColor(Color(0xFF2A2A2A))
                     )
                 ) {
-                    Text("ADD NOTES")
+                    Text("NOTES")
                 }
             }
 
             // Compare button
-            Button(
+            OutlinedButton(
                 onClick = { showPhotoSelectionDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4CAF50)
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color.White
+                ),
+                border = ButtonDefaults.outlinedButtonBorder.copy(
+                    brush = SolidColor(Color(0xFF2A2A2A))
                 )
             ) {
-                Icon(
-                    Icons.Default.Info,
-                    contentDescription = "Compare",
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text("COMPARE WITH OTHER PHOTOS")
+                Text("COMPARE")
+            }
+
+            // Metrics section
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFF1A1A1A)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    // Metrics rows
+                    val allMetrics = listOf(
+                        "Weight" to "kg",
+                        "Height" to "cm",
+                        "Body Fat" to "%",
+                        "Waist" to "cm",
+                        "Bicep" to "cm",
+                        "Chest" to "cm",
+                        "Thigh" to "cm",
+                        "Shoulder" to "cm"
+                    )
+
+                    allMetrics.forEach { (metricName, unit) ->
+                        val entry = metricEntries.find { it.first == metricName }
+                        val value = entry?.second?.first?.value
+                        val valueString = value?.let { 
+                            if (unit == "cm" && metricName != "Height") {
+                                String.format("%.1f", it)
+                            } else if (metricName == "Height") {
+                                String.format("%d", it.toInt())
+                            } else {
+                                String.format("%.1f", it)
+                            }
+                        } ?: "-"
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = metricName,
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 8.dp)
+                            )
+                            
+                            Text(
+                                text = "$valueString ${if (valueString != "-") unit else ""}",
+                                color = Color.White,
+                                fontSize = 16.sp
+                            )
+                        }
+                        
+                        if (metricName != allMetrics.last().first) {
+                            Divider(color = Color(0xFF333333), thickness = 0.5.dp)
+                        }
+                    }
+                }
             }
         }
     }
@@ -382,27 +388,23 @@ private fun MetricRow(
     title: String,
     value: String
 ) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                color = Color.White,
-                fontSize = 16.sp
-            )
-            Text(
-                text = value,
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        Divider(color = Color(0xFF333333), thickness = 0.5.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            color = Color.White,
+            fontSize = 12.sp
+        )
+        Text(
+            text = value,
+            color = Color.White,
+            fontSize = 12.sp
+        )
     }
 }
 
@@ -419,8 +421,8 @@ private fun PhotoSelectionDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.8f),
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xFF1A1A1A)
+            shape = RoundedCornerShape(8.dp),
+            color = Color(0xFF000000)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
@@ -434,10 +436,9 @@ private fun PhotoSelectionDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Select Photo to Compare",
+                        text = "COMPARE",
                         color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 14.sp
                     )
                     IconButton(onClick = onDismiss) {
                         Icon(
@@ -461,8 +462,8 @@ private fun PhotoSelectionDialog(
                     ) {
                         Text(
                             text = "No other photos of type '${category.displayName}' to compare with",
-                            color = Color.White,
-                            fontSize = 16.sp,
+                            color = Color(0xFFB3B3B3),
+                            fontSize = 14.sp,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -493,18 +494,13 @@ private fun PhotoSelectionDialog(
                                         val encodedMainPath = java.net.URLEncoder.encode(mainPath, "UTF-8")
                                         val encodedComparePath = java.net.URLEncoder.encode(comparePath, "UTF-8")
 
-                                        navController.navigate(
-                                            PHOTO_COMPARE_ROUTE
-                                                .replace("{mainUri}", encodedMainPath)
-                                                .replace("{compareUri}", encodedComparePath)
-                                        )
+                                        navController.navigate("photo_compare/$encodedMainPath/$encodedComparePath")
                                     }
                             ) {
                                 Box(
                                     modifier = Modifier
                                         .aspectRatio(1f)
                                         .fillMaxWidth()
-                                        .background(Color(0xFF111111))
                                 ) {
                                     AsyncImage(
                                         model = compareUri,
@@ -515,7 +511,7 @@ private fun PhotoSelectionDialog(
                                 }
                                 Text(
                                     text = compareDate,
-                                    color = Color.White,
+                                    color = Color(0xFFB3B3B3),
                                     fontSize = 12.sp,
                                     modifier = Modifier.padding(top = 4.dp)
                                 )
@@ -543,8 +539,8 @@ private fun MetadataDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.9f),
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xFF1A1A1A)
+            shape = RoundedCornerShape(8.dp),
+            color = Color(0xFF000000)
         ) {
             Column(
                 modifier = Modifier
@@ -560,10 +556,9 @@ private fun MetadataDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Add Notes",
+                        text = "NOTES",
                         color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 14.sp
                     )
                     IconButton(onClick = onDismiss) {
                         Icon(
@@ -575,12 +570,6 @@ private fun MetadataDialog(
                 }
                 
                 // Notes input
-                Text(
-                    text = "NOTES",
-                    color = Color.LightGray,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                )
                 TextField(
                     value = notes,
                     onValueChange = { notes = it },
@@ -589,18 +578,18 @@ private fun MetadataDialog(
                         .heightIn(min = 100.dp)
                         .padding(bottom = 16.dp),
                     colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = Color(0xFF333333),
-                        focusedContainerColor = Color(0xFF333333),
+                        unfocusedContainerColor = Color(0xFF1A1A1A),
+                        focusedContainerColor = Color(0xFF1A1A1A),
                         unfocusedTextColor = Color.White,
                         focusedTextColor = Color.White,
-                        cursorColor = Color(0xFF2196F3),
-                        focusedIndicatorColor = Color(0xFF2196F3),
-                        unfocusedIndicatorColor = Color(0xFF666666)
+                        cursorColor = Color(0xFFB3B3B3),
+                        focusedIndicatorColor = Color(0xFFB3B3B3),
+                        unfocusedIndicatorColor = Color(0xFF2A2A2A)
                     )
                 )
                 
                 // Save button
-                Button(
+                OutlinedButton(
                     onClick = {
                         // Save only notes
                         val newMetadata = PhotoMetadata(
@@ -611,15 +600,57 @@ private fun MetadataDialog(
                         onDismiss()
                     },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4CAF50)
+                        .fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White
+                    ),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        brush = SolidColor(Color(0xFF2A2A2A))
                     )
                 ) {
-                    Text("SAVE NOTES")
+                    Text("SAVE")
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MetricsSection(
+    metricEntries: List<Pair<String, Pair<HistoryEntry, String>>>,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        // Define all possible metrics in order
+        val allMetrics = listOf(
+            "Weight" to "kg",
+            "Height" to "cm",
+            "Body Fat" to "%",
+            "Waist" to "cm",
+            "Bicep" to "cm",
+            "Chest" to "cm",
+            "Thigh" to "cm",
+            "Shoulder" to "cm"
+        )
+        
+        allMetrics.forEach { (metricName, unit) ->
+            val entry = metricEntries.find { it.first == metricName }
+            
+            MetricRow(
+                title = metricName,
+                value = entry?.second?.first?.value?.let { formatValue(it, unit) } ?: "-"
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+    }
+}
+
+private fun formatValue(value: Float, unit: String): String {
+    return when {
+        unit == "cm" && value != value.toInt().toFloat() -> String.format("%.1f %s", value, unit)
+        unit == "cm" -> String.format("%d %s", value.toInt(), unit)
+        unit == "kg" -> String.format("%.1f %s", value, unit)
+        unit == "%" -> String.format("%.1f%s", value, unit)
+        else -> String.format("%.1f %s", value, unit)
     }
 } 
