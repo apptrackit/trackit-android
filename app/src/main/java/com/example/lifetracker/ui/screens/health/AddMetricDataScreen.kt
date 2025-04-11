@@ -1,5 +1,5 @@
 // app/src/main/java/com/example/lifetracker/ui/screens/AddMetricDataScreen.kt
-package com.example.lifetracker.ui.screens
+package com.example.lifetracker.ui.screens.health
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,7 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.lifetracker.ui.components.DatePickerDialog
+import com.example.lifetracker.data.model.HealthMetrics
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
+import com.example.lifetracker.ui.screens.health.ProgressScreen
 import com.example.lifetracker.utils.formatDate
 
 @OptIn(ExperimentalMaterial3Api::class)

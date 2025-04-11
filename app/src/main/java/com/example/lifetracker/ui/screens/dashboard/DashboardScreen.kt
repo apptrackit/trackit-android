@@ -1,4 +1,4 @@
-package com.example.lifetracker.ui.screens
+package com.example.lifetracker.ui.screens.dashboard
 
 import android.annotation.SuppressLint
 import com.guru.fontawesomecomposelib.FaIcons

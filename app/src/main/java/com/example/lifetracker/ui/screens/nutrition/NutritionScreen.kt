@@ -1,4 +1,4 @@
-package com.example.lifetracker.ui.screens
+package com.example.lifetracker.ui.screens.nutrition
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -13,7 +13,7 @@ import androidx.navigation.NavController
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 
 @Composable
-fun ProfileScreen(
+fun NutritionScreen(
     navController: NavController,
     viewModel: HealthViewModel
 ) {
@@ -29,7 +29,7 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Profile",
+                text = "Nutrition",
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
