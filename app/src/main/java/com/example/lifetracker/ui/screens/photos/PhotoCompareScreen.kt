@@ -36,6 +36,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.util.Log
 import kotlin.math.abs
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.graphicsLayer
 
 // Custom icon mapping to avoid missing Material icons
 private object CustomIcons {
@@ -171,8 +175,8 @@ fun PhotoCompareScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
+                .padding(paddingValues)
         ) {
             Card(
                 modifier = Modifier
@@ -193,98 +197,88 @@ fun PhotoCompareScreen(
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    // Photos comparison
+                    // Photos
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(300.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            .padding(horizontal = 4.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         // Before photo
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(3f/4f)
+                                .clip(RoundedCornerShape(4.dp))
                         ) {
-                            Box(
+                            var scale by remember { mutableStateOf(1f) }
+                            var offset by remember { mutableStateOf(Offset.Zero) }
+                            
+                            AsyncImage(
+                                model = mainUri,
+                                contentDescription = "Before Photo",
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(
-                                        color = Color(0xFF1A1A1A),
-                                        shape = RoundedCornerShape(8.dp)
+                                    .graphicsLayer(
+                                        scaleX = scale,
+                                        scaleY = scale,
+                                        translationX = offset.x.coerceIn(-200f, 200f),
+                                        translationY = offset.y.coerceIn(-200f, 200f)
                                     )
-                            ) {
-                                AsyncImage(
-                                    model = mainUri,
-                                    contentDescription = "Before Photo",
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(RoundedCornerShape(8.dp)),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Text(
-                                    text = "BEFORE",
-                                    color = Color.White,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .align(Alignment.TopStart)
-                                        .padding(8.dp)
-                                        .background(
-                                            color = Color.Black.copy(alpha = 0.6f),
-                                            shape = RoundedCornerShape(4.dp)
+                                    .pointerInput(Unit) {
+                                        detectTransformGestures(
+                                            onGesture = { centroid: Offset, pan: Offset, zoom: Float, rotation: Float ->
+                                                scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                                offset += pan
+                                                // Constrain offset based on scale
+                                                val maxOffset = 200f * (scale - 0.5f)
+                                                offset = Offset(
+                                                    offset.x.coerceIn(-maxOffset, maxOffset),
+                                                    offset.y.coerceIn(-maxOffset, maxOffset)
+                                                )
+                                            }
                                         )
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                            Text(
-                                text = mainDate,
-                                color = Color.Gray,
-                                fontSize = 14.sp,
-                                modifier = Modifier.padding(top = 8.dp)
+                                    },
+                                contentScale = ContentScale.Fit
                             )
                         }
 
                         // After photo
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(3f/4f)
+                                .clip(RoundedCornerShape(4.dp))
                         ) {
-                            Box(
+                            var scale by remember { mutableStateOf(1f) }
+                            var offset by remember { mutableStateOf(Offset.Zero) }
+                            
+                            AsyncImage(
+                                model = compareUri,
+                                contentDescription = "After Photo",
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(
-                                        color = Color(0xFF1A1A1A),
-                                        shape = RoundedCornerShape(8.dp)
+                                    .graphicsLayer(
+                                        scaleX = scale,
+                                        scaleY = scale,
+                                        translationX = offset.x.coerceIn(-200f, 200f),
+                                        translationY = offset.y.coerceIn(-200f, 200f)
                                     )
-                            ) {
-                                AsyncImage(
-                                    model = compareUri,
-                                    contentDescription = "After Photo",
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(RoundedCornerShape(8.dp)),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Text(
-                                    text = "AFTER",
-                                    color = Color.White,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .align(Alignment.TopStart)
-                                        .padding(8.dp)
-                                        .background(
-                                            color = Color.Black.copy(alpha = 0.6f),
-                                            shape = RoundedCornerShape(4.dp)
+                                    .pointerInput(Unit) {
+                                        detectTransformGestures(
+                                            onGesture = { centroid: Offset, pan: Offset, zoom: Float, rotation: Float ->
+                                                scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                                offset += pan
+                                                // Constrain offset based on scale
+                                                val maxOffset = 200f * (scale - 0.5f)
+                                                offset = Offset(
+                                                    offset.x.coerceIn(-maxOffset, maxOffset),
+                                                    offset.y.coerceIn(-maxOffset, maxOffset)
+                                                )
+                                            }
                                         )
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                            Text(
-                                text = compareDate,
-                                color = Color.Gray,
-                                fontSize = 14.sp,
-                                modifier = Modifier.padding(top = 8.dp)
+                                    },
+                                contentScale = ContentScale.Fit
                             )
                         }
                     }
@@ -419,34 +413,35 @@ private fun MetricsComparison(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        // Combine metrics from both photos
-        val allMetrics = (mainMetricEntries.map { it.first } + compareMetricEntries.map { it.first }).distinct()
+        // Define all possible metrics in order
+        val allMetrics = listOf(
+            "Weight" to "kg",
+            "Height" to "cm",
+            "Body Fat" to "%",
+            "Waist" to "cm",
+            "Bicep" to "cm",
+            "Chest" to "cm",
+            "Thigh" to "cm",
+            "Shoulder" to "cm"
+        )
         
-        allMetrics.forEach { metricName ->
+        allMetrics.forEach { (metricName, unit) ->
             val mainEntry = mainMetricEntries.find { it.first == metricName }
             val compareEntry = compareMetricEntries.find { it.first == metricName }
             
-            if (mainEntry != null || compareEntry != null) {
-                MetricRow(
-                    metricName = metricName,
-                    beforeValue = mainEntry?.let { 
-                        val (value, unit) = it.second
-                        value.value
-                    },
-                    afterValue = compareEntry?.let { 
-                        val (value, unit) = it.second
-                        value.value
-                    },
-                    unit = mainEntry?.second?.second ?: compareEntry?.second?.second ?: ""
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
+            MetricRow(
+                metricName = metricName,
+                beforeValue = mainEntry?.second?.first?.value,
+                afterValue = compareEntry?.second?.first?.value,
+                unit = unit
+            )
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
 
 @Composable
-private fun MetricRow(
+internal fun MetricRow(
     metricName: String,
     beforeValue: Float?,
     afterValue: Float?,
