@@ -1,4 +1,4 @@
-package com.example.lifetracker.ui.screens
+package com.example.lifetracker.ui.screens.health
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
@@ -15,6 +15,7 @@ import androidx.navigation.NavController
 import com.example.lifetracker.ui.components.AddMetricButton
 import com.example.lifetracker.ui.components.AddMetricPopup
 import com.example.lifetracker.ui.components.ClickableMetricCardWithChart
+import com.example.lifetracker.data.model.HealthMetrics
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.calculateBMI
 import androidx.compose.material.icons.Icons
@@ -22,6 +23,11 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import com.example.lifetracker.utils.TimeFilter
+import com.example.lifetracker.ui.screens.health.AddMetricDataScreen
+import com.example.lifetracker.ui.screens.health.EditMetricDataScreen
+import com.example.lifetracker.ui.screens.health.EditMetricScreen
 
 @SuppressLint("DefaultLocale")
 @Composable

@@ -1,4 +1,4 @@
-package com.example.lifetracker.ui.screens
+package com.example.lifetracker.ui.screens.dashboard
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -22,6 +22,10 @@ import com.google.accompanist.pager.*
 import com.guru.fontawesomecomposelib.FaIcons
 import com.guru.fontawesomecomposelib.FaIconType
 import kotlinx.coroutines.launch
+import com.example.lifetracker.ui.screens.health.ProgressScreen
+import com.example.lifetracker.ui.screens.nutrition.NutritionScreen
+import com.example.lifetracker.ui.screens.photos.PhotosScreen
+import com.example.lifetracker.ui.screens.settings.ProfileScreen
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable

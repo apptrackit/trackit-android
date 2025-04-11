@@ -1,4 +1,4 @@
-package com.example.lifetracker.ui.screens
+package com.example.lifetracker.ui.screens.health
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -26,10 +26,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.lifetracker.ui.components.DatePickerDialog
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.TimeFilter
 import com.example.lifetracker.utils.formatDate
+import com.example.lifetracker.ui.screens.health.ProgressScreen
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -385,8 +387,6 @@ fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
         }
     }
 }
-
-
 
 @Composable
 fun HistoryItem(

@@ -1,4 +1,4 @@
-package com.example.lifetracker.ui.screens
+package com.example.lifetracker.ui.screens.photos
 
 import android.Manifest
 import android.content.Context

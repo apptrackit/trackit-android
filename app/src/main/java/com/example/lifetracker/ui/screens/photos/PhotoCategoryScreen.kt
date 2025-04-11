@@ -1,4 +1,4 @@
-package com.example.lifetracker.ui.screens
+package com.example.lifetracker.ui.screens.photos
 
 import android.net.Uri
 import androidx.compose.foundation.layout.*

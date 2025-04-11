@@ -1,4 +1,4 @@
-package com.example.lifetracker.ui.screens
+package com.example.lifetracker.ui.screens.health
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -307,4 +307,4 @@ fun BMIHistoryItem(entry: HistoryEntry) {
             fontSize = 14.sp
         )
     }
-} 
+}
