@@ -33,7 +33,7 @@ import com.example.lifetracker.ui.screens.health.EditMetricScreen
 @Composable
 fun ProgressScreen(
     onNavigateToEditMetric: (String) -> Unit,
-    onNavigateToViewBMIHistory: () -> Unit,
+    onNavigateToViewMetricHistory: (String, String) -> Unit,
     viewModel: HealthViewModel,
     navController: NavController
 ) {
@@ -220,49 +220,69 @@ fun ProgressScreen(
                             // BMI
                             MetricRowWithArrow(
                                 title = "BMI",
-                                value = formattedBmi,
+                                value = viewModel.getLatestHistoryEntry("BMI", "")?.let { 
+                                    String.format("%.1f", it).let { 
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                    }
+                                } ?: "No Data",
                                 unit = "",
-                                onClick = { onNavigateToViewBMIHistory() }
+                                onClick = { onNavigateToViewMetricHistory("BMI", "") }
                             )
                             
                             // Lean Body Mass
                             MetricRowWithArrow(
                                 title = "Lean Body Mass",
-                                value = "58.2",
+                                value = viewModel.getLatestHistoryEntry("Lean Body Mass", "kg")?.let { 
+                                    String.format("%.1f", it).let { 
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                    }
+                                } ?: "No Data",
                                 unit = "kg",
-                                onClick = { /* No action */ }
+                                onClick = { onNavigateToViewMetricHistory("Lean Body Mass", "kg") }
                             )
                             
                             // Fat Mass
                             MetricRowWithArrow(
                                 title = "Fat Mass",
-                                value = "10.3",
+                                value = viewModel.getLatestHistoryEntry("Fat Mass", "kg")?.let { 
+                                    String.format("%.1f", it).let { 
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                    }
+                                } ?: "No Data",
                                 unit = "kg",
-                                onClick = { /* No action */ }
+                                onClick = { onNavigateToViewMetricHistory("Fat Mass", "kg") }
                             )
                             
-                            // Fat-Free Mass Index
+                            // FFMI
                             MetricRowWithArrow(
                                 title = "Fat-Free Mass Index",
-                                value = "19.0",
+                                value = viewModel.getLatestHistoryEntry("FFMI", "")?.let { 
+                                    String.format("%.1f", it).let { 
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                    }
+                                } ?: "No Data",
                                 unit = "",
-                                onClick = { /* No action */ }
+                                onClick = { onNavigateToViewMetricHistory("FFMI", "") }
                             )
                             
-                            // Basal Metabolic Rate
+                            // BMR
                             MetricRowWithArrow(
                                 title = "Basal Metabolic Rate",
-                                value = "1628",
+                                value = viewModel.getLatestHistoryEntry("BMR", "kcal")?.let { 
+                                    String.format("%.0f", it)
+                                } ?: "No Data",
                                 unit = "kcal",
-                                onClick = { /* No action */ }
+                                onClick = { onNavigateToViewMetricHistory("BMR", "kcal") }
                             )
                             
-                            // Body Surface Area
+                            // BSA
                             MetricRowWithArrow(
                                 title = "Body Surface Area",
-                                value = "1.8",
+                                value = viewModel.getLatestHistoryEntry("BSA", "m²")?.let { 
+                                    String.format("%.2f", it)
+                                } ?: "No Data",
                                 unit = "m²",
-                                onClick = { /* No action */ }
+                                onClick = { onNavigateToViewMetricHistory("BSA", "m²") }
                             )
                         }
                     }

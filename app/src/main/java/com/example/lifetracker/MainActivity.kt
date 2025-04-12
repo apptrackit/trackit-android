@@ -21,8 +21,8 @@ class MainActivity : ComponentActivity() {
         val repository = MetricsRepository(this)
         val viewModel = HealthViewModel(repository)
         
-        // Ensure all metrics have history entries
-        viewModel.ensureMetricHistory()
+        // Initialize and calculate all metrics
+        viewModel.initializeAndCalculateMetrics()
 
         setContent {
             // Create NavController

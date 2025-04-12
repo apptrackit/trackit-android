@@ -7,6 +7,11 @@ import androidx.lifecycle.ViewModel
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.data.repository.MetricsRepository
 import com.example.lifetracker.utils.calculateBMI
+import com.example.lifetracker.utils.calculateLeanBodyMass
+import com.example.lifetracker.utils.calculateFatMass
+import com.example.lifetracker.utils.calculateFFMI
+import com.example.lifetracker.utils.calculateBMR
+import com.example.lifetracker.utils.calculateBSA
 
 class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
     var metrics by mutableStateOf(repository.loadMetrics())
@@ -18,16 +23,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
             repository.saveMetricHistory("Weight", it, "kg", date)
-            
-            // Update BMI if height is available
-            val height = getLatestHistoryEntry("Height", "cm")
-            if (height != null && height > 0) {
-                val bmi = calculateBMI(it, height)
-                repository.saveMetricHistory("BMI", bmi, "", date, it, height)
-            }
-            
-            // Recalculate all past BMIs
-            recalculateAllBMIs()
+            calculateAllDerivedMetrics()
         }
     }
 
@@ -37,16 +33,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
             repository.saveMetricHistory("Height", it, "cm", date)
-            
-            // Update BMI if weight is available
-            val weight = getLatestHistoryEntry("Weight", "kg")
-            if (weight != null && weight > 0) {
-                val bmi = calculateBMI(weight, it)
-                repository.saveMetricHistory("BMI", bmi, "", date, weight, it)
-            }
-            
-            // Recalculate all past BMIs
-            recalculateAllBMIs()
+            calculateAllDerivedMetrics()
         }
     }
 
@@ -56,6 +43,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
             repository.saveMetricHistory("Body Fat", it, "%", date)
+            calculateAllDerivedMetrics()
         }
     }
     
@@ -220,7 +208,124 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             repository.saveMetricHistory("Body Fat", metrics.bodyFat, "%", metrics.date)
         }
         
+        // Check if waist has history entries
+        val waistHistory = getMetricHistory("Waist", "cm")
+        if (waistHistory.isEmpty() && metrics.waist > 0) {
+            repository.saveMetricHistory("Waist", metrics.waist, "cm", metrics.date)
+        }
+        
+        // Check if bicep has history entries
+        val bicepHistory = getMetricHistory("Bicep", "cm")
+        if (bicepHistory.isEmpty() && metrics.bicep > 0) {
+            repository.saveMetricHistory("Bicep", metrics.bicep, "cm", metrics.date)
+        }
+        
+        // Check if chest has history entries
+        val chestHistory = getMetricHistory("Chest", "cm")
+        if (chestHistory.isEmpty() && metrics.chest > 0) {
+            repository.saveMetricHistory("Chest", metrics.chest, "cm", metrics.date)
+        }
+        
+        // Check if thigh has history entries
+        val thighHistory = getMetricHistory("Thigh", "cm")
+        if (thighHistory.isEmpty() && metrics.thigh > 0) {
+            repository.saveMetricHistory("Thigh", metrics.thigh, "cm", metrics.date)
+        }
+        
+        // Check if shoulder has history entries
+        val shoulderHistory = getMetricHistory("Shoulder", "cm")
+        if (shoulderHistory.isEmpty() && metrics.shoulder > 0) {
+            repository.saveMetricHistory("Shoulder", metrics.shoulder, "cm", metrics.date)
+        }
+        
         // Recalculate all BMIs to ensure they're up to date
         recalculateAllBMIs()
+    }
+
+    private fun recalculateAllMetrics() {
+        val weight = getLatestHistoryEntry("Weight", "kg") ?: return
+        val height = getLatestHistoryEntry("Height", "cm") ?: return
+        val bodyFat = getLatestHistoryEntry("Body Fat", "%") ?: return
+        
+        // Calculate and save all metrics
+        val date = System.currentTimeMillis()
+        
+        // BMI
+        val bmi = calculateBMI(weight, height)
+        repository.saveMetricHistory("BMI", bmi, "", date, weight, height)
+        
+        // Lean Body Mass
+        val lbm = calculateLeanBodyMass(weight, bodyFat)
+        repository.saveMetricHistory("Lean Body Mass", lbm, "kg", date)
+        
+        // Fat Mass
+        val fatMass = calculateFatMass(weight, bodyFat)
+        repository.saveMetricHistory("Fat Mass", fatMass, "kg", date)
+        
+        // FFMI
+        val ffmi = calculateFFMI(weight, height, bodyFat)
+        repository.saveMetricHistory("FFMI", ffmi, "", date)
+        
+        // BMR (using default age 30 and male for now)
+        val bmr = calculateBMR(weight, height, 30, true)
+        repository.saveMetricHistory("BMR", bmr, "kcal", date)
+        
+        // BSA
+        val bsa = calculateBSA(weight, height)
+        repository.saveMetricHistory("BSA", bsa, "m²", date)
+    }
+
+    /**
+     * Initializes and calculates all metrics.
+     * This should be called when the app starts to ensure all metrics are calculated.
+     */
+    fun initializeAndCalculateMetrics() {
+        // First ensure all base metrics have history entries
+        ensureMetricHistory()
+        
+        // Force calculate all derived metrics
+        calculateAllDerivedMetrics()
+    }
+    
+    /**
+     * Calculates all derived metrics (BMI, LBM, etc.) without causing recursion.
+     */
+    private fun calculateAllDerivedMetrics() {
+        // Only continue if we have the basic required measurements
+        val weight = getLatestHistoryEntry("Weight", "kg")
+        val height = getLatestHistoryEntry("Height", "cm")
+        
+        if (weight != null && height != null) {
+            val date = System.currentTimeMillis()
+            
+            // Calculate BMI
+            val bmi = calculateBMI(weight, height)
+            repository.saveMetricHistory("BMI", bmi, "", date, weight, height)
+            
+            // Calculate other metrics if body fat is available
+            val bodyFat = getLatestHistoryEntry("Body Fat", "%")
+            
+            if (bodyFat != null) {
+                // Lean Body Mass
+                val lbm = calculateLeanBodyMass(weight, bodyFat)
+                repository.saveMetricHistory("Lean Body Mass", lbm, "kg", date)
+                
+                // Fat Mass
+                val fatMass = calculateFatMass(weight, bodyFat)
+                repository.saveMetricHistory("Fat Mass", fatMass, "kg", date)
+                
+                // FFMI
+                val ffmi = calculateFFMI(weight, height, bodyFat)
+                repository.saveMetricHistory("FFMI", ffmi, "", date)
+            }
+            
+            // BMR (using default age 30 and male for now)
+            val bmr = calculateBMR(weight, height, 30, true)
+            repository.saveMetricHistory("BMR", bmr, "kcal", date)
+            
+            // BSA
+            val bsa = calculateBSA(weight, height)
+            repository.saveMetricHistory("BSA", bsa, "m²", date)
+        }
     }
 }

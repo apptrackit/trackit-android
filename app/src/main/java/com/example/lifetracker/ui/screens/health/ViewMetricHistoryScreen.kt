@@ -22,35 +22,38 @@ import com.example.lifetracker.utils.TimeFilter
 import com.example.lifetracker.utils.formatDate
 import com.example.lifetracker.ui.components.MetricHistoryChart
 import com.example.lifetracker.ui.components.StatItem
+import com.example.lifetracker.ui.components.MetricHistoryItem
 
 @Composable
-fun ViewBMIHistoryScreen(
+fun ViewMetricHistoryScreen(
     navController: NavController,
-    viewModel: HealthViewModel
+    viewModel: HealthViewModel,
+    metricName: String,
+    unit: String
 ) {
     var selectedTimeFilter by remember { mutableStateOf(TimeFilter.MONTH) }
 
-    // Get BMI history
-    val bmiHistory = viewModel.getMetricHistory("BMI", "")
+    // Get metric history
+    val metricHistory = viewModel.getMetricHistory(metricName, unit)
 
     // Filter history based on selected time period
     val filteredHistory = when (selectedTimeFilter) {
         TimeFilter.WEEK -> {
             val weekAgo = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L
-            bmiHistory.filter { it.date >= weekAgo }
+            metricHistory.filter { it.date >= weekAgo }
         }
         TimeFilter.MONTH -> {
             val monthAgo = System.currentTimeMillis() - 30 * 24 * 60 * 60 * 1000L
-            bmiHistory.filter { it.date >= monthAgo }
+            metricHistory.filter { it.date >= monthAgo }
         }
         TimeFilter.YEAR -> {
             val yearAgo = System.currentTimeMillis() - 365 * 24 * 60 * 60 * 1000L
-            bmiHistory.filter { it.date >= yearAgo }
+            metricHistory.filter { it.date >= yearAgo }
         }
     }
 
-    // Calculate BMI statistics
-    val bmiStats = if (filteredHistory.isNotEmpty()) {
+    // Calculate metric statistics
+    val metricStats = if (filteredHistory.isNotEmpty()) {
         val values = filteredHistory.map { it.value }
         val avg = values.average()
         val min = values.minOrNull() ?: 0f
@@ -85,7 +88,7 @@ fun ViewBMIHistoryScreen(
                 }
 
                 Text(
-                    text = "BMI History",
+                    text = "$metricName History",
                     color = Color.White,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
@@ -117,7 +120,7 @@ fun ViewBMIHistoryScreen(
                     onClick = { selectedTimeFilter = TimeFilter.YEAR }
                 )
             }
-            // BMI Stats Card
+            // Metric Stats Card
             if (filteredHistory.isNotEmpty()) {
                 Card(
                     modifier = Modifier
@@ -133,7 +136,7 @@ fun ViewBMIHistoryScreen(
                             .padding(16.dp)
                     ) {
                         Text(
-                            text = "BMI Statistics",
+                            text = "$metricName Statistics",
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
@@ -146,19 +149,19 @@ fun ViewBMIHistoryScreen(
                         ) {
                             StatItem(
                                 label = "Min",
-                                value = String.format("%.1f", bmiStats.first).let { 
+                                value = String.format("%.1f", metricStats.first).let { 
                                     if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
                                 }
                             )
                             StatItem(
                                 label = "Avg",
-                                value = String.format("%.1f", bmiStats.second).let { 
+                                value = String.format("%.1f", metricStats.second).let { 
                                     if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
                                 }
                             )
                             StatItem(
                                 label = "Max",
-                                value = String.format("%.1f", bmiStats.third).let { 
+                                value = String.format("%.1f", metricStats.third).let { 
                                     if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
                                 }
                             )
@@ -183,14 +186,14 @@ fun ViewBMIHistoryScreen(
                             .padding(16.dp)
                     ) {
                         Text(
-                            text = "BMI Trend",
+                            text = "$metricName Trend",
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
                         
-                        MetricHistoryChart(history = filteredHistory, unit = "")
+                        MetricHistoryChart(history = filteredHistory, unit = unit)
                     }
                 }
             } else {
@@ -202,7 +205,7 @@ fun ViewBMIHistoryScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No BMI data available",
+                        text = "No $metricName data available",
                         color = Color(0xFF444444),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Light
@@ -237,7 +240,7 @@ fun ViewBMIHistoryScreen(
             } else {
                 LazyColumn {
                     items(filteredHistory) { entry ->
-                        BMIHistoryItem(entry = entry)
+                        MetricHistoryItem(entry = entry, unit = unit)
                         Divider(color = Color(0xFF333333), thickness = 1.dp)
                     }
                 }
@@ -247,19 +250,19 @@ fun ViewBMIHistoryScreen(
 }
 
 @Composable
-fun BMIHistoryItem(entry: HistoryEntry) {
+fun MetricHistoryItem(entry: HistoryEntry, unit: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // BMI value with calculation details
+        // Metric value
         Row(
             modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // BMI value
+            // Value
             Text(
                 text = String.format("%.1f", entry.value).let { 
                     if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
@@ -269,12 +272,10 @@ fun BMIHistoryItem(entry: HistoryEntry) {
                 fontWeight = FontWeight.Bold
             )
             
-            // Calculation details (weight and height)
-            if (entry.weight != null && entry.height != null) {
+            // Unit
+            if (unit.isNotEmpty()) {
                 Text(
-                    text = " (${String.format("%.1f", entry.weight).let { 
-                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
-                    }} kg, ${entry.height.toInt()} cm)",
+                    text = " $unit",
                     color = Color(0xFF888888),
                     fontSize = 10.sp
                 )
@@ -288,4 +289,4 @@ fun BMIHistoryItem(entry: HistoryEntry) {
             fontSize = 14.sp
         )
     }
-}
+} 
