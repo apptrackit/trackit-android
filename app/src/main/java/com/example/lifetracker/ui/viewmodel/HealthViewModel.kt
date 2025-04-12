@@ -256,23 +256,23 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
         
         // Lean Body Mass
         val lbm = calculateLeanBodyMass(weight, bodyFat)
-        repository.saveMetricHistory("Lean Body Mass", lbm, "kg", date)
+        repository.saveMetricHistory("Lean Body Mass", lbm, "kg", date, weight, height)
         
         // Fat Mass
         val fatMass = calculateFatMass(weight, bodyFat)
-        repository.saveMetricHistory("Fat Mass", fatMass, "kg", date)
+        repository.saveMetricHistory("Fat Mass", fatMass, "kg", date, weight, height)
         
         // FFMI
         val ffmi = calculateFFMI(weight, height, bodyFat)
-        repository.saveMetricHistory("FFMI", ffmi, "", date)
+        repository.saveMetricHistory("FFMI", ffmi, "", date, weight, height)
         
         // BMR (using default age 30 and male for now)
         val bmr = calculateBMR(weight, height, 30, true)
-        repository.saveMetricHistory("BMR", bmr, "kcal", date)
+        repository.saveMetricHistory("BMR", bmr, "kcal", date, weight, height)
         
         // BSA
         val bsa = calculateBSA(weight, height)
-        repository.saveMetricHistory("BSA", bsa, "m²", date)
+        repository.saveMetricHistory("BSA", bsa, "m²", date, weight, height)
     }
 
     /**
@@ -308,24 +308,24 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             if (bodyFat != null) {
                 // Lean Body Mass
                 val lbm = calculateLeanBodyMass(weight, bodyFat)
-                repository.saveMetricHistory("Lean Body Mass", lbm, "kg", date)
+                repository.saveMetricHistory("Lean Body Mass", lbm, "kg", date, weight, height)
                 
                 // Fat Mass
                 val fatMass = calculateFatMass(weight, bodyFat)
-                repository.saveMetricHistory("Fat Mass", fatMass, "kg", date)
+                repository.saveMetricHistory("Fat Mass", fatMass, "kg", date, weight, height)
                 
                 // FFMI
                 val ffmi = calculateFFMI(weight, height, bodyFat)
-                repository.saveMetricHistory("FFMI", ffmi, "", date)
+                repository.saveMetricHistory("FFMI", ffmi, "", date, weight, height)
             }
             
             // BMR (using default age 30 and male for now)
             val bmr = calculateBMR(weight, height, 30, true)
-            repository.saveMetricHistory("BMR", bmr, "kcal", date)
+            repository.saveMetricHistory("BMR", bmr, "kcal", date, weight, height)
             
             // BSA
             val bsa = calculateBSA(weight, height)
-            repository.saveMetricHistory("BSA", bsa, "m²", date)
+            repository.saveMetricHistory("BSA", bsa, "m²", date, weight, height)
         }
     }
 }

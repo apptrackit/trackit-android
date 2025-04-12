@@ -23,6 +23,7 @@ import com.example.lifetracker.utils.formatDate
 import com.example.lifetracker.ui.components.MetricHistoryChart
 import com.example.lifetracker.ui.components.StatItem
 import com.example.lifetracker.ui.components.MetricHistoryItem
+import com.example.lifetracker.ui.components.TimeFilterButton
 
 @Composable
 fun ViewMetricHistoryScreen(
@@ -248,45 +249,3 @@ fun ViewMetricHistoryScreen(
         }
     }
 }
-
-@Composable
-fun MetricHistoryItem(entry: HistoryEntry, unit: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Metric value
-        Row(
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Value
-            Text(
-                text = String.format("%.1f", entry.value).let { 
-                    if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
-                },
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-            
-            // Unit
-            if (unit.isNotEmpty()) {
-                Text(
-                    text = " $unit",
-                    color = Color(0xFF888888),
-                    fontSize = 10.sp
-                )
-            }
-        }
-
-        // Date
-        Text(
-            text = formatDate(entry.date),
-            color = Color.Gray,
-            fontSize = 14.sp
-        )
-    }
-} 
