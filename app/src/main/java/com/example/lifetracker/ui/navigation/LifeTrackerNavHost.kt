@@ -12,9 +12,9 @@ import com.example.lifetracker.ui.screens.dashboard.MainScreen
 import com.example.lifetracker.ui.screens.health.AddMetricDataScreen
 import com.example.lifetracker.ui.screens.health.EditMetricDataScreen
 import com.example.lifetracker.ui.screens.health.EditMetricScreen
-import com.example.lifetracker.ui.screens.health.ViewBMIHistoryScreen
 import com.example.lifetracker.ui.screens.nutrition.NutritionScreen
 import com.example.lifetracker.ui.screens.photos.*
+import com.example.lifetracker.ui.screens.progress.ViewProgressHistoryScreen
 import com.example.lifetracker.ui.screens.settings.ProfileScreen
 import com.example.lifetracker.ui.screens.settings.SettingsScreen
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
@@ -98,8 +98,15 @@ fun LifeTrackerNavHost(
             )
         }
 
-        composable(VIEW_BMI_HISTORY_ROUTE) {
-            ViewBMIHistoryScreen(navController = navController, viewModel = viewModel)
+        composable(
+            route = VIEW_BMI_HISTORY_ROUTE
+        ) { backStackEntry ->
+            ViewProgressHistoryScreen(
+                navController = navController,
+                viewModel = viewModel,
+                metricName = "BMI",
+                unit = ""
+            )
         }
 
         composable(
@@ -256,6 +263,24 @@ fun LifeTrackerNavHost(
                     photoUri = uri
                 )
             }
+        }
+
+        composable(
+            route = VIEW_METRIC_HISTORY_ROUTE,
+            arguments = listOf(
+                navArgument("metricName") { type = NavType.StringType },
+                navArgument("unit") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val metricName = backStackEntry.arguments?.getString("metricName") ?: ""
+            val unit = backStackEntry.arguments?.getString("unit") ?: ""
+            
+            ViewProgressHistoryScreen(
+                navController = navController,
+                viewModel = viewModel,
+                metricName = metricName,
+                unit = unit
+            )
         }
     }
 } 

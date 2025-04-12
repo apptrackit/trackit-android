@@ -60,7 +60,7 @@ class MetricsRepository(private val context: Context) {
         val newEntry = if (weight != null && height != null) {
             "$date:$value:$weight:$height"
         } else {
-            "$date:$value"
+            "$date:$value:$unit"
         }
 
         // Remove any existing entry with the same date
@@ -100,7 +100,9 @@ class MetricsRepository(private val context: Context) {
                             val height = parts[3].toFloat()
                             HistoryEntry(value, unit, date, metricName, weight, height)
                         } else {
-                            HistoryEntry(value, unit, date, metricName)
+                            // If not, use the unit from the entry
+                            val entryUnit = parts[2]
+                            HistoryEntry(value, entryUnit, date, metricName)
                         }
                     } catch (e: Exception) {
                         null
@@ -119,14 +121,34 @@ class MetricsRepository(private val context: Context) {
 
         if (historyString.isEmpty()) return
 
-        val entries = historyString.split("|").toMutableList()
-        val targetEntry = "${entry.date}:${entry.value}"
-
-        entries.removeAll { it.startsWith(targetEntry) }
-
-        with(sharedPrefs.edit()) {
-            putString(historyKey, entries.joinToString("|"))
-            apply()
+        val entries = historyString.split("|").filter { it.isNotEmpty() }.toMutableList()
+        
+        try {
+            // For calculated metrics (with weight and height)
+            if (entry.weight != null && entry.height != null) {
+                // Create format with all details for exact matching
+                val targetEntryPattern = "${entry.date}:${entry.value}:${entry.weight}:${entry.height}"
+                entries.removeIf { it == targetEntryPattern }
+            } else {
+                // For regular metrics, match by date and value
+                entries.removeIf { historyEntry ->
+                    val parts = historyEntry.split(":")
+                    if (parts.size >= 2) {
+                        val date = parts[0].toLong()
+                        val value = parts[1].toFloat()
+                        date == entry.date && value == entry.value
+                    } else {
+                        false
+                    }
+                }
+            }
+            
+            with(sharedPrefs.edit()) {
+                putString(historyKey, entries.joinToString("|"))
+                apply()
+            }
+        } catch (e: Exception) {
+            // Log error or handle exception
         }
     }
     fun getMetricHistory(metricName: String): List<HistoryEntry> {
