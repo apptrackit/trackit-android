@@ -51,10 +51,13 @@ fun ViewProgressHistoryScreen(
     var selectedTimeFilter by remember { mutableStateOf(TimeFilter.MONTH) }
     val isCalculatedMetric = metricName in listOf("BMI", "Lean Body Mass", "Body Surface Area", "FFMI")
 
+    // Add a refresh key to force recomposition when data changes
+    var refreshKey by remember { mutableStateOf(0) }
+
     // Get base metrics history for calculations
-    val weightHistory by remember { mutableStateOf(viewModel.getMetricHistory("Weight", "kg")) }
-    val heightHistory by remember { mutableStateOf(viewModel.getMetricHistory("Height", "cm")) }
-    val bodyFatHistory by remember { mutableStateOf(viewModel.getMetricHistory("Body Fat", "%")) }
+    val weightHistory by remember(refreshKey) { derivedStateOf { viewModel.getMetricHistory("Weight", "kg") } }
+    val heightHistory by remember(refreshKey) { derivedStateOf { viewModel.getMetricHistory("Height", "cm") } }
+    val bodyFatHistory by remember(refreshKey) { derivedStateOf { viewModel.getMetricHistory("Body Fat", "%") } }
 
     // Calculate the metric history on the fly
     val allHistory = remember(weightHistory, heightHistory, bodyFatHistory) {
@@ -63,17 +66,22 @@ fun ViewProgressHistoryScreen(
                 // Get all unique dates from both weight and height history
                 val allDates = (weightHistory.map { it.date } + heightHistory.map { it.date }).distinct().sorted()
                 
+                var lastValue: Float? = null
                 allDates.mapNotNull { date ->
                     val weight = weightHistory.find { it.date <= date }?.value
                     val height = heightHistory.find { it.date <= date }?.value
                     
                     if (weight != null && height != null) {
-                        HistoryEntry(
-                            value = calculateBMI(weight, height),
-                            unit = "",
-                            date = date,
-                            metricName = "BMI"
-                        )
+                        val currentValue = calculateBMI(weight, height)
+                        if (lastValue == null || currentValue != lastValue) {
+                            lastValue = currentValue
+                            HistoryEntry(
+                                value = currentValue,
+                                unit = "",
+                                date = date,
+                                metricName = "BMI"
+                            )
+                        } else null
                     } else null
                 }
             }
@@ -81,17 +89,22 @@ fun ViewProgressHistoryScreen(
                 // Get all unique dates from both weight and body fat history
                 val allDates = (weightHistory.map { it.date } + bodyFatHistory.map { it.date }).distinct().sorted()
                 
+                var lastValue: Float? = null
                 allDates.mapNotNull { date ->
                     val weight = weightHistory.find { it.date <= date }?.value
                     val bodyFat = bodyFatHistory.find { it.date <= date }?.value
                     
                     if (weight != null && bodyFat != null) {
-                        HistoryEntry(
-                            value = calculateLeanBodyMass(weight, bodyFat),
-                            unit = "kg",
-                            date = date,
-                            metricName = "Lean Body Mass"
-                        )
+                        val currentValue = calculateLeanBodyMass(weight, bodyFat)
+                        if (lastValue == null || currentValue != lastValue) {
+                            lastValue = currentValue
+                            HistoryEntry(
+                                value = currentValue,
+                                unit = "kg",
+                                date = date,
+                                metricName = "Lean Body Mass"
+                            )
+                        } else null
                     } else null
                 }
             }
@@ -99,17 +112,22 @@ fun ViewProgressHistoryScreen(
                 // Get all unique dates from both weight and height history
                 val allDates = (weightHistory.map { it.date } + heightHistory.map { it.date }).distinct().sorted()
                 
+                var lastValue: Float? = null
                 allDates.mapNotNull { date ->
                     val weight = weightHistory.find { it.date <= date }?.value
                     val height = heightHistory.find { it.date <= date }?.value
                     
                     if (weight != null && height != null) {
-                        HistoryEntry(
-                            value = calculateBodySurfaceArea(weight, height),
-                            unit = "m²",
-                            date = date,
-                            metricName = "Body Surface Area"
-                        )
+                        val currentValue = calculateBodySurfaceArea(weight, height)
+                        if (lastValue == null || currentValue != lastValue) {
+                            lastValue = currentValue
+                            HistoryEntry(
+                                value = currentValue,
+                                unit = "m²",
+                                date = date,
+                                metricName = "Body Surface Area"
+                            )
+                        } else null
                     } else null
                 }
             }
@@ -117,23 +135,40 @@ fun ViewProgressHistoryScreen(
                 // Get all unique dates from weight, height, and body fat history
                 val allDates = (weightHistory.map { it.date } + heightHistory.map { it.date } + bodyFatHistory.map { it.date }).distinct().sorted()
                 
+                var lastValue: Float? = null
                 allDates.mapNotNull { date ->
                     val weight = weightHistory.find { it.date <= date }?.value
                     val height = heightHistory.find { it.date <= date }?.value
                     val bodyFat = bodyFatHistory.find { it.date <= date }?.value
                     
                     if (weight != null && height != null && bodyFat != null) {
-                        HistoryEntry(
-                            value = calculateFFMI(weight, height, bodyFat),
-                            unit = "",
-                            date = date,
-                            metricName = "FFMI"
-                        )
+                        val currentValue = calculateFFMI(weight, height, bodyFat)
+                        if (lastValue == null || currentValue != lastValue) {
+                            lastValue = currentValue
+                            HistoryEntry(
+                                value = currentValue,
+                                unit = "",
+                                date = date,
+                                metricName = "FFMI"
+                            )
+                        } else null
                     } else null
                 }
             }
             else -> viewModel.getMetricHistory(metricName, unit)
         }
+    }
+
+    // Add LaunchedEffect to observe changes in base metrics
+    LaunchedEffect(Unit) {
+        // This will run when the screen is first composed
+        refreshKey++
+    }
+
+    // Add LaunchedEffect to observe changes in base metrics
+    LaunchedEffect(weightHistory, heightHistory, bodyFatHistory) {
+        // This will run whenever any of the base metrics change
+        refreshKey++
     }
 
     // Filter history based on selected time period
