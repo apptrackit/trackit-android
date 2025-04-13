@@ -184,8 +184,10 @@ fun MainScreen(
                                 )
                             }
                         },
-                        onNavigateToViewBMIHistory = {
-                            navController.navigate(VIEW_BMI_HISTORY_ROUTE)
+                        onNavigateToViewMetricHistory = { metricName, unit ->
+                            navController.navigate(
+                                "${Screen.ViewMetricHistory.route}/$metricName/$unit"
+                            )
                         },
                         viewModel = viewModel,
                         navController = navController
