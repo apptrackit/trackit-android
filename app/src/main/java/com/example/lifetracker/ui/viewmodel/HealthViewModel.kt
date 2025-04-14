@@ -61,6 +61,9 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
             repository.saveMetricHistory("Body Fat", it, "%", date)
+            
+            // Recalculate and save other metrics that depend on body fat
+            updateCalculatedMetrics(date)
         }
     }
     
@@ -229,6 +232,32 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
         recalculateAllBMIs()
     }
 
+    private fun updateCalculatedMetrics(date: Long) {
+        val weight = getLatestHistoryEntry("Weight", "kg") ?: return
+        val height = getLatestHistoryEntry("Height", "cm") ?: return
+        val bodyFat = getLatestHistoryEntry("Body Fat", "%") ?: 0f
+
+        // Calculate and save lean body mass
+        val leanBodyMass = calculateLeanBodyMass(weight, bodyFat)
+        repository.saveMetricHistory("Lean Body Mass", leanBodyMass, "kg", date)
+
+        // Calculate and save fat mass
+        val fatMass = calculateFatMass(weight, bodyFat)
+        repository.saveMetricHistory("Fat Mass", fatMass, "kg", date)
+
+        // Calculate and save FFMI
+        val ffmi = calculateFatFreeMassIndex(leanBodyMass, height)
+        repository.saveMetricHistory("Fat-Free Mass Index", ffmi, "", date)
+
+        // Calculate and save BMR
+        val bmr = calculateBMR(weight, height)
+        repository.saveMetricHistory("Basal Metabolic Rate", bmr, "kcal", date)
+
+        // Calculate and save BSA
+        val bsa = calculateBodySurfaceArea(weight, height)
+        repository.saveMetricHistory("Body Surface Area", bsa, "m²", date)
+    }
+
     fun getCalculatedMetrics(): Map<String, Float> {
         val latestWeight = getLatestHistoryEntry("Weight", "kg") ?: 0f
         val latestHeight = getLatestHistoryEntry("Height", "cm") ?: 0f
@@ -238,14 +267,19 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
 
         val leanBodyMass = calculateLeanBodyMass(latestWeight, latestBodyFat)
         val fatMass = calculateFatMass(latestWeight, latestBodyFat)
+        val ffmi = calculateFatFreeMassIndex(leanBodyMass, latestHeight)
+        val bmr = calculateBMR(latestWeight, latestHeight)
+        val bsa = calculateBodySurfaceArea(latestWeight, latestHeight)
+
+        updateCalculatedMetrics(System.currentTimeMillis())
         
         return mapOf(
             "BMI" to calculateBMI(latestWeight, latestHeight),
             "Lean Body Mass" to leanBodyMass,
             "Fat Mass" to fatMass,
-            "Fat-Free Mass Index" to calculateFatFreeMassIndex(leanBodyMass, latestHeight),
-            "Basal Metabolic Rate" to calculateBMR(latestWeight, latestHeight),
-            "Body Surface Area" to calculateBodySurfaceArea(latestWeight, latestHeight)
+            "Fat-Free Mass Index" to ffmi,
+            "Basal Metabolic Rate" to bmr,
+            "Body Surface Area" to bsa
         )
     }
 

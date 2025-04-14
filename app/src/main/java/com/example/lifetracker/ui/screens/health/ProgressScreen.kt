@@ -237,7 +237,11 @@ fun ProgressScreen(
                                     }
                                 } ?: "No Data",
                                 unit = "kg",
-                                onClick = { /* No action */ }
+                                onClick = { 
+                                    navController.navigate(
+                                        "view_calculated_history/Lean Body Mass/kg/Lean Body Mass"
+                                    )
+                                }
                             )
                             
                             // Fat Mass
@@ -249,7 +253,11 @@ fun ProgressScreen(
                                     }
                                 } ?: "No Data",
                                 unit = "kg",
-                                onClick = { /* No action */ }
+                                onClick = { 
+                                    navController.navigate(
+                                        "view_calculated_history/Fat Mass/kg/Fat Mass"
+                                    )
+                                }
                             )
                             
                             // Fat-Free Mass Index
@@ -261,7 +269,11 @@ fun ProgressScreen(
                                     }
                                 } ?: "No Data",
                                 unit = "",
-                                onClick = { /* No action */ }
+                                onClick = { 
+                                    navController.navigate(
+                                        "view_calculated_history/Fat-Free Mass Index//Fat-Free Mass Index"
+                                    )
+                                }
                             )
                             
                             // Basal Metabolic Rate
@@ -271,7 +283,11 @@ fun ProgressScreen(
                                     String.format("%.0f", it)
                                 } ?: "No Data",
                                 unit = "kcal",
-                                onClick = { /* No action */ }
+                                onClick = { 
+                                    navController.navigate(
+                                        "view_calculated_history/Basal Metabolic Rate/kcal/Basal Metabolic Rate"
+                                    )
+                                }
                             )
                             
                             // Body Surface Area
@@ -283,7 +299,11 @@ fun ProgressScreen(
                                     }
                                 } ?: "No Data",
                                 unit = "m²",
-                                onClick = { /* No action */ }
+                                onClick = { 
+                                    navController.navigate(
+                                        "view_calculated_history/Body Surface Area/m²/Body Surface Area"
+                                    )
+                                }
                             )
                         }
                     }

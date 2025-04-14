@@ -13,6 +13,7 @@ import com.example.lifetracker.ui.screens.health.AddMetricDataScreen
 import com.example.lifetracker.ui.screens.health.EditMetricDataScreen
 import com.example.lifetracker.ui.screens.health.EditMetricScreen
 import com.example.lifetracker.ui.screens.health.ViewBMIHistoryScreen
+import com.example.lifetracker.ui.screens.health.ViewCalculatedHistoryScreen
 import com.example.lifetracker.ui.screens.nutrition.NutritionScreen
 import com.example.lifetracker.ui.screens.photos.*
 import com.example.lifetracker.ui.screens.settings.ProfileScreen
@@ -257,5 +258,26 @@ fun LifeTrackerNavHost(
                 )
             }
         }
+
+        composable(
+            route = VIEW_CALCULATED_HISTORY_ROUTE,
+            arguments = listOf(
+                navArgument("metricName") { type = NavType.StringType },
+                navArgument("unit") { type = NavType.StringType },
+                navArgument("title") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val metricName = backStackEntry.arguments?.getString("metricName") ?: ""
+            val unit = backStackEntry.arguments?.getString("unit") ?: ""
+            val title = backStackEntry.arguments?.getString("title") ?: ""
+            
+            ViewCalculatedHistoryScreen(
+                navController = navController,
+                viewModel = viewModel,
+                metricName = metricName,
+                unit = unit,
+                title = title
+            )
+        }
     }
-} 
+}

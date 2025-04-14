@@ -36,17 +36,6 @@ class MetricsRepository(private val context: Context) {
             date = sharedPrefs.getLong("date", System.currentTimeMillis())
         )
     }
-    /*fun saveMetricHistory(metricName: String, value: Float, unit: String, date: Long) {
-        val history = getMetricHistory(metricName).toMutableList()
-        history.add(HistoryEntry(value, unit, date))
-
-        val sharedPrefs = context.getSharedPreferences("health_metrics_history", Context.MODE_PRIVATE)
-        with(sharedPrefs.edit()) {
-            // In a real app, you'd need proper serialization here
-            putString(metricName, history.toString())
-            apply()
-        }
-    }*/
 
     fun saveMetricHistory(metricName: String, value: Float, unit: String, date: Long, weight: Float? = null, height: Float? = null) {
         val sharedPrefs = context.getSharedPreferences("health_metrics_history", Context.MODE_PRIVATE)
@@ -54,27 +43,46 @@ class MetricsRepository(private val context: Context) {
         val currentHistory = sharedPrefs.getString(historyKey, "") ?: ""
 
         // Split current history into entries and filter out empty ones
-        val entries = currentHistory.split("|").filter { it.isNotEmpty() }.toMutableList()
+        val entries = currentHistory.split("|")
+            .filter { it.isNotEmpty() }
+            .map { entry ->
+                val parts = entry.split(":")
+                val entryDate = parts[0].toLong()
+                val entryValue = parts[1].toFloat()
+                val entryWeight = if (parts.size > 2) parts[2].toFloat() else null
+                val entryHeight = if (parts.size > 3) parts[3].toFloat() else null
+                EntryData(entryDate, entryValue, entryWeight, entryHeight)
+            }
+            .toMutableList()
 
-        // Create new entry
-        val newEntry = if (weight != null && height != null) {
-            "$date:$value:$weight:$height"
-        } else {
-            "$date:$value"
-        }
+        // Check if this value already exists
+        val valueExists = entries.any { it.value == value }
+        
+        if (!valueExists) {
+            // Create new entry only if value doesn't exist
+            val newEntry = if (weight != null && height != null) {
+                "$date:$value:$weight:$height"
+            } else {
+                "$date:$value"
+            }
+            entries.add(EntryData(date, value, weight, height))
+            
+            // Convert back to string format and save
+            val updatedHistory = entries
+                .sortedByDescending { it.date }
+                .map { entry ->
+                    if (entry.weight != null && entry.height != null) {
+                        "${entry.date}:${entry.value}:${entry.weight}:${entry.height}"
+                    } else {
+                        "${entry.date}:${entry.value}"
+                    }
+                }
+                .joinToString("|")
 
-        // Remove any existing entry with the same date
-        entries.removeAll { it.startsWith("$date:") }
-
-        // Add the new entry
-        entries.add(newEntry)
-
-        // Join entries back together and save
-        val updatedHistory = entries.joinToString("|")
-
-        with(sharedPrefs.edit()) {
-            putString(historyKey, updatedHistory)
-            apply()
+            with(sharedPrefs.edit()) {
+                putString(historyKey, updatedHistory)
+                apply()
+            }
         }
     }
 
@@ -106,6 +114,7 @@ class MetricsRepository(private val context: Context) {
                         null
                     }
                 }
+                .distinctBy { it.value } // Keep only unique values
                 .sortedByDescending { it.date }
         } catch (e: Exception) {
             emptyList()
@@ -129,8 +138,11 @@ class MetricsRepository(private val context: Context) {
             apply()
         }
     }
-    fun getMetricHistory(metricName: String): List<HistoryEntry> {
-        // This is a placeholder. In a real app, you'd implement proper serialization/deserialization
-        return emptyList()
-    }
+
+    private data class EntryData(
+        val date: Long,
+        val value: Float,
+        val weight: Float? = null,
+        val height: Float? = null
+    )
 }
