@@ -225,10 +225,17 @@ fun ProgressScreen(
                                 onClick = { onNavigateToViewBMIHistory() }
                             )
                             
+                            // Get calculated metrics
+                            val calculatedMetrics = viewModel.getCalculatedMetrics()
+                            
                             // Lean Body Mass
                             MetricRowWithArrow(
                                 title = "Lean Body Mass",
-                                value = "58.2",
+                                value = calculatedMetrics["Lean Body Mass"]?.let { 
+                                    String.format("%.1f", it).let { 
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                    }
+                                } ?: "No Data",
                                 unit = "kg",
                                 onClick = { /* No action */ }
                             )
@@ -236,7 +243,11 @@ fun ProgressScreen(
                             // Fat Mass
                             MetricRowWithArrow(
                                 title = "Fat Mass",
-                                value = "10.3",
+                                value = calculatedMetrics["Fat Mass"]?.let { 
+                                    String.format("%.1f", it).let { 
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                    }
+                                } ?: "No Data",
                                 unit = "kg",
                                 onClick = { /* No action */ }
                             )
@@ -244,7 +255,11 @@ fun ProgressScreen(
                             // Fat-Free Mass Index
                             MetricRowWithArrow(
                                 title = "Fat-Free Mass Index",
-                                value = "19.0",
+                                value = calculatedMetrics["Fat-Free Mass Index"]?.let { 
+                                    String.format("%.1f", it).let { 
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                    }
+                                } ?: "No Data",
                                 unit = "",
                                 onClick = { /* No action */ }
                             )
@@ -252,7 +267,9 @@ fun ProgressScreen(
                             // Basal Metabolic Rate
                             MetricRowWithArrow(
                                 title = "Basal Metabolic Rate",
-                                value = "1628",
+                                value = calculatedMetrics["Basal Metabolic Rate"]?.let { 
+                                    String.format("%.0f", it)
+                                } ?: "No Data",
                                 unit = "kcal",
                                 onClick = { /* No action */ }
                             )
@@ -260,7 +277,11 @@ fun ProgressScreen(
                             // Body Surface Area
                             MetricRowWithArrow(
                                 title = "Body Surface Area",
-                                value = "1.8",
+                                value = calculatedMetrics["Body Surface Area"]?.let { 
+                                    String.format("%.2f", it).let { 
+                                        if (it.endsWith(".00")) it.substring(0, it.length - 3) else it 
+                                    }
+                                } ?: "No Data",
                                 unit = "m²",
                                 onClick = { /* No action */ }
                             )

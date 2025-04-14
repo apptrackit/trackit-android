@@ -12,13 +12,7 @@ data class HealthMetrics(
     val thigh: Float = 200.0f,
     val shoulder: Float = 582.0f,
     val date: Long = System.currentTimeMillis()
-) {
-    val bmi: Float
-        get() {
-            val heightInMeters = height / 100
-            return weight / heightInMeters.pow(2)
-        }
-}
+)
 
 data class HistoryEntry(
     val value: Float,

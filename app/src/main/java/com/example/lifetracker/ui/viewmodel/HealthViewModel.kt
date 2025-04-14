@@ -7,6 +7,11 @@ import androidx.lifecycle.ViewModel
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.data.repository.MetricsRepository
 import com.example.lifetracker.utils.calculateBMI
+import com.example.lifetracker.utils.calculateBMR
+import com.example.lifetracker.utils.calculateBodySurfaceArea
+import com.example.lifetracker.utils.calculateFatFreeMassIndex
+import com.example.lifetracker.utils.calculateFatMass
+import com.example.lifetracker.utils.calculateLeanBodyMass
 
 class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
     var metrics by mutableStateOf(repository.loadMetrics())
@@ -223,4 +228,25 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
         // Recalculate all BMIs to ensure they're up to date
         recalculateAllBMIs()
     }
+
+    fun getCalculatedMetrics(): Map<String, Float> {
+        val latestWeight = getLatestHistoryEntry("Weight", "kg") ?: 0f
+        val latestHeight = getLatestHistoryEntry("Height", "cm") ?: 0f
+        val latestBodyFat = getLatestHistoryEntry("Body Fat", "%") ?: 0f
+
+        if (latestWeight <= 0 || latestHeight <= 0) return emptyMap()
+
+        val leanBodyMass = calculateLeanBodyMass(latestWeight, latestBodyFat)
+        val fatMass = calculateFatMass(latestWeight, latestBodyFat)
+        
+        return mapOf(
+            "BMI" to calculateBMI(latestWeight, latestHeight),
+            "Lean Body Mass" to leanBodyMass,
+            "Fat Mass" to fatMass,
+            "Fat-Free Mass Index" to calculateFatFreeMassIndex(leanBodyMass, latestHeight),
+            "Basal Metabolic Rate" to calculateBMR(latestWeight, latestHeight),
+            "Body Surface Area" to calculateBodySurfaceArea(latestWeight, latestHeight)
+        )
+    }
+
 }
