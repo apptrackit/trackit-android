@@ -139,6 +139,15 @@ class MetricsRepository(private val context: Context) {
         }
     }
 
+    fun clearMetricHistory(metricName: String) {
+        val sharedPrefs = context.getSharedPreferences("health_metrics_history", Context.MODE_PRIVATE)
+        val historyKey = "${metricName.lowercase()}_history"
+        with(sharedPrefs.edit()) {
+            remove(historyKey)
+            apply()
+        }
+    }
+
     private data class EntryData(
         val date: Long,
         val value: Float,

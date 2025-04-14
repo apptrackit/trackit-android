@@ -344,7 +344,7 @@ private fun MetricRowWithArrow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if (unit.isEmpty()) value else "$value $unit",
+                text = if (value == "-") value else if (unit.isEmpty()) value else "$value $unit",
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
