@@ -52,7 +52,7 @@ fun ProgressScreen(
     val bmiHistory = viewModel.getMetricHistory("BMI", "")
 
     // Format values based on history
-    val formattedWeight = if (weightHistory.isEmpty()) "No Data" else {
+    val formattedWeight = if (weightHistory.isEmpty()) "-" else {
         val value = latestWeight ?: 0f
         if (value > 0) {
             val formatted = String.format("%.1f", value)
@@ -60,15 +60,15 @@ fun ProgressScreen(
                 0,
                 formatted.length - 2
             ) else formatted
-        } else "No Data"
+        } else "-"
     }
 
-    val formattedHeight = if (heightHistory.isEmpty()) "No Data" else {
+    val formattedHeight = if (heightHistory.isEmpty()) "-" else {
         val value = latestHeight ?: 0f
-        if (value > 0) value.toInt().toString() else "No Data"
+        if (value > 0) value.toInt().toString() else "-"
     }
 
-    val formattedBodyFat = if (bodyFatHistory.isEmpty()) "No Data" else {
+    val formattedBodyFat = if (bodyFatHistory.isEmpty()) "-" else {
         val value = latestBodyFat ?: 0f
         if (value > 0) {
             val formatted = String.format("%.1f", value)
@@ -76,7 +76,7 @@ fun ProgressScreen(
                 0,
                 formatted.length - 2
             ) else formatted
-        } else "No Data"
+        } else "-"
     }
 
     // Calculate BMI with null safety
@@ -92,7 +92,7 @@ fun ProgressScreen(
     val formattedBmi = if (bmi > 0) {
         val formatted = String.format("%.1f", bmi)
         if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
-    } else "No Data"
+    } else "-"
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -161,7 +161,7 @@ fun ProgressScreen(
                             // Waist measurement
                             MetricRowWithArrow(
                                 title = "Waist",
-                                value = viewModel.getLatestHistoryEntry("Waist", "cm")?.toString() ?: "No Data",
+                                value = viewModel.getLatestHistoryEntry("Waist", "cm")?.toString() ?: "-",
                                 unit = "cm",
                                 onClick = { onNavigateToEditMetric("Waist") }
                             )
@@ -169,7 +169,7 @@ fun ProgressScreen(
                             // Bicep measurement
                             MetricRowWithArrow(
                                 title = "Bicep",
-                                value = viewModel.getLatestHistoryEntry("Bicep", "cm")?.toString() ?: "No Data",
+                                value = viewModel.getLatestHistoryEntry("Bicep", "cm")?.toString() ?: "-",
                                 unit = "cm",
                                 onClick = { onNavigateToEditMetric("Bicep") }
                             )
@@ -177,7 +177,7 @@ fun ProgressScreen(
                             // Chest measurement
                             MetricRowWithArrow(
                                 title = "Chest",
-                                value = viewModel.getLatestHistoryEntry("Chest", "cm")?.toString() ?: "No Data",
+                                value = viewModel.getLatestHistoryEntry("Chest", "cm")?.toString() ?: "-",
                                 unit = "cm",
                                 onClick = { onNavigateToEditMetric("Chest") }
                             )
@@ -185,7 +185,7 @@ fun ProgressScreen(
                             // Thigh measurement
                             MetricRowWithArrow(
                                 title = "Thigh",
-                                value = viewModel.getLatestHistoryEntry("Thigh", "cm")?.toString() ?: "No Data",
+                                value = viewModel.getLatestHistoryEntry("Thigh", "cm")?.toString() ?: "-",
                                 unit = "cm",
                                 onClick = { onNavigateToEditMetric("Thigh") }
                             )
@@ -193,7 +193,7 @@ fun ProgressScreen(
                             // Shoulder measurement
                             MetricRowWithArrow(
                                 title = "Shoulder",
-                                value = viewModel.getLatestHistoryEntry("Shoulder", "cm")?.toString() ?: "No Data",
+                                value = viewModel.getLatestHistoryEntry("Shoulder", "cm")?.toString() ?: "-",
                                 unit = "cm",
                                 onClick = { onNavigateToEditMetric("Shoulder") }
                             )
@@ -235,12 +235,14 @@ fun ProgressScreen(
                                     String.format("%.1f", it).let { 
                                         if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
                                     }
-                                } ?: "No Data",
-                                unit = "kg",
+                                } ?: "-",
+                                unit = if (calculatedMetrics["Lean Body Mass"] != null) "kg" else "",
                                 onClick = { 
-                                    navController.navigate(
-                                        "view_calculated_history/Lean Body Mass/kg/Lean Body Mass"
-                                    )
+                                    if (calculatedMetrics["Lean Body Mass"] != null) {
+                                        navController.navigate(
+                                            "view_calculated_history/Lean Body Mass/kg/Lean Body Mass"
+                                        )
+                                    }
                                 }
                             )
                             
@@ -251,12 +253,14 @@ fun ProgressScreen(
                                     String.format("%.1f", it).let { 
                                         if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
                                     }
-                                } ?: "No Data",
-                                unit = "kg",
+                                } ?: "-",
+                                unit = if (calculatedMetrics["Fat Mass"] != null) "kg" else "",
                                 onClick = { 
-                                    navController.navigate(
-                                        "view_calculated_history/Fat Mass/kg/Fat Mass"
-                                    )
+                                    if (calculatedMetrics["Fat Mass"] != null) {
+                                        navController.navigate(
+                                            "view_calculated_history/Fat Mass/kg/Fat Mass"
+                                        )
+                                    }
                                 }
                             )
                             
@@ -267,12 +271,14 @@ fun ProgressScreen(
                                     String.format("%.1f", it).let { 
                                         if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
                                     }
-                                } ?: "No Data",
+                                } ?: "-",
                                 unit = "",
                                 onClick = { 
-                                    navController.navigate(
-                                        "view_calculated_history/Fat-Free Mass Index//Fat-Free Mass Index"
-                                    )
+                                    if (calculatedMetrics["Fat-Free Mass Index"] != null) {
+                                        navController.navigate(
+                                            "view_calculated_history/Fat-Free Mass Index//Fat-Free Mass Index"
+                                        )
+                                    }
                                 }
                             )
                             
@@ -281,7 +287,7 @@ fun ProgressScreen(
                                 title = "Basal Metabolic Rate",
                                 value = calculatedMetrics["Basal Metabolic Rate"]?.let { 
                                     String.format("%.0f", it)
-                                } ?: "No Data",
+                                } ?: "-",
                                 unit = "kcal",
                                 onClick = { 
                                     navController.navigate(
@@ -297,7 +303,7 @@ fun ProgressScreen(
                                     String.format("%.2f", it).let { 
                                         if (it.endsWith(".00")) it.substring(0, it.length - 3) else it 
                                     }
-                                } ?: "No Data",
+                                } ?: "-",
                                 unit = "m²",
                                 onClick = { 
                                     navController.navigate(
@@ -381,7 +387,7 @@ private fun MetricCardNoChart(
                 color = Color.White,
                 fontSize = 16.sp
             )
-            if (unit.isNotEmpty() && value != "No Data") {
+            if (unit.isNotEmpty() && value != "-") {
                 Text(
                     text = " $unit",
                     color = Color.Gray,

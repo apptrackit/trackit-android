@@ -204,7 +204,7 @@ fun ViewBMIHistoryScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No BMI data available",
+                        text = "-",
                         color = Color(0xFF444444),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Light
@@ -230,7 +230,7 @@ fun ViewBMIHistoryScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No history entries for this period",
+                        text = "-",
                         color = Color(0xFF444444),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Light

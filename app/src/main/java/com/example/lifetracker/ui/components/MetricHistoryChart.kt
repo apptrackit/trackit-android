@@ -34,7 +34,7 @@ fun MetricHistoryChart(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "No Data",
+                text = "-",
                 color = Color(0xFF444444),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Light,
@@ -225,4 +225,4 @@ fun MetricHistoryChart(
             }
         }
     }
-} 
+}
