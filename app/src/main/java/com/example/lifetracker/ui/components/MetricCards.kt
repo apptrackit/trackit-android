@@ -90,12 +90,12 @@ fun MetricCardContent(title: String, value: String, unit: String) {
         ) {
             Text(
                 text = value,
-                color = if (value == "No Data") Color(0xFF555555) else Color.White,
-                fontSize = if (value == "No Data") 14.sp else 32.sp,
-                fontWeight = if (value == "No Data") FontWeight.Normal else FontWeight.Bold,
-                modifier = Modifier.padding(bottom = if (value == "No Data") 0.dp else 2.dp)
+                color = if (value == "-") Color(0xFF555555) else Color.White,
+                fontSize = if (value == "-") 14.sp else 32.sp,
+                fontWeight = if (value == "-") FontWeight.Normal else FontWeight.Bold,
+                modifier = Modifier.padding(bottom = if (value == "-") 0.dp else 2.dp)
             )
-            if (unit.isNotEmpty() && value != "No Data") {
+            if (unit.isNotEmpty() && value != "-") {
                 Text(
                     text = unit,
                     color = Color.White,

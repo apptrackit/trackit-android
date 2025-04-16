@@ -20,6 +20,8 @@ import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.TimeFilter
 import com.example.lifetracker.utils.formatDate
+import com.example.lifetracker.ui.components.TimeFilterButton
+import com.example.lifetracker.ui.components.MetricHistoryChart
 
 @Composable
 fun ViewBMIHistoryScreen(
@@ -202,7 +204,7 @@ fun ViewBMIHistoryScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No BMI data available",
+                        text = "-",
                         color = Color(0xFF444444),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Light
@@ -228,7 +230,7 @@ fun ViewBMIHistoryScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No history entries for this period",
+                        text = "-",
                         color = Color(0xFF444444),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Light
@@ -305,6 +307,185 @@ fun BMIHistoryItem(entry: HistoryEntry) {
             text = formatDate(entry.date),
             color = Color.Gray,
             fontSize = 14.sp
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ViewCalculatedHistoryScreen(
+    navController: NavController,
+    viewModel: HealthViewModel,
+    metricName: String,
+    unit: String,
+    title: String
+) {
+    var selectedTimeFilter by remember { mutableStateOf(TimeFilter.MONTH) }
+
+    // Get history data
+    val history = viewModel.getMetricHistory(metricName, unit)
+
+    // Filter history based on selected time period
+    val filteredHistory = when (selectedTimeFilter) {
+        TimeFilter.WEEK -> {
+            val weekAgo = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L
+            history.filter { it.date >= weekAgo }
+        }
+        TimeFilter.MONTH -> {
+            val monthAgo = System.currentTimeMillis() - 30 * 24 * 60 * 60 * 1000L
+            history.filter { it.date >= monthAgo }
+        }
+        TimeFilter.YEAR -> {
+            val yearAgo = System.currentTimeMillis() - 365 * 24 * 60 * 60 * 1000L
+            history.filter { it.date >= yearAgo }
+        }
+    }
+
+    // Calculate statistics
+    val stats = if (filteredHistory.isNotEmpty()) {
+        val values = filteredHistory.map { it.value }
+        val avg = values.average()
+        val min = values.minOrNull() ?: 0f
+        val max = values.maxOrNull() ?: 0f
+        Triple(min, avg, max)
+    } else {
+        Triple(0f, 0.0, 0f)
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Black
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+
+                Text(
+                    text = title,
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Time filter buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TimeFilterButton(
+                    text = "Week",
+                    isSelected = selectedTimeFilter == TimeFilter.WEEK,
+                    onClick = { selectedTimeFilter = TimeFilter.WEEK }
+                )
+                TimeFilterButton(
+                    text = "Month",
+                    isSelected = selectedTimeFilter == TimeFilter.MONTH,
+                    onClick = { selectedTimeFilter = TimeFilter.MONTH }
+                )
+                TimeFilterButton(
+                    text = "Year",
+                    isSelected = selectedTimeFilter == TimeFilter.YEAR,
+                    onClick = { selectedTimeFilter = TimeFilter.YEAR }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Statistics
+            if (filteredHistory.isNotEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF1E1E1E)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Statistics",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            StatItem("Min", String.format("%.1f", stats.first))
+                            StatItem("Avg", String.format("%.1f", stats.second))
+                            StatItem("Max", String.format("%.1f", stats.third))
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Chart
+            MetricHistoryChart(
+                history = filteredHistory,
+                unit = unit
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // History
+            Text(
+                text = "History",
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyColumn {
+                items(filteredHistory) { entry ->
+                    HistoryItem(entry = entry)
+                    Divider(color = Color(0xFF333333))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HistoryItem(entry: HistoryEntry) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = formatDate(entry.date),
+            color = Color.Gray,
+            fontSize = 14.sp
+        )
+        Text(
+            text = String.format("%.1f", entry.value),
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
         )
     }
 }
