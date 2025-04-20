@@ -23,7 +23,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
             repository.saveMetricHistory("Weight", it, "kg", date)
-            recalculateMetricsForDate(date) // Add this line
+            recalculateAllMetrics() // Changed from recalculateMetricsForDate
         }
     }
 
@@ -137,13 +137,8 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
 
     fun deleteHistoryEntry(metricName: String, entry: HistoryEntry) {
         repository.deleteHistoryEntry(metricName, entry)
-        if (metricName == "Weight") {
-            // When weight entry is deleted, recalculate everything for that date
-            recalculateMetricsForDate(entry.date)
-        } else {
-            // For other metrics, just recalculate all metrics to be safe
-            recalculateAllMetrics()
-        }
+        // Always recalculate all metrics when any entry is deleted
+        recalculateAllMetrics()
     }
 
     fun getMetricHistory(metricName: String, unit: String): List<HistoryEntry> {
@@ -264,7 +259,12 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
         try {
             clearCalculatedMetrics()
             val weightHistory = repository.getMetricHistory("Weight", "kg")
-            weightHistory.forEach { weightEntry ->
+            
+            // Sort weight entries chronologically
+            val sortedWeightHistory = weightHistory.sortedBy { it.date }
+            
+            // Recalculate for each weight entry date
+            sortedWeightHistory.forEach { weightEntry ->
                 recalculateMetricsForDate(weightEntry.date)
             }
         } catch (e: Exception) {
