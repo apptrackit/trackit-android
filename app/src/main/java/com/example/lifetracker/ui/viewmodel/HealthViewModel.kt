@@ -147,15 +147,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
     }
 
     fun getMetricHistory(metricName: String, unit: String): List<HistoryEntry> {
-        // Recalculate all metrics before returning history
-        if (metricName.startsWith("BMI") || 
-            metricName.startsWith("Lean Body Mass") ||
-            metricName.startsWith("Fat Mass") ||
-            metricName.startsWith("Fat-Free Mass Index") ||
-            metricName.startsWith("Basal Metabolic Rate") ||
-            metricName.startsWith("Body Surface Area")) {
-            recalculateAllMetrics()
-        }
+        // Remove automatic recalculation to prevent recursive calls
         return repository.getMetricHistory(metricName, unit)
     }
     
@@ -250,68 +242,86 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
         return result
     }
 
-    private fun recalculateAllMetrics() {
-        // First clear all calculated metrics
-        clearCalculatedMetrics()
+    private fun clearCalculatedMetrics() {
+        val calculatedMetrics = listOf(
+            "BMI",
+            "Lean Body Mass",
+            "Fat Mass",
+            "Fat-Free Mass Index",
+            "Basal Metabolic Rate",
+            "Body Surface Area"
+        )
         
-        val weightHistory = repository.getMetricHistory("Weight", "kg")
-        val heightHistory = repository.getMetricHistory("Height", "cm")
-        val bodyFatHistory = repository.getMetricHistory("Body Fat", "%")
-
-        // Recalculate for each weight entry
-        weightHistory.forEach { weightEntry ->
-            recalculateMetricsForDate(weightEntry.date)
+        calculatedMetrics.forEach { metric ->
+            val existingHistory = getMetricHistory(metric, "")
+            existingHistory.forEach { entry ->
+                repository.deleteHistoryEntry(metric, entry)
+            }
         }
     }
 
-    private fun clearCalculatedMetrics() {
-        // Clear all calculated metric histories
-        repository.clearMetricHistory("BMI")
-        repository.clearMetricHistory("Lean Body Mass")
-        repository.clearMetricHistory("Fat Mass")
-        repository.clearMetricHistory("Fat-Free Mass Index")
-        repository.clearMetricHistory("Basal Metabolic Rate")
-        repository.clearMetricHistory("Body Surface Area")
+    private fun recalculateAllMetrics() {
+        try {
+            clearCalculatedMetrics()
+            val weightHistory = repository.getMetricHistory("Weight", "kg")
+            weightHistory.forEach { weightEntry ->
+                recalculateMetricsForDate(weightEntry.date)
+            }
+        } catch (e: Exception) {
+            // Log error but don't crash
+            e.printStackTrace()
+        }
+    }
+
+    private fun findClosestHistoricalValue(targetDate: Long, metricName: String, unit: String): Float? {
+        val history = repository.getMetricHistory(metricName, unit)
+        if (history.isEmpty()) return null
+        
+        // Get only values that existed before or on the target date
+        return history
+            .filter { it.date <= targetDate }
+            .maxByOrNull { it.date }
+            ?.value
     }
 
     private fun recalculateMetricsForDate(targetDate: Long) {
-        // Get relevant data for calculations
-        val weight = getHistoryEntryAtDate("Weight", "kg", targetDate) ?: return
-        val height = getHistoryEntryAtDate("Height", "cm", targetDate)
-        val bodyFat = getHistoryEntryAtDate("Body Fat", "%", targetDate)
+        try {
+            // Get required values - only use measurements that existed at target date
+            val weight = findClosestHistoricalValue(targetDate, "Weight", "kg") ?: return
+            val height = findClosestHistoricalValue(targetDate, "Height", "cm")
+            val bodyFat = findClosestHistoricalValue(targetDate, "Body Fat", "%")
 
-        // Calculate and save BMI if height is available
-        if (height != null) {
-            val bmi = calculateBMI(weight, height)
-            repository.saveMetricHistory("BMI", bmi, "", targetDate, weight, height)
-        }
-
-        // Calculate and save body composition metrics if body fat is available
-        if (bodyFat != null) {
-            // Lean Body Mass
-            val leanMass = calculateLeanBodyMass(weight, bodyFat)
-            repository.saveMetricHistory("Lean Body Mass", leanMass, "kg", targetDate)
-
-            // Fat Mass
-            val fatMass = calculateFatMass(weight, bodyFat)
-            repository.saveMetricHistory("Fat Mass", fatMass, "kg", targetDate)
-
-            // FFMI if height is available
+            // Only calculate metrics if historical height exists
             if (height != null) {
-                val ffmi = calculateFatFreeMassIndex(leanMass, height)
-                repository.saveMetricHistory("Fat-Free Mass Index", ffmi, "", targetDate)
+                val bmi = calculateBMI(weight, height)
+                repository.saveMetricHistory("BMI", bmi, "", targetDate, weight, height)
+                
+                val bmr = calculateBMR(weight, height)
+                repository.saveMetricHistory("Basal Metabolic Rate", bmr, "kcal", targetDate)
+                
+                val bsa = calculateBodySurfaceArea(weight, height)
+                repository.saveMetricHistory("Body Surface Area", bsa, "m²", targetDate)
+
+                // Calculate body composition metrics if historical body fat exists
+                if (bodyFat != null) {
+                    val leanMass = calculateLeanBodyMass(weight, bodyFat)
+                    repository.saveMetricHistory("Lean Body Mass", leanMass, "kg", targetDate)
+                    
+                    val fatMass = calculateFatMass(weight, bodyFat)
+                    repository.saveMetricHistory("Fat Mass", fatMass, "kg", targetDate)
+                    
+                    val ffmi = calculateFatFreeMassIndex(leanMass, height)
+                    repository.saveMetricHistory("Fat-Free Mass Index", ffmi, "", targetDate)
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+    }
 
-        // Calculate metrics that only need weight and height
-        if (height != null) {
-            // BMR
-            val bmr = calculateBMR(weight, height)
-            repository.saveMetricHistory("Basal Metabolic Rate", bmr, "kcal", targetDate)
-
-            // BSA
-            val bsa = calculateBodySurfaceArea(weight, height)
-            repository.saveMetricHistory("Body Surface Area", bsa, "m²", targetDate)
-        }
+    init {
+        // Initialize calculated metrics on startup
+        ensureMetricHistory()
+        recalculateAllMetrics()
     }
 }
