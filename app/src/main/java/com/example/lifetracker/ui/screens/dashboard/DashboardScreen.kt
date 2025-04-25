@@ -1,6 +1,11 @@
 package com.example.lifetracker.ui.screens.dashboard
 
 import android.annotation.SuppressLint
+import android.util.Log
+import android.content.ActivityNotFoundException
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -8,7 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,12 +27,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.lifetracker.ui.components.AddMetricButton
 import com.example.lifetracker.ui.components.AddMetricPopup
-import com.example.lifetracker.ui.components.ClickableMetricCard
 import com.example.lifetracker.ui.components.ClickableMetricCardWithChart
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.calculateBMI
 import com.guru.fontawesomecomposelib.FaIcon
 import com.guru.fontawesomecomposelib.FaIcons
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.collections.isNotEmpty as listIsNotEmpty
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -57,43 +64,89 @@ fun DashboardScreen(
     // Collect step count from Health Connect
     val stepCount = viewModel.stepCount.collectAsStateWithLifecycle().value
     
-    // Activity launcher for permission requests
+    // Permission launcher with delayed status check
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) {
-        // Check permission status after coming back from permission screen
-        viewModel.checkHealthConnectStatus()
+        // Check permission status after returning from the permission screen
+        Log.d("DashboardScreen", "Permission request completed, checking status")
+        
+        // Wait a moment before checking again to allow system to update permission status
+        Handler(Looper.getMainLooper()).postDelayed({
+            viewModel.checkHealthConnectStatus()
+        }, 1000)
     }
-
-    // Effect to refresh step data when screen is shown
+    
+    // Function to handle permission request with better fallbacks
+    val requestPermission = {
+        try {
+            // First try the direct API method
+            viewModel.requestHealthConnectPermissions()
+            
+            // Then use the intent approach as backup after a short delay
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (!viewModel.permissionsGranted) {
+                    val intent = viewModel.getPermissionRequestIntent()
+                    if (intent != null) {
+                        try {
+                            permissionLauncher.launch(intent)
+                        } catch (e: Exception) {
+                            Log.e("DashboardScreen", "Failed to launch permission intent", e)
+                            Toast.makeText(context, "Could not request Health Connect permissions. Please grant them manually.", Toast.LENGTH_LONG).show()
+                            
+                            // As a last resort, open Health Connect app
+                            try {
+                                context.startActivity(viewModel.getHealthConnectAppIntent())
+                            } catch (e2: Exception) {
+                                Log.e("DashboardScreen", "Failed to open Health Connect app", e2)
+                            }
+                        }
+                    }
+                }
+            }, 500) // Short delay to give direct API a chance first
+        } catch (e: Exception) {
+            Log.e("DashboardScreen", "Error in permission flow", e)
+            Toast.makeText(context, "Error accessing Health Connect", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    // Check status when screen appears and after orientation changes
     LaunchedEffect(Unit) {
+        Log.d("DashboardScreen", "Initial Health Connect status check")
         viewModel.checkHealthConnectStatus()
+        
+        // Give Health Connect a moment to register permissions
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (viewModel.permissionsGranted) {
+                viewModel.refreshStepData()
+            }
+        }, 1000)
     }
 
     // Format values based on history
-    val formattedWeight = if (weightHistory.isEmpty()) "No Data" else {
+    val formattedWeight = if (weightHistory.size > 0) {
         val value = latestWeight ?: 0f
         if (value > 0) {
             val formatted = String.format("%.1f", value)
             if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
         } else "No Data"
-    }
+    } else "No Data"
     
-    val formattedHeight = if (heightHistory.isEmpty()) "No Data" else {
+    val formattedHeight = if (heightHistory.size > 0) {
         val value = latestHeight ?: 0f
         if (value > 0) value.toInt().toString() else "No Data"
-    }
+    } else "No Data"
     
-    val formattedBodyFat = if (bodyFatHistory.isEmpty()) "No Data" else {
+    val formattedBodyFat = if (bodyFatHistory.size > 0) {
         val value = latestBodyFat ?: 0f
         if (value > 0) {
             val formatted = String.format("%.1f", value)
             if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
         } else "No Data"
-    }
+    } else "No Data"
 
     // Calculate BMI with null safety
-    val bmi = if (weightHistory.isNotEmpty() && heightHistory.isNotEmpty() && 
+    val bmi = if (weightHistory.size > 0 && heightHistory.size > 0 && 
                  latestWeight != null && latestHeight != null && 
                  latestWeight > 0 && latestHeight > 0) {
         calculateBMI(latestWeight, latestHeight)
@@ -144,6 +197,7 @@ fun DashboardScreen(
                 modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
             )
             
+            // Card showing step information
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -171,47 +225,68 @@ fun DashboardScreen(
                             
                             if (viewModel.healthConnectAvailable) {
                                 if (viewModel.permissionsGranted) {
+                                    // Show step count
                                     Text(
                                         text = "$stepCount",
                                         color = Color.White,
                                         fontSize = 32.sp,
                                         fontWeight = FontWeight.Bold
                                     )
-                                } else {
-                                    // Show permission button
-                                    TextButton(
-                                        onClick = {
-                                            try {
-                                                val intent = viewModel.getPermissionRequestIntent()
-                                                permissionLauncher.launch(intent)
-                                            } catch (e: Exception) {
-                                                e.printStackTrace()
-                                            }
-                                        },
-                                        colors = ButtonDefaults.textButtonColors(
-                                            contentColor = Color(0xFF2196F3)
+                                    
+                                    // Add a refresh button
+                                    IconButton(onClick = { viewModel.refreshStepData() }) {
+                                        Icon(
+                                            // Use FontAwesome or other icon here
+                                            // e.g., FontAwesomeIcon(icon = FontAwesomeIcons.Sync)
+                                            // or Material icon
+                                            Icons.Default.Refresh,
+                                            contentDescription = "Refresh",
+                                            tint = Color.White
                                         )
+                                    }
+                                } else {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Text("Grant Permission")
+                                        Text(
+                                            "Connect to Health Data",
+                                            color = Color.White,
+                                            fontSize = 14.sp,
+                                            modifier = Modifier.padding(bottom = 4.dp)
+                                        )
+                                        Button(
+                                            onClick = { requestPermission() },
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color(0xFF2196F3)
+                                            ),
+                                            modifier = Modifier.padding(vertical = 8.dp)
+                                        ) {
+                                            Text("Grant Access", color = Color.White)
+                                        }
                                     }
                                 }
                             } else {
                                 // Health Connect not available
-                                TextButton(
-                                    onClick = {
-                                        val intent = viewModel.getHealthConnectInstallIntent()
-                                        context.startActivity(intent)
+                                Text(
+                                    text = "Health Connect not available",
+                                    color = Color.Gray,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                                Button(
+                                    onClick = { 
+                                        context.startActivity(viewModel.getHealthConnectInstallIntent())
                                     },
-                                    colors = ButtonDefaults.textButtonColors(
-                                        contentColor = Color(0xFF2196F3)
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF2196F3)
                                     )
                                 ) {
-                                    Text("Install Health Connect")
+                                    Text("Install Health Connect", color = Color.White)
                                 }
                             }
                         }
                         
-                        // Use FontAwesome for walking icon since Material DirectionsWalk is not found
+                        // Replace DirectionsWalk with FontAwesome icon
                         FaIcon(
                             faIcon = FaIcons.Running,
                             tint = Color(0xFF2196F3),

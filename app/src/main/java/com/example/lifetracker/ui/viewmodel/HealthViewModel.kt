@@ -1,12 +1,12 @@
 package com.example.lifetracker.ui.viewmodel
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.data.repository.HealthConnectRepository
 import com.example.lifetracker.data.repository.MetricsRepository
 import com.example.lifetracker.utils.calculateBMI
@@ -17,11 +17,14 @@ import com.example.lifetracker.utils.calculateFatMass
 import com.example.lifetracker.utils.calculateLeanBodyMass
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import com.example.lifetracker.data.model.HistoryEntry
 
 class HealthViewModel(
     private val repository: MetricsRepository,
     private val healthConnectRepository: HealthConnectRepository
 ) : ViewModel() {
+    private val TAG = "HealthViewModel"
+    
     var metrics by mutableStateOf(repository.loadMetrics())
         private set
 
@@ -47,22 +50,62 @@ class HealthViewModel(
     // Check if Health Connect is available and permissions are granted
     fun checkHealthConnectStatus() {
         viewModelScope.launch {
-            healthConnectAvailable = healthConnectRepository.hasHealthConnectCapability()
-            if (healthConnectAvailable) {
-                permissionsGranted = healthConnectRepository.checkPermissions()
-                if (permissionsGranted) {
-                    healthConnectRepository.readTodayStepData()
+            try {
+                healthConnectAvailable = healthConnectRepository.hasHealthConnectCapability()
+                Log.d(TAG, "Health Connect available: $healthConnectAvailable")
+                
+                if (healthConnectAvailable) {
+                    permissionsGranted = healthConnectRepository.checkPermissions()
+                    Log.d(TAG, "Health Connect permissions granted: $permissionsGranted")
+                    
+                    if (permissionsGranted) {
+                        refreshStepData()
+                    }
+                } else {
+                    permissionsGranted = false
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking Health Connect status", e)
+                healthConnectAvailable = false
+                permissionsGranted = false
             }
         }
     }
     
+    // Request Health Connect permissions directly through the repository
+    fun requestHealthConnectPermissions() {
+        viewModelScope.launch {
+            try {
+                // Can no longer call requestPermissions() directly, so get the intent instead
+                val intent = getPermissionRequestIntent()
+                if (intent != null) {
+                    // UI layer will handle launching this intent
+                    Log.d(TAG, "Created permission intent, UI should handle launching")
+                } else {
+                    Log.e(TAG, "Failed to create permission intent")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error requesting Health Connect permissions", e)
+            }
+        }
+    }
+
     // Get Health Connect permissions
     fun getHealthConnectPermissions() = healthConnectRepository.permissions
     
     // Get intent to request permissions
-    fun getPermissionRequestIntent(): Intent {
-        return healthConnectRepository.createPermissionRequestIntent()
+    fun getPermissionRequestIntent(): Intent? {
+        return try {
+            healthConnectRepository.createPermissionRequestIntent()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error creating permission request intent", e)
+            null
+        }
+    }
+    
+    // Get intent to open Health Connect app directly
+    fun getHealthConnectAppIntent(): Intent {
+        return healthConnectRepository.getHealthConnectAppIntent()
     }
     
     // Get intent to install Health Connect
@@ -73,8 +116,15 @@ class HealthViewModel(
     // Refresh step data
     fun refreshStepData() {
         viewModelScope.launch {
-            if (permissionsGranted) {
-                healthConnectRepository.readTodayStepData()
+            try {
+                Log.d(TAG, "Refreshing step data")
+                if (permissionsGranted) {
+                    healthConnectRepository.readTodayStepData()
+                } else {
+                    Log.d(TAG, "Can't refresh - permissions not granted")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error refreshing step data", e)
             }
         }
     }

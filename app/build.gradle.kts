@@ -6,18 +6,23 @@ plugins {
 
 android {
     namespace = "com.example.lifetracker"
-    compileSdk = 35
+    compileSdk = 36  // Updated to 36 as required by Health Connect
 
     defaultConfig {
         applicationId = "com.example.lifetracker"
-        minSdk = 30
-        targetSdk = 35
+        minSdk = 31
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    
+    // Add this to address the @Composable invocation issues
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8" // Use a version compatible with your Kotlin version
+    }
+    
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -58,7 +63,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
-    implementation("androidx.health.connect:connect-client:1.1.0-alpha08")
+    implementation("androidx.health.connect:connect-client:1.1.0-rc01")  // Make sure this is present
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
