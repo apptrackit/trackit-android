@@ -1,10 +1,9 @@
 package com.example.lifetracker.ui.screens.dashboard
 
 import android.annotation.SuppressLint
-import com.guru.fontawesomecomposelib.FaIcons
-import com.guru.fontawesomecomposelib.FaIconType
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,9 +12,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.lifetracker.ui.components.AddMetricButton
 import com.example.lifetracker.ui.components.AddMetricPopup
+import com.example.lifetracker.ui.components.ClickableMetricCard
 import com.example.lifetracker.ui.components.ClickableMetricCardWithChart
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.calculateBMI
@@ -41,6 +42,14 @@ fun DashboardScreen(
     val heightHistory = viewModel.getMetricHistory("Height", "cm")
     val bodyFatHistory = viewModel.getMetricHistory("Body Fat", "%")
     val bmiHistory = viewModel.getMetricHistory("BMI", "")
+
+    // New: Collect step count from Health Connect
+    val stepCount = viewModel.stepCount.collectAsStateWithLifecycle().value
+
+    // Effect to refresh step data when screen is shown
+    LaunchedEffect(Unit) {
+        viewModel.refreshStepData()
+    }
 
     // Format values based on history
     val formattedWeight = if (weightHistory.isEmpty()) "No Data" else {
@@ -85,6 +94,7 @@ fun DashboardScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
             // Header with title and add button
@@ -106,7 +116,36 @@ fun DashboardScreen(
                 )
             }
 
-            // Metric cards grid
+            // Step counter card
+            Text(
+                text = "TODAY'S ACTIVITY",
+                color = Color.Gray,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
+            )
+            
+            ClickableMetricCard(
+                title = "Steps",
+                value = if (viewModel.permissionsGranted) "$stepCount" else "No Access",
+                unit = "steps",
+                onClick = {
+                    // For future: Navigate to detailed steps view
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            )
+
+            // Existing metric cards grid
+            Text(
+                text = "BODY METRICS",
+                color = Color.Gray,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
+            )
+            
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)

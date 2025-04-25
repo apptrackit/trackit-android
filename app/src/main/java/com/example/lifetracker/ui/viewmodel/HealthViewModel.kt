@@ -4,7 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.lifetracker.data.model.HistoryEntry
+import com.example.lifetracker.data.repository.HealthConnectRepository
 import com.example.lifetracker.data.repository.MetricsRepository
 import com.example.lifetracker.utils.calculateBMI
 import com.example.lifetracker.utils.calculateBMR
@@ -12,10 +14,66 @@ import com.example.lifetracker.utils.calculateBodySurfaceArea
 import com.example.lifetracker.utils.calculateFatFreeMassIndex
 import com.example.lifetracker.utils.calculateFatMass
 import com.example.lifetracker.utils.calculateLeanBodyMass
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
+class HealthViewModel(
+    private val repository: MetricsRepository,
+    private val healthConnectRepository: HealthConnectRepository
+) : ViewModel() {
+    // Existing code
     var metrics by mutableStateOf(repository.loadMetrics())
         private set
+
+    // Health Connect permissions state
+    var permissionsGranted by mutableStateOf(false)
+        private set
+
+    // Expose step count from the repository
+    val stepCount: StateFlow<Long> = healthConnectRepository.stepCount
+
+    init {
+        // Initialize calculated metrics on startup
+        ensureMetricHistory()
+        recalculateAllMetrics()
+        
+        // Check Health Connect permissions and load step data
+        viewModelScope.launch {
+            checkHealthConnectPermissions()
+        }
+    }
+
+    // Check if Health Connect permissions are granted and load step data if they are
+    private suspend fun checkHealthConnectPermissions() {
+        val hasCapability = healthConnectRepository.hasHealthConnectCapability()
+        if (hasCapability) {
+            permissionsGranted = healthConnectRepository.checkPermissions()
+            if (permissionsGranted) {
+                healthConnectRepository.readTodayStepData()
+            }
+        }
+    }
+
+    // Request Health Connect permissions
+    suspend fun requestHealthConnectPermissions(): Boolean {
+        return healthConnectRepository.checkPermissions()
+    }
+
+    // Refresh step data
+    fun refreshStepData() {
+        viewModelScope.launch {
+            if (healthConnectRepository.checkPermissions()) {
+                healthConnectRepository.readTodayStepData()
+            }
+        }
+    }
+
+    // Get Health Connect permissions needed
+    fun getHealthConnectPermissions() = healthConnectRepository.permissions
+
+    // Get Health Connect permissions contract
+    fun getHealthConnectPermissionContract() =
+        healthConnectRepository.getPermissionRequestContract()
 
     fun updateWeight(value: String, date: Long) {
         value.toFloatOrNull()?.let {

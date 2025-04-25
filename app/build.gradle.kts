@@ -58,6 +58,8 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
+    implementation("androidx.health.connect:connect-client:1.1.0-alpha08")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
