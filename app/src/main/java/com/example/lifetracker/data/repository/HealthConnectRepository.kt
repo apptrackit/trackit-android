@@ -1,8 +1,9 @@
 package com.example.lifetracker.data.repository
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.activity.result.contract.ActivityResultContract
+import android.net.Uri
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
@@ -39,9 +40,18 @@ class HealthConnectRepository(private val context: Context) {
         }
     }
     
-    // Get permission request contract
-    fun getPermissionRequestContract(): ActivityResultContract<Set<String>, Set<String>> {
+    // Get intent to direct user to Health Connect permission screen
+    fun createPermissionRequestIntent(): Intent {
         return PermissionController.createRequestPermissionResultContract()
+            .createIntent(context, permissions)
+    }
+    
+    // Get intent to install Health Connect if not available
+    fun getHealthConnectInstallIntent(): Intent {
+        val uriString = "https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata"
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data = Uri.parse(uriString)
+        return intent
     }
     
     // Check if permissions are granted

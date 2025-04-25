@@ -23,9 +23,9 @@ class MainActivity : ComponentActivity() {
             val metricsRepository = MetricsRepository(this)
             val healthConnectRepository = HealthConnectRepository(this)
             
-            // Initialize ViewModel with both repositories
+            // Create ViewModel with the repositories
             val viewModel = HealthViewModel(metricsRepository, healthConnectRepository)
-            
+
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background

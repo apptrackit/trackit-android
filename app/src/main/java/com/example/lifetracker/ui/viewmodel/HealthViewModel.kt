@@ -1,5 +1,6 @@
 package com.example.lifetracker.ui.viewmodel
 
+import android.content.Intent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -21,11 +22,13 @@ class HealthViewModel(
     private val repository: MetricsRepository,
     private val healthConnectRepository: HealthConnectRepository
 ) : ViewModel() {
-    // Existing code
     var metrics by mutableStateOf(repository.loadMetrics())
         private set
 
-    // Health Connect permissions state
+    // Health Connect state
+    var healthConnectAvailable by mutableStateOf(false)
+        private set
+        
     var permissionsGranted by mutableStateOf(false)
         private set
 
@@ -37,43 +40,44 @@ class HealthViewModel(
         ensureMetricHistory()
         recalculateAllMetrics()
         
-        // Check Health Connect permissions and load step data
-        viewModelScope.launch {
-            checkHealthConnectPermissions()
-        }
+        // Check Health Connect availability and permissions
+        checkHealthConnectStatus()
     }
 
-    // Check if Health Connect permissions are granted and load step data if they are
-    private suspend fun checkHealthConnectPermissions() {
-        val hasCapability = healthConnectRepository.hasHealthConnectCapability()
-        if (hasCapability) {
-            permissionsGranted = healthConnectRepository.checkPermissions()
-            if (permissionsGranted) {
-                healthConnectRepository.readTodayStepData()
+    // Check if Health Connect is available and permissions are granted
+    fun checkHealthConnectStatus() {
+        viewModelScope.launch {
+            healthConnectAvailable = healthConnectRepository.hasHealthConnectCapability()
+            if (healthConnectAvailable) {
+                permissionsGranted = healthConnectRepository.checkPermissions()
+                if (permissionsGranted) {
+                    healthConnectRepository.readTodayStepData()
+                }
             }
         }
     }
-
-    // Request Health Connect permissions
-    suspend fun requestHealthConnectPermissions(): Boolean {
-        return healthConnectRepository.checkPermissions()
+    
+    // Get Health Connect permissions
+    fun getHealthConnectPermissions() = healthConnectRepository.permissions
+    
+    // Get intent to request permissions
+    fun getPermissionRequestIntent(): Intent {
+        return healthConnectRepository.createPermissionRequestIntent()
+    }
+    
+    // Get intent to install Health Connect
+    fun getHealthConnectInstallIntent(): Intent {
+        return healthConnectRepository.getHealthConnectInstallIntent()
     }
 
     // Refresh step data
     fun refreshStepData() {
         viewModelScope.launch {
-            if (healthConnectRepository.checkPermissions()) {
+            if (permissionsGranted) {
                 healthConnectRepository.readTodayStepData()
             }
         }
     }
-
-    // Get Health Connect permissions needed
-    fun getHealthConnectPermissions() = healthConnectRepository.permissions
-
-    // Get Health Connect permissions contract
-    fun getHealthConnectPermissionContract() =
-        healthConnectRepository.getPermissionRequestContract()
 
     fun updateWeight(value: String, date: Long) {
         value.toFloatOrNull()?.let {
