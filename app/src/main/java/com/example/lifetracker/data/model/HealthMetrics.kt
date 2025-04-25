@@ -1,6 +1,6 @@
 package com.example.lifetracker.data.model
 
-import kotlin.math.pow
+
 
 data class HealthMetrics(
     val weight: Float = 68.2f,
