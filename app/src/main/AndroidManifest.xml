@@ -1,29 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.lifetracker"
-    tools:ignore="ExtraText">
-
+    package="com.example.lifetracker">
+    
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
-    <!-- Health Connect permissions - comprehensive list -->
-    <uses-permission android:name="android.permission.health.READ_STEPS" />
-    <uses-permission android:name="androidx.health.permission.Steps.READ" />
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     
-    <queries>
-        <package android:name="com.google.android.apps.healthdata" />
-        <intent>
-            <action android:name="androidx.health.ACTION_HEALTH_CONNECT_PERMISSIONS" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <data android:scheme="healthconnect" />
-        </intent>
-    </queries>
+    <!-- Google Fit permissions -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -34,7 +23,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LifeTracker"
-        tools:targetApi="33">
+        tools:targetApi="31">
         <activity
             android:name=".MainActivity"
             android:exported="true"

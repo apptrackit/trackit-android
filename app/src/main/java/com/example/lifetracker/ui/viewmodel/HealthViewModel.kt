@@ -1,134 +1,71 @@
 package com.example.lifetracker.ui.viewmodel
 
-import android.content.Intent
-import android.util.Log
+import android.app.Activity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.lifetracker.data.repository.HealthConnectRepository
+import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.data.repository.MetricsRepository
+import com.example.lifetracker.data.repository.StepCountRepository
 import com.example.lifetracker.utils.calculateBMI
 import com.example.lifetracker.utils.calculateBMR
 import com.example.lifetracker.utils.calculateBodySurfaceArea
 import com.example.lifetracker.utils.calculateFatFreeMassIndex
 import com.example.lifetracker.utils.calculateFatMass
 import com.example.lifetracker.utils.calculateLeanBodyMass
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import com.example.lifetracker.data.model.HistoryEntry
 
 class HealthViewModel(
     private val repository: MetricsRepository,
-    private val healthConnectRepository: HealthConnectRepository
+    private val stepCountRepository: StepCountRepository
 ) : ViewModel() {
-    private val TAG = "HealthViewModel"
-    
     var metrics by mutableStateOf(repository.loadMetrics())
         private set
-
-    // Health Connect state
-    var healthConnectAvailable by mutableStateOf(false)
+        
+    // Step count state
+    var todayStepCount by mutableStateOf(0)
         private set
         
-    var permissionsGranted by mutableStateOf(false)
+    var stepCountLoading by mutableStateOf(false)
+        private set
+        
+    var weeklyStepCounts by mutableStateOf<List<Pair<Long, Int>>>(emptyList())
         private set
 
-    // Expose step count from the repository
-    val stepCount: StateFlow<Long> = healthConnectRepository.stepCount
+    // Check if Google Fit permissions are granted
+    fun hasGoogleFitPermissions(): Boolean {
+        return stepCountRepository.hasPermissions()
+    }
 
-    init {
-        // Initialize calculated metrics on startup
-        ensureMetricHistory()
-        recalculateAllMetrics()
+    // Request Google Fit permissions
+    fun requestGoogleFitPermissions(activity: Activity) {
+        stepCountRepository.requestPermissions(
+            activity,
+            StepCountRepository.GOOGLE_FIT_PERMISSIONS_REQUEST_CODE
+        )
+    }
+
+    // Fetch today's step count
+    fun refreshTodayStepCount() {
+        if (!stepCountRepository.hasPermissions()) return
         
-        // Check Health Connect availability and permissions
-        checkHealthConnectStatus()
-    }
-
-    // Check if Health Connect is available and permissions are granted
-    fun checkHealthConnectStatus() {
-        viewModelScope.launch {
-            try {
-                healthConnectAvailable = healthConnectRepository.hasHealthConnectCapability()
-                Log.d(TAG, "Health Connect available: $healthConnectAvailable")
-                
-                if (healthConnectAvailable) {
-                    permissionsGranted = healthConnectRepository.checkPermissions()
-                    Log.d(TAG, "Health Connect permissions granted: $permissionsGranted")
-                    
-                    if (permissionsGranted) {
-                        refreshStepData()
-                    }
-                } else {
-                    permissionsGranted = false
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error checking Health Connect status", e)
-                healthConnectAvailable = false
-                permissionsGranted = false
-            }
-        }
-    }
-    
-    // Request Health Connect permissions directly through the repository
-    fun requestHealthConnectPermissions() {
-        viewModelScope.launch {
-            try {
-                // Can no longer call requestPermissions() directly, so get the intent instead
-                val intent = getPermissionRequestIntent()
-                if (intent != null) {
-                    // UI layer will handle launching this intent
-                    Log.d(TAG, "Created permission intent, UI should handle launching")
-                } else {
-                    Log.e(TAG, "Failed to create permission intent")
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error requesting Health Connect permissions", e)
-            }
+        stepCountLoading = true
+        stepCountRepository.getTodayStepCount { steps ->
+            todayStepCount = steps
+            stepCountLoading = false
         }
     }
 
-    // Get Health Connect permissions
-    fun getHealthConnectPermissions() = healthConnectRepository.permissions
-    
-    // Get intent to request permissions
-    fun getPermissionRequestIntent(): Intent? {
-        return try {
-            healthConnectRepository.createPermissionRequestIntent()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error creating permission request intent", e)
-            null
-        }
-    }
-    
-    // Get intent to open Health Connect app directly
-    fun getHealthConnectAppIntent(): Intent {
-        return healthConnectRepository.getHealthConnectAppIntent()
-    }
-    
-    // Get intent to install Health Connect
-    fun getHealthConnectInstallIntent(): Intent {
-        return healthConnectRepository.getHealthConnectInstallIntent()
-    }
-
-    // Refresh step data
-    fun refreshStepData() {
-        viewModelScope.launch {
-            try {
-                Log.d(TAG, "Refreshing step data")
-                if (permissionsGranted) {
-                    healthConnectRepository.readTodayStepData()
-                } else {
-                    Log.d(TAG, "Can't refresh - permissions not granted")
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error refreshing step data", e)
-            }
+    // Fetch weekly step counts for chart
+    fun refreshWeeklyStepCounts() {
+        if (!stepCountRepository.hasPermissions()) return
+        
+        stepCountRepository.getWeeklyStepCounts { stepCounts ->
+            weeklyStepCounts = stepCounts
         }
     }
 
+    // Existing methods
     fun updateWeight(value: String, date: Long) {
         value.toFloatOrNull()?.let {
             val newMetrics = metrics.copy(weight = it, date = date)
