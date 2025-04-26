@@ -2,6 +2,7 @@ package com.example.lifetracker.ui.screens.dashboard
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.guru.fontawesomecomposelib.FaIcons
@@ -59,28 +60,26 @@ fun DashboardScreen(
     val context = LocalContext.current
     val activity = context as? Activity
     
-    // Permission launcher
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            // Permissions granted, refresh step count
-            viewModel.refreshTodayStepCount()
-            viewModel.refreshWeeklyStepCounts()
-        }
-    }
-    
-    // Check for permissions on first composition
+    // Check for permissions and subscribe on first composition
     LaunchedEffect(Unit) {
         if (viewModel.hasGoogleFitPermissions()) {
-            // Already have permissions, fetch data
+            Log.d("DashboardScreen", "Have Google Fit permissions on launch")
+            // Already have permissions, fetch data and subscribe to updates
+            viewModel.subscribeToStepCountUpdates()
             viewModel.refreshTodayStepCount()
             viewModel.refreshWeeklyStepCounts()
         } else {
-            // Request permissions
-            activity?.let {
-                viewModel.requestGoogleFitPermissions(it)
-            }
+            Log.d("DashboardScreen", "No Google Fit permissions on launch")
+        }
+    }
+    
+    // When permission status changes, refresh data if we now have permissions
+    LaunchedEffect(viewModel.permissionRequestInProgress) {
+        if (!viewModel.permissionRequestInProgress && viewModel.hasGoogleFitPermissions()) {
+            Log.d("DashboardScreen", "Permission request completed, have permissions")
+            viewModel.subscribeToStepCountUpdates()
+            viewModel.refreshTodayStepCount()
+            viewModel.refreshWeeklyStepCounts()
         }
     }
 
@@ -156,10 +155,13 @@ fun DashboardScreen(
                 weeklySteps = weeklyStepCounts,
                 onClick = {
                     if (!viewModel.hasGoogleFitPermissions()) {
+                        Log.d("DashboardScreen", "No permissions, requesting Google Fit permissions")
+                        viewModel.resetPermissionRequestState() // Reset before requesting
                         activity?.let {
                             viewModel.requestGoogleFitPermissions(it)
                         }
                     } else {
+                        Log.d("DashboardScreen", "Have permissions, refreshing step count")
                         viewModel.refreshTodayStepCount()
                         viewModel.refreshWeeklyStepCounts()
                     }

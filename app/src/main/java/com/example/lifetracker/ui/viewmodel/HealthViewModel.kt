@@ -1,6 +1,7 @@
 package com.example.lifetracker.ui.viewmodel
 
 import android.app.Activity
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,6 +20,8 @@ class HealthViewModel(
     private val repository: MetricsRepository,
     private val stepCountRepository: StepCountRepository
 ) : ViewModel() {
+    private val TAG = "HealthViewModel"
+    
     var metrics by mutableStateOf(repository.loadMetrics())
         private set
         
@@ -32,25 +35,81 @@ class HealthViewModel(
     var weeklyStepCounts by mutableStateOf<List<Pair<Long, Int>>>(emptyList())
         private set
 
+    var stepCountSubscribed by mutableStateOf(false)
+        private set
+
     // Check if Google Fit permissions are granted
     fun hasGoogleFitPermissions(): Boolean {
         return stepCountRepository.hasPermissions()
     }
 
+    // Track permission request state to avoid multiple requests
+    var permissionRequestInProgress by mutableStateOf(false)
+        private set
+
     // Request Google Fit permissions
     fun requestGoogleFitPermissions(activity: Activity) {
-        stepCountRepository.requestPermissions(
-            activity,
-            StepCountRepository.GOOGLE_FIT_PERMISSIONS_REQUEST_CODE
-        )
+        Log.d(TAG, "Requesting Google Fit permissions, in progress: $permissionRequestInProgress, has permissions: ${stepCountRepository.hasPermissions()}")
+        if (!permissionRequestInProgress && !stepCountRepository.hasPermissions()) {
+            permissionRequestInProgress = true
+            stepCountRepository.requestPermissions(
+                activity,
+                StepCountRepository.GOOGLE_FIT_PERMISSIONS_REQUEST_CODE
+            )
+        }
+    }
+
+    // Handle Google Fit permission results
+    fun handleGoogleFitPermissionResult(granted: Boolean) {
+        Log.d(TAG, "Google Fit permission result: $granted")
+        permissionRequestInProgress = false
+        if (granted) {
+            // If permissions were granted, immediately fetch step data AND subscribe to updates
+            subscribeToStepCountUpdates()
+            refreshTodayStepCount()
+            refreshWeeklyStepCounts()
+        }
+    }
+
+    // Reset permission request state
+    fun resetPermissionRequestState() {
+        permissionRequestInProgress = false
+    }
+
+    // Subscribe to step count updates
+    fun subscribeToStepCountUpdates() {
+        if (!stepCountRepository.hasPermissions()) {
+            Log.d(TAG, "Cannot subscribe to step count: no permissions")
+            return
+        }
+        
+        if (stepCountSubscribed) {
+            Log.d(TAG, "Already subscribed to step count updates")
+            return
+        }
+        
+        Log.d(TAG, "Subscribing to step count updates")
+        stepCountSubscribed = true
+        
+        stepCountRepository.subscribeToStepCountUpdates { steps ->
+            Log.d(TAG, "Received step count update: $steps")
+            todayStepCount = steps
+            // Also refresh weekly data when steps change
+            refreshWeeklyStepCounts()
+        }
     }
 
     // Fetch today's step count
     fun refreshTodayStepCount() {
-        if (!stepCountRepository.hasPermissions()) return
+        if (!stepCountRepository.hasPermissions()) {
+            Log.d(TAG, "Cannot refresh step count: no permissions")
+            return
+        }
         
+        Log.d(TAG, "Refreshing today's step count")
         stepCountLoading = true
-        stepCountRepository.getTodayStepCount { steps ->
+        stepCountRepository.refreshStepCount { steps ->
+            Log.d(TAG, "Refreshed step count: $steps")
             todayStepCount = steps
             stepCountLoading = false
         }
@@ -58,9 +117,14 @@ class HealthViewModel(
 
     // Fetch weekly step counts for chart
     fun refreshWeeklyStepCounts() {
-        if (!stepCountRepository.hasPermissions()) return
+        if (!stepCountRepository.hasPermissions()) {
+            Log.d(TAG, "Cannot refresh weekly step counts: no permissions")
+            return
+        }
         
+        Log.d(TAG, "Refreshing weekly step counts")
         stepCountRepository.getWeeklyStepCounts { stepCounts ->
+            Log.d(TAG, "Received ${stepCounts.size} weekly step counts")
             weeklyStepCounts = stepCounts
         }
     }
@@ -372,5 +436,15 @@ class HealthViewModel(
         // Initialize calculated metrics on startup
         ensureMetricHistory()
         recalculateAllMetrics()
+        
+        // Try to subscribe to step updates on initialization
+        if (stepCountRepository.hasPermissions()) {
+            Log.d(TAG, "Have permissions on init, subscribing to step updates")
+            subscribeToStepCountUpdates()
+            refreshTodayStepCount()
+            refreshWeeklyStepCounts()
+        } else {
+            Log.d(TAG, "No permissions on init, can't subscribe to step updates")
+        }
     }
 }
