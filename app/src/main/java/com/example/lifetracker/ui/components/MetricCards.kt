@@ -376,20 +376,31 @@ fun MetricCardRedesignedWithFaIcon(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
-                Row(verticalAlignment = Alignment.Bottom) {
+                
+                // Different display style for "No Data" versus actual measurements
+                if (value == "No Data") {
                     Text(
                         text = value,
-                        color = Color.White,
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold
+                        color = Color(0xFF666666), // Darker gray for "No Data"
+                        fontSize = 16.sp, // Smaller font size
+                        fontWeight = FontWeight.Normal // Not bold
                     )
-                    if (unit.isNotEmpty()) {
+                } else {
+                    Row(verticalAlignment = Alignment.Bottom) {
                         Text(
-                            text = unit,
+                            text = value,
                             color = Color.White,
-                            fontSize = 15.sp,
-                            modifier = Modifier.padding(start = 3.dp, bottom = 2.dp)
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
                         )
+                        if (unit.isNotEmpty()) {
+                            Text(
+                                text = unit,
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                modifier = Modifier.padding(start = 3.dp, bottom = 2.dp)
+                            )
+                        }
                     }
                 }
             }
