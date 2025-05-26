@@ -19,6 +19,23 @@ import com.example.lifetracker.ui.components.AddMetricPopup
 import com.example.lifetracker.ui.components.ClickableMetricCardWithChart
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.calculateBMI
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
+import com.example.lifetracker.data.model.HistoryEntry
+import com.example.lifetracker.ui.components.MetricCardRedesigned
+import com.example.lifetracker.ui.components.MetricHistoryChart
+import java.text.SimpleDateFormat
+import java.util.*
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -31,16 +48,19 @@ fun DashboardScreen(
     // State for showing the popup
     var showAddMetricPopup by remember { mutableStateOf(false) }
     
+    // Time filter state (must be before usage)
+    var selectedTimeFilter by remember { mutableStateOf("6M") }
+    
     // Get latest values from history
     val latestWeight = viewModel.getLatestHistoryEntry("Weight", "kg")
     val latestHeight = viewModel.getLatestHistoryEntry("Height", "cm")
     val latestBodyFat = viewModel.getLatestHistoryEntry("Body Fat", "%")
 
     // Get history data for charts
-    val weightHistory = viewModel.getMetricHistory("Weight", "kg")
-    val heightHistory = viewModel.getMetricHistory("Height", "cm")
-    val bodyFatHistory = viewModel.getMetricHistory("Body Fat", "%")
-    val bmiHistory = viewModel.getMetricHistory("BMI", "")
+    val weightHistory = viewModel.getFilteredMetricHistory("Weight", "kg", selectedTimeFilter)
+    val heightHistory = viewModel.getFilteredMetricHistory("Height", "cm", selectedTimeFilter)
+    val bodyFatHistory = viewModel.getFilteredMetricHistory("Body Fat", "%", selectedTimeFilter)
+    val bmiHistory = viewModel.getFilteredMetricHistory("BMI", "", selectedTimeFilter)
 
     // Format values based on history
     val formattedWeight = if (weightHistory.isEmpty()) "No Data" else {
@@ -78,82 +98,248 @@ fun DashboardScreen(
         if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
     } else "No Data"
 
+    val context = LocalContext.current
+    val now = remember { Calendar.getInstance() }
+    val greeting = remember {
+        val hour = now.get(Calendar.HOUR_OF_DAY)
+        when {
+            hour < 12 -> "Good morning"
+            hour < 18 -> "Good afternoon"
+            else -> "Good evening"
+        }
+    }
+    val dateString = remember {
+        val sdf = SimpleDateFormat("yyyy. MMM dd., EEEE", Locale.getDefault())
+        sdf.format(now.time)
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Black
     ) {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .background(Color.Black),
+            contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            // Header with title and add button
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            item {
+                // Header
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { navController.navigate("profile") }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Profile",
+                            tint = Color(0xFF4CAF50),
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF222222))
+                                .padding(4.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = greeting,
+                                color = Color.White,
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = dateString,
+                                color = Color(0xFFAAAAAA),
+                                fontSize = 15.sp
+                            )
+                        }
+                    }
+                    IconButton(onClick = { showAddMetricPopup = true }) {
+                        Icon(
+                            painter = painterResource(id = android.R.drawable.ic_input_add),
+                            contentDescription = "Add",
+                            tint = Color(0xFF4CAF50),
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            item {
+                // Metric Cards 2x2 grid
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        MetricCardRedesigned(
+                            title = "Weight",
+                            value = formattedWeight,
+                            unit = "kg",
+                            icon = painterResource(id = android.R.drawable.ic_menu_compass),
+                            iconTint = Color(0xFF2196F3),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onNavigateToEditMetric("Weight") }
+                        )
+                        MetricCardRedesigned(
+                            title = "Body Fat",
+                            value = formattedBodyFat,
+                            unit = "%",
+                            icon = painterResource(id = android.R.drawable.ic_menu_myplaces),
+                            iconTint = Color(0xFF4CAF50),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onNavigateToEditMetric("Body Fat") }
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        MetricCardRedesigned(
+                            title = "BMI",
+                            value = formattedBmi,
+                            unit = "",
+                            icon = painterResource(id = android.R.drawable.ic_menu_sort_by_size),
+                            iconTint = Color(0xFFFF9800),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onNavigateToViewBMIHistory() }
+                        )
+                        MetricCardRedesigned(
+                            title = "Height",
+                            value = formattedHeight,
+                            unit = "cm",
+                            icon = painterResource(id = android.R.drawable.ic_menu_crop),
+                            iconTint = Color(0xFF9C27B0),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onNavigateToEditMetric("Height") }
+                        )
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(18.dp))
+            }
+
+            item {
+                // Progress Section
                 Text(
-                    text = "Dashboard",
+                    text = "Progress",
                     color = Color.White,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                AddMetricButton(
-                    onClick = { showAddMetricPopup = true }
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 18.dp, bottom = 8.dp)
                 )
             }
 
-            // Metric cards grid
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+            item {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    ClickableMetricCardWithChart(
-                        title = "Weight",
-                        value = formattedWeight,
-                        unit = "kg",
-                        history = weightHistory,
-                        onClick = { onNavigateToEditMetric("Weight") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    ClickableMetricCardWithChart(
-                        title = "Height",
-                        value = formattedHeight,
-                        unit = "cm",
-                        history = heightHistory,
-                        onClick = { onNavigateToEditMetric("Height") },
-                        modifier = Modifier.weight(1f)
-                    )
+                    TimeFilterButton("W", selectedTimeFilter == "W") { selectedTimeFilter = "W" }
+                    TimeFilterButton("M", selectedTimeFilter == "M") { selectedTimeFilter = "M" }
+                    TimeFilterButton("6M", selectedTimeFilter == "6M") { selectedTimeFilter = "6M" }
+                    TimeFilterButton("Y", selectedTimeFilter == "Y") { selectedTimeFilter = "Y" }
+                    TimeFilterButton("All", selectedTimeFilter == "All") { selectedTimeFilter = "All" }
                 }
+            }
 
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            item {
+                // Trend Charts
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    ClickableMetricCardWithChart(
-                        title = "BMI",
-                        value = formattedBmi,
-                        unit = "",
-                        history = bmiHistory,
-                        onClick = { onNavigateToViewBMIHistory() },
-                        modifier = Modifier.weight(1f)
-                    )
-                    ClickableMetricCardWithChart(
-                        title = "Body Fat",
-                        value = formattedBodyFat,
-                        unit = "%",
-                        history = bodyFatHistory,
-                        onClick = { onNavigateToEditMetric("Body Fat") },
-                        modifier = Modifier.weight(1f)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(Color(0xFF181818), RoundedCornerShape(18.dp))
+                            .padding(10.dp)
+                            .clickable { onNavigateToEditMetric("Weight") }
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Weight Trend", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                Text("${formattedWeight}kg", color = Color.White, fontSize = 14.sp)
+                            }
+                            MetricHistoryChart(history = weightHistory, unit = "kg")
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(Color(0xFF181818), RoundedCornerShape(18.dp))
+                            .padding(10.dp)
+                            .clickable { onNavigateToEditMetric("Body Fat") }
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Body Fat Trend", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                Text("${formattedBodyFat}%", color = Color.White, fontSize = 14.sp)
+                            }
+                            MetricHistoryChart(history = bodyFatHistory, unit = "%")
+                        }
+                    }
                 }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(18.dp))
+            }
+
+            item {
+                // Recent Measurements
+                Text(
+                    text = "Recent Measurements",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 18.dp, bottom = 8.dp)
+                )
+            }
+
+            // Recent Measurements List
+            val recent = viewModel.getRecentMeasurements(5)
+            items(recent) { entry ->
+                RecentMeasurementRow(
+                    entry = entry,
+                    onClick = { onNavigateToEditMetric(entry.metricName) }
+                )
             }
         }
     }
@@ -165,5 +351,72 @@ fun DashboardScreen(
             onNavigateToEditMetric = onNavigateToEditMetric,
             navController = navController
         )
+    }
+}
+
+@Composable
+fun RecentMeasurementRow(entry: HistoryEntry, onClick: () -> Unit) {
+    val iconAndColor = when (entry.metricName) {
+        "Weight" -> Pair(android.R.drawable.ic_menu_compass, Color(0xFF2196F3))
+        "Body Fat" -> Pair(android.R.drawable.ic_menu_myplaces, Color(0xFF4CAF50))
+        "Thigh" -> Pair(android.R.drawable.ic_menu_directions, Color(0xFF00BCD4))
+        "Bicep" -> Pair(android.R.drawable.ic_menu_crop, Color(0xFFFF9800))
+        else -> Pair(android.R.drawable.ic_menu_info_details, Color(0xFFAAAAAA))
+    }
+    val dateFormat = SimpleDateFormat("MMM d, yyyy 'at' HH:mm", Locale.getDefault())
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .background(Color(0xFF181818), RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = iconAndColor.first),
+            contentDescription = entry.metricName,
+            tint = iconAndColor.second,
+            modifier = Modifier
+                .padding(12.dp)
+                .size(28.dp)
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = entry.metricName,
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = dateFormat.format(Date(entry.date)),
+                color = Color(0xFFAAAAAA),
+                fontSize = 13.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        Text(
+            text = "${entry.value} ${entry.unit}",
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(end = 16.dp)
+        )
+    }
+}
+
+@Composable
+fun TimeFilterButton(label: String, selected: Boolean, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (selected) Color(0xFF4CAF50) else Color(0xFF222222),
+            contentColor = if (selected) Color.White else Color(0xFFAAAAAA)
+        ),
+        shape = RoundedCornerShape(12.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+        modifier = Modifier.height(32.dp)
+    ) {
+        Text(text = label, fontSize = 14.sp, fontWeight = FontWeight.Medium)
     }
 }

@@ -319,6 +319,44 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Returns the most recent measurement entries across all metrics, sorted by date descending.
+     */
+    fun getRecentMeasurements(limit: Int): List<HistoryEntry> {
+        val allMetrics = listOf(
+            Triple("Weight", "kg", "Weight"),
+            Triple("Body Fat", "%", "Body Fat"),
+            Triple("Height", "cm", "Height"),
+            Triple("Thigh", "cm", "Thigh"),
+            Triple("Bicep", "cm", "Bicep"),
+            Triple("Waist", "cm", "Waist"),
+            Triple("Chest", "cm", "Chest"),
+            Triple("Shoulder", "cm", "Shoulder")
+        )
+        val allEntries = allMetrics.flatMap { (name, unit, metricName) ->
+            getMetricHistory(name, unit).map { it.copy(metricName = metricName) }
+        }
+        return allEntries.sortedByDescending { it.date }.take(limit)
+    }
+
+    /**
+     * Returns filtered history based on the selected time range.
+     */
+    fun getFilteredMetricHistory(metricName: String, unit: String, timeFilter: String): List<HistoryEntry> {
+        val history = getMetricHistory(metricName, unit)
+        if (history.isEmpty()) return emptyList()
+
+        val now = System.currentTimeMillis()
+        val filteredHistory = when (timeFilter) {
+            "W" -> history.filter { it.date >= now - 7 * 24 * 60 * 60 * 1000L }
+            "M" -> history.filter { it.date >= now - 30 * 24 * 60 * 60 * 1000L }
+            "6M" -> history.filter { it.date >= now - 180 * 24 * 60 * 60 * 1000L }
+            "Y" -> history.filter { it.date >= now - 365 * 24 * 60 * 60 * 1000L }
+            else -> history
+        }
+        return filteredHistory.sortedBy { it.date }
+    }
+
     init {
         // Initialize calculated metrics on startup
         ensureMetricHistory()
