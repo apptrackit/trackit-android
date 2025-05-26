@@ -192,6 +192,7 @@ fun ViewBMIHistoryScreen(
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
                         
+                        // Using the improved smooth chart implementation from EditMetricScreen
                         MetricHistoryChart(history = filteredHistory, unit = "")
                     }
                 }

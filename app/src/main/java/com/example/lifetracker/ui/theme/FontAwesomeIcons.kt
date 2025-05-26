@@ -8,6 +8,8 @@ import androidx.compose.material.LocalContentColor
 import com.guru.fontawesomecomposelib.FaIcon
 import com.guru.fontawesomecomposelib.FaIcons
 import com.guru.fontawesomecomposelib.FaIconType
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Alignment
 
 object FontAwesomeIcons {
     val Home = FaIcons.Home
@@ -35,10 +37,14 @@ fun FontAwesomeIcon(
     tint: Color = Color.White,  // Changed default to white
     modifier: Modifier = Modifier
 ) {
-    FaIcon(
-        faIcon = icon,
-        size = 20.dp,  // Changed from 24.dp to match navigation
-        tint = tint,
-        modifier = modifier
-    )
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        FaIcon(
+            faIcon = icon,
+            size = 20.dp,  // Changed from 24.dp to match navigation
+            tint = tint
+        )
+    }
 }
