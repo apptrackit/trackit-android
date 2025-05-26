@@ -383,13 +383,16 @@ fun RecentMeasurementRow(entry: HistoryEntry, onClick: () -> Unit) {
         Box(
             modifier = Modifier
                 .padding(12.dp)
-                .size(28.dp),
+                .size(28.dp)
+                .background(iconAndColor.second.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             FontAwesomeIcon(
                 icon = iconAndColor.first,
                 tint = iconAndColor.second,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier
+                    .size(20.dp)
+                    .padding(0.dp) // Remove any implicit padding
             )
         }
         Column(modifier = Modifier.weight(1f)) {

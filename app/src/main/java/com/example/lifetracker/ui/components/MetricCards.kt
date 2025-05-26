@@ -362,7 +362,7 @@ fun MetricCardRedesignedWithFaIcon(
                 FontAwesomeIcon(
                     icon = icon,
                     tint = iconTint,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(20.dp).padding(0.dp) // Remove any implicit padding
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
