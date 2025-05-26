@@ -17,7 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lifetracker.data.model.HistoryEntry
-import com.example.lifetracker.utils.TimeFilter
 
 @Composable
 fun ClickableMetricCard(

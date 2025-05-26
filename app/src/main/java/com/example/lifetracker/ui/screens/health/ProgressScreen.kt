@@ -24,7 +24,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import com.example.lifetracker.utils.TimeFilter
 import com.example.lifetracker.ui.screens.health.AddMetricDataScreen
 import com.example.lifetracker.ui.screens.health.EditMetricDataScreen
 import com.example.lifetracker.ui.screens.health.EditMetricScreen

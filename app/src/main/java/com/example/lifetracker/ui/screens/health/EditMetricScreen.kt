@@ -29,9 +29,9 @@ import androidx.navigation.NavController
 import com.example.lifetracker.ui.components.DatePickerDialog
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
-import com.example.lifetracker.utils.TimeFilter
 import com.example.lifetracker.utils.formatDate
 import com.example.lifetracker.ui.screens.health.ProgressScreen
+import com.example.lifetracker.utils.TimeFilter
 import java.text.SimpleDateFormat
 import java.util.*
 
