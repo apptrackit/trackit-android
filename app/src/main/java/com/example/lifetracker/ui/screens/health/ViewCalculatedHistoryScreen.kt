@@ -20,7 +20,7 @@ import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.formatDate
 import com.example.lifetracker.ui.components.TimeFilterButton
-import com.example.lifetracker.ui.components.MetricHistoryChart
+import com.example.lifetracker.ui.screens.dashboard.SmoothMetricChart
 import com.example.lifetracker.utils.TimeFilter
 
 @Composable
@@ -167,33 +167,51 @@ fun ViewBMIHistoryScreen(
                 }
             }
 
-
-
-            // Graph
+            // Graph - Updated to use SmoothMetricChart
             if (filteredHistory.isNotEmpty()) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF1E1E1E)
+                        containerColor = Color(0xFF181818)
                     )
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(10.dp)
                     ) {
-                        Text(
-                            text = "BMI Trend",
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "BMI Trend", 
+                                color = Color.White, 
+                                fontSize = 16.sp, 
+                                fontWeight = FontWeight.Bold
+                            )
+                            
+                            // Display the latest value if available
+                            if (filteredHistory.isNotEmpty()) {
+                                val latestValue = filteredHistory.maxByOrNull { it.date }?.value
+                                val formattedValue = latestValue?.let {
+                                    String.format("%.1f", it).let { 
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                    }
+                                } ?: ""
+                                
+                                Text(
+                                    text = formattedValue, 
+                                    color = Color.White, 
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
                         
-                        // Using the improved smooth chart implementation from EditMetricScreen
-                        MetricHistoryChart(history = filteredHistory, unit = "")
+                        // Use the same chart component as dashboard
+                        SmoothMetricChart(history = filteredHistory, unit = "")
                     }
                 }
             } else {
@@ -201,13 +219,13 @@ fun ViewBMIHistoryScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
-                        .background(Color(0xFF1E1E1E), RoundedCornerShape(8.dp)),
+                        .background(Color(0xFF181818), RoundedCornerShape(18.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "-",
+                        text = "No Data",
                         color = Color(0xFF444444),
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Light
                     )
                 }
@@ -231,7 +249,7 @@ fun ViewBMIHistoryScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "-",
+                        text = "No Data",
                         color = Color(0xFF444444),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Light
@@ -386,7 +404,9 @@ fun ViewCalculatedHistoryScreen(
 
             // Time filter buttons
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 TimeFilterButton(
@@ -406,12 +426,12 @@ fun ViewCalculatedHistoryScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Statistics
             if (filteredHistory.isNotEmpty()) {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = Color(0xFF1E1E1E)
                     )
@@ -430,38 +450,123 @@ fun ViewCalculatedHistoryScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            StatItem("Min", String.format("%.1f", stats.first))
-                            StatItem("Avg", String.format("%.1f", stats.second))
-                            StatItem("Max", String.format("%.1f", stats.third))
+                            StatItem(
+                                label = "Min",
+                                value = String.format("%.1f", stats.first).let { 
+                                    if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                }
+                            )
+                            StatItem(
+                                label = "Avg",
+                                value = String.format("%.1f", stats.second).let { 
+                                    if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                }
+                            )
+                            StatItem(
+                                label = "Max",
+                                value = String.format("%.1f", stats.third).let { 
+                                    if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                }
+                            )
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Chart - Updated to use SmoothMetricChart
+            if (filteredHistory.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF181818)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "$title Trend", 
+                                color = Color.White, 
+                                fontSize = 16.sp, 
+                                fontWeight = FontWeight.Bold
+                            )
+                            
+                            // Display the latest value if available
+                            if (filteredHistory.isNotEmpty()) {
+                                val latestValue = filteredHistory.maxByOrNull { it.date }?.value
+                                val formattedValue = latestValue?.let {
+                                    String.format("%.1f", it).let { 
+                                        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+                                    }
+                                } ?: ""
+                                
+                                Text(
+                                    text = "$formattedValue${if (unit.isNotEmpty()) " $unit" else ""}", 
+                                    color = Color.White, 
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+                        
+                        // Use the same chart component as dashboard
+                        SmoothMetricChart(history = filteredHistory, unit = unit)
+                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .background(Color(0xFF181818), RoundedCornerShape(18.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No Data",
+                        color = Color(0xFF444444),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Light
+                    )
+                }
+            }
 
-            // Chart
-            MetricHistoryChart(
-                history = filteredHistory,
-                unit = unit
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // History
+            // History section header
             Text(
                 text = "History",
                 color = Color.White,
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            LazyColumn {
-                items(filteredHistory) { entry ->
-                    HistoryItem(entry = entry)
-                    Divider(color = Color(0xFF333333))
+            // History items
+            if (filteredHistory.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No Data",
+                        color = Color(0xFF444444),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Light
+                    )
+                }
+            } else {
+                LazyColumn {
+                    items(filteredHistory) { entry ->
+                        HistoryItem(entry = entry, unit = unit)
+                        Divider(color = Color(0xFF333333), thickness = 1.dp)
+                    }
                 }
             }
         }
@@ -469,7 +574,7 @@ fun ViewCalculatedHistoryScreen(
 }
 
 @Composable
-private fun HistoryItem(entry: HistoryEntry) {
+private fun HistoryItem(entry: HistoryEntry, unit: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -482,8 +587,13 @@ private fun HistoryItem(entry: HistoryEntry) {
             color = Color.Gray,
             fontSize = 14.sp
         )
+        
+        val formattedValue = String.format("%.1f", entry.value).let { 
+            if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
+        }
+        
         Text(
-            text = String.format("%.1f", entry.value),
+            text = if (unit.isEmpty()) formattedValue else "$formattedValue $unit",
             color = Color.White,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold
