@@ -33,7 +33,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.components.MetricCardRedesigned
+import com.example.lifetracker.ui.components.MetricCardRedesignedWithFaIcon
 import com.example.lifetracker.ui.components.MetricHistoryChart
+import com.example.lifetracker.ui.theme.FontAwesomeIcon
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -188,21 +190,21 @@ fun DashboardScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        MetricCardRedesigned(
+                        MetricCardRedesignedWithFaIcon(
                             title = "Weight",
                             value = formattedWeight,
                             unit = "kg",
-                            icon = painterResource(id = android.R.drawable.ic_menu_compass),
+                            icon = FaIcons.Weight,
                             iconTint = Color(0xFF2196F3),
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable { onNavigateToEditMetric("Weight") }
                         )
-                        MetricCardRedesigned(
+                        MetricCardRedesignedWithFaIcon(
                             title = "Body Fat",
                             value = formattedBodyFat,
                             unit = "%",
-                            icon = painterResource(id = android.R.drawable.ic_menu_myplaces),
+                            icon = FaIcons.Percent,
                             iconTint = Color(0xFF4CAF50),
                             modifier = Modifier
                                 .weight(1f)
@@ -213,21 +215,21 @@ fun DashboardScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        MetricCardRedesigned(
+                        MetricCardRedesignedWithFaIcon(
                             title = "BMI",
                             value = formattedBmi,
                             unit = "",
-                            icon = painterResource(id = android.R.drawable.ic_menu_sort_by_size),
+                            icon = FaIcons.User,
                             iconTint = Color(0xFFFF9800),
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable { onNavigateToViewBMIHistory() }
                         )
-                        MetricCardRedesigned(
+                        MetricCardRedesignedWithFaIcon(
                             title = "Height",
                             value = formattedHeight,
                             unit = "cm",
-                            icon = painterResource(id = android.R.drawable.ic_menu_crop),
+                            icon = FaIcons.RulerVertical,
                             iconTint = Color(0xFF9C27B0),
                             modifier = Modifier
                                 .weight(1f)
@@ -273,15 +275,15 @@ fun DashboardScreen(
 
             item {
                 // Trend Charts
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .weight(1f)
+                            .fillMaxWidth()
                             .background(Color(0xFF181818), RoundedCornerShape(18.dp))
                             .padding(10.dp)
                             .clickable { onNavigateToEditMetric("Weight") }
@@ -299,7 +301,7 @@ fun DashboardScreen(
                     }
                     Box(
                         modifier = Modifier
-                            .weight(1f)
+                            .fillMaxWidth()
                             .background(Color(0xFF181818), RoundedCornerShape(18.dp))
                             .padding(10.dp)
                             .clickable { onNavigateToEditMetric("Body Fat") }
@@ -357,11 +359,13 @@ fun DashboardScreen(
 @Composable
 fun RecentMeasurementRow(entry: HistoryEntry, onClick: () -> Unit) {
     val iconAndColor = when (entry.metricName) {
-        "Weight" -> Pair(android.R.drawable.ic_menu_compass, Color(0xFF2196F3))
-        "Body Fat" -> Pair(android.R.drawable.ic_menu_myplaces, Color(0xFF4CAF50))
-        "Thigh" -> Pair(android.R.drawable.ic_menu_directions, Color(0xFF00BCD4))
-        "Bicep" -> Pair(android.R.drawable.ic_menu_crop, Color(0xFFFF9800))
-        else -> Pair(android.R.drawable.ic_menu_info_details, Color(0xFFAAAAAA))
+        "Weight" -> Pair(FaIcons.Weight, Color(0xFF2196F3))
+        "Body Fat" -> Pair(FaIcons.Percent, Color(0xFF4CAF50))
+        "Thigh" -> Pair(FaIcons.Child, Color(0xFF00BCD4))
+        "Bicep" -> Pair(FaIcons.Dumbbell, Color(0xFFFF9800))
+        "Height" -> Pair(FaIcons.RulerVertical, Color(0xFF9C27B0))
+        "BMI" -> Pair(FaIcons.User, Color(0xFFFF9800))
+        else -> Pair(FaIcons.QuestionCircle, Color(0xFFAAAAAA))
     }
     val dateFormat = SimpleDateFormat("MMM d, yyyy 'at' HH:mm", Locale.getDefault())
     Row(
@@ -372,14 +376,18 @@ fun RecentMeasurementRow(entry: HistoryEntry, onClick: () -> Unit) {
             .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            painter = painterResource(id = iconAndColor.first),
-            contentDescription = entry.metricName,
-            tint = iconAndColor.second,
+        Box(
             modifier = Modifier
                 .padding(12.dp)
-                .size(28.dp)
-        )
+                .size(28.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            FontAwesomeIcon(
+                icon = iconAndColor.first,
+                tint = iconAndColor.second,
+                modifier = Modifier.size(22.dp)
+            )
+        }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = entry.metricName,

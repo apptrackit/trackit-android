@@ -21,6 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lifetracker.data.model.HistoryEntry
+import com.example.lifetracker.ui.theme.FontAwesomeIcon
+import com.guru.fontawesomecomposelib.FaIconType
 
 @Composable
 fun ClickableMetricCard(
@@ -283,6 +285,70 @@ fun MetricCardRedesigned(
                     contentDescription = title,
                     tint = iconTint,
                     modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = title,
+                    color = Color(0xFFAAAAAA),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = value,
+                        color = Color.White,
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    if (unit.isNotEmpty()) {
+                        Text(
+                            text = unit,
+                            color = Color.White,
+                            fontSize = 15.sp,
+                            modifier = Modifier.padding(start = 3.dp, bottom = 2.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MetricCardRedesignedWithFaIcon(
+    title: String,
+    value: String,
+    unit: String,
+    icon: FaIconType.SolidIcon,
+    iconTint: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.height(90.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF181818))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(iconTint.copy(alpha = 0.12f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                FontAwesomeIcon(
+                    icon = icon,
+                    tint = iconTint,
+                    modifier = Modifier.size(20.dp)
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))

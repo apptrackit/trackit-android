@@ -17,6 +17,16 @@ object FontAwesomeIcons {
     val User = FaIcons.User
     val Plus = FaIcons.Plus
     val Images = FaIcons.Images
+    
+    // Add health metric related icons
+    val Weight = FaIcons.Weight
+    val Percent = FaIcons.Percent
+    val RulerVertical = FaIcons.RulerVertical
+    val Heartbeat = FaIcons.Heartbeat
+    val Running = FaIcons.Running
+    val Child = FaIcons.Child
+    val Tape = FaIcons.Tape
+    val Fire = FaIcons.Fire
 }
 
 @Composable
