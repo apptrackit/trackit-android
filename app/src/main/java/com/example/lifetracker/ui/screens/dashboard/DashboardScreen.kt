@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.lifetracker.ui.components.AddMetricButton
 import com.example.lifetracker.ui.components.AddMetricPopup
 import com.example.lifetracker.ui.components.ClickableMetricCardWithChart
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
