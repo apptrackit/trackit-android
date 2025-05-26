@@ -206,49 +206,63 @@ fun MetricCardChart(history: List<HistoryEntry>) {
         // Calculate min and max values for scaling
         val minValue = monthlyHistory.minOf { it.value }
         val maxValue = monthlyHistory.maxOf { it.value }
-        val valueRange = if (maxValue > minValue) maxValue - minValue + 0.1f else 1f
+        val range = (maxValue - minValue).coerceAtLeast(0.1f)
+        val paddedMin = (minValue - range * 0.1f).coerceAtLeast(0f)
+        val paddedMax = maxValue + range * 0.1f
+        val valueRange = paddedMax - paddedMin
         
-        // Draw the chart
-        val path = Path()
-        monthlyHistory.forEachIndexed { index, entry ->
-            val x = if (monthlyHistory.size > 1) {
-                index * width / (monthlyHistory.size - 1)
-            } else {
-                width / 2
+        // Draw the smooth chart
+        if (monthlyHistory.size > 1) {
+            val path = Path()
+            val points = monthlyHistory.mapIndexed { index, entry ->
+                val x = index * width / (monthlyHistory.size - 1)
+                val normalizedValue = (entry.value - paddedMin) / valueRange
+                val y = height - normalizedValue * height * 0.9f
+                Offset(x, y)
             }
             
-            val normalizedValue = (entry.value - minValue) / valueRange
-            val y = height - normalizedValue * height * 0.9f // Leave some margin at the top
+            // Start path
+            path.moveTo(points[0].x, points[0].y)
             
-            if (index == 0) {
-                path.moveTo(x, y)
-            } else {
-                path.lineTo(x, y)
-            }
-        }
-        
-        // Draw the path with a semi-transparent color
-        drawPath(
-            path = path,
-            color = Color(0x4D2196F3), // More transparent blue
-            style = androidx.compose.ui.graphics.drawscope.Stroke(2.5f)
-        )
-        
-        // Draw data points
-        monthlyHistory.forEachIndexed { index, entry ->
-            val x = if (monthlyHistory.size > 1) {
-                index * width / (monthlyHistory.size - 1)
-            } else {
-                width / 2
+            // Draw smooth curve through points
+            for (i in 1 until points.size) {
+                val prev = points[i - 1]
+                val current = points[i]
+                
+                // Simple cubic interpolation for smoothing
+                val controlX1 = prev.x + (current.x - prev.x) / 3
+                val controlY1 = prev.y
+                val controlX2 = current.x - (current.x - prev.x) / 3
+                val controlY2 = current.y
+                
+                path.cubicTo(
+                    controlX1, controlY1,
+                    controlX2, controlY2,
+                    current.x, current.y
+                )
             }
             
-            val normalizedValue = (entry.value - minValue) / valueRange
+            // Draw the smooth path
+            drawPath(
+                path = path,
+                color = Color(0x4D2196F3), // Semi-transparent blue
+                style = androidx.compose.ui.graphics.drawscope.Stroke(
+                    width = 2.5f,
+                    cap = androidx.compose.ui.graphics.StrokeCap.Round,
+                    join = androidx.compose.ui.graphics.StrokeJoin.Round
+                )
+            )
+        } else if (monthlyHistory.size == 1) {
+            // For single point, draw a horizontal line
+            val entry = monthlyHistory[0]
+            val normalizedValue = (entry.value - paddedMin) / valueRange
             val y = height - normalizedValue * height * 0.9f
             
-            drawCircle(
-                color = Color(0x4D2196F3), // More transparent blue
-                radius = 3f,
-                center = Offset(x, y)
+            drawLine(
+                color = Color(0x4D2196F3),
+                start = Offset(0f, y),
+                end = Offset(width, y),
+                strokeWidth = 2.5f
             )
         }
     }

@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -314,45 +315,119 @@ fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
     val sortedHistory = history.sortedBy { it.date }
     val minValue = sortedHistory.minOf { it.value }
     val maxValue = sortedHistory.maxOf { it.value }
-    // Add a small buffer to the range to avoid division by zero and to make the graph look better
-    val valueRange = if (maxValue > minValue) maxValue - minValue + 0.1f else 1f
+    
+    // Add a padding to the range to avoid values touching the edges
+    val range = (maxValue - minValue).coerceAtLeast(0.1f)
+    val paddedMin = (minValue - range * 0.1f).coerceAtLeast(0f)
+    val paddedMax = maxValue + range * 0.1f
+    val valueRange = paddedMax - paddedMin
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(240.dp) // Increased height to accommodate labels below baseline
+            .height(280.dp) // Increased height to accommodate labels
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp) // Chart area height
+                .padding(start = 50.dp, end = 8.dp, top = 8.dp, bottom = 8.dp) // Increased left padding from 40dp to 50dp
         ) {
             val width = size.width
             val height = size.height
-            val xStep = if (sortedHistory.size > 1) width / (sortedHistory.size - 1) else width
-
-            // Draw axis
-            drawLine(Color.Gray, Offset(0f, height), Offset(width, height))
-            drawLine(Color.Gray, Offset(0f, 0f), Offset(0f, height))
-
-            // Draw data points and lines
-            val path = Path()
-            sortedHistory.forEachIndexed { index, entry ->
-                val x = if (sortedHistory.size > 1) index * xStep else width / 2
-                val normalizedValue = (entry.value - minValue) / valueRange
-                val y = height - normalizedValue * height * 0.9f // Leave some margin at the top
-
-                if (index == 0) {
-                    path.moveTo(x, y)
-                } else {
-                    path.lineTo(x, y)
+            val chartWidth = width
+            val chartHeight = height - 20.dp.toPx() // Leave space for x-axis labels
+            
+            // Draw horizontal grid lines and y-axis labels
+            val ySteps = 5
+            for (i in 0..ySteps) {
+                val y = chartHeight - (i.toFloat() / ySteps.toFloat() * chartHeight)
+                
+                // Draw horizontal grid line
+                drawLine(
+                    color = Color(0xFF333333),
+                    start = Offset(0f, y),
+                    end = Offset(chartWidth, y),
+                    strokeWidth = 1.dp.toPx()
+                )
+                
+                // Calculate the value for this grid line
+                val value = paddedMin + (i.toFloat() / ySteps.toFloat() * valueRange)
+                val formattedValue = String.format("%.1f", value).let { 
+                    if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
                 }
-
-                drawCircle(Color(0xFF2196F3), 4.dp.toPx(), Offset(x, y))
+                
+                // Draw y-axis label
+                drawContext.canvas.nativeCanvas.apply {
+                    drawText(
+                        formattedValue,
+                        -45.dp.toPx(), // Increased from -35dp to -45dp to move labels further from the edge
+                        y + 5.dp.toPx(), // Align with grid line, adjust for text height
+                        android.graphics.Paint().apply {
+                            color = android.graphics.Color.GRAY
+                            textSize = 10.sp.toPx()
+                            textAlign = android.graphics.Paint.Align.RIGHT
+                        }
+                    )
+                }
             }
-
-            drawPath(path, Color(0xFF2196F3), style = androidx.compose.ui.graphics.drawscope.Stroke(3.dp.toPx()))
+            
+            // Draw smooth curve through data points
+            if (sortedHistory.size > 1) {
+                val path = Path()
+                val points = sortedHistory.mapIndexed { index, entry ->
+                    val x = index * chartWidth / (sortedHistory.size - 1)
+                    val normalizedValue = (entry.value - paddedMin) / valueRange
+                    val y = chartHeight - normalizedValue * chartHeight
+                    Offset(x, y)
+                }
+                
+                // Start the path at the first point
+                path.moveTo(points[0].x, points[0].y)
+                
+                // Draw smooth curve through points
+                for (i in 1 until points.size) {
+                    val prev = points[i - 1]
+                    val current = points[i]
+                    
+                    // Simple cubic interpolation for smoothing
+                    // You can adjust the control points for different smoothness
+                    val controlX1 = prev.x + (current.x - prev.x) / 3
+                    val controlY1 = prev.y
+                    val controlX2 = current.x - (current.x - prev.x) / 3
+                    val controlY2 = current.y
+                    
+                    path.cubicTo(
+                        controlX1, controlY1,
+                        controlX2, controlY2,
+                        current.x, current.y
+                    )
+                }
+                
+                // Draw the smooth path
+                drawPath(
+                    path = path,
+                    color = Color(0xFF2196F3),
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(
+                        width = 2.5.dp.toPx(),
+                        cap = androidx.compose.ui.graphics.StrokeCap.Round,
+                        join = androidx.compose.ui.graphics.StrokeJoin.Round
+                    )
+                )
+            } else if (sortedHistory.size == 1) {
+                // For single point, draw a horizontal line
+                val entry = sortedHistory[0]
+                val normalizedValue = (entry.value - paddedMin) / valueRange
+                val y = chartHeight - normalizedValue * chartHeight
+                
+                drawLine(
+                    color = Color(0xFF2196F3),
+                    start = Offset(0f, y),
+                    end = Offset(chartWidth, y),
+                    strokeWidth = 2.5.dp.toPx()
+                )
+            }
         }
 
         // Draw date labels below the chart
@@ -360,7 +435,7 @@ fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomStart)
-                .padding(top = 210.dp), // Position below the chart
+                .padding(top = 210.dp, start = 50.dp, end = 8.dp), // Increased left padding from 40dp to 50dp
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
@@ -371,17 +446,57 @@ fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
                     Text(
                         text = dateFormat.format(Date(sortedHistory[0].date)),
                         color = Color.Gray,
-                        fontSize = 12.sp
+                        fontSize = 10.sp
                     )
                 }
-            } else {
-                // Distribute dates evenly
+            } else if (sortedHistory.size <= 7) {
+                // Show all dates if there are 7 or fewer
                 sortedHistory.forEach { entry ->
                     Text(
                         text = dateFormat.format(Date(entry.date)),
                         color = Color.Gray,
-                        fontSize = 12.sp
+                        fontSize = 10.sp
                     )
+                }
+            } else {
+                // Show only a subset of dates for readability
+                val dates = if (sortedHistory.size > 10) {
+                    // For many points, show first, some intermediate, and last
+                    val step = sortedHistory.size / 4
+                    listOf(
+                        sortedHistory.first(),
+                        sortedHistory[step],
+                        sortedHistory[step * 2],
+                        sortedHistory[step * 3],
+                        sortedHistory.last()
+                    )
+                } else {
+                    // For medium dataset, show every other point
+                    sortedHistory.filterIndexed { index, _ -> index % 2 == 0 || index == sortedHistory.lastIndex }
+                }
+                
+                // Use a weighted arrangement for the date labels
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    dates.forEachIndexed { index, entry ->
+                        val position = if (dates.size > 1) {
+                            index.toFloat() / (dates.size - 1)
+                        } else 0.5f
+                        
+                        Text(
+                            text = dateFormat.format(Date(entry.date)),
+                            color = Color.Gray,
+                            fontSize = 10.sp,
+                            modifier = Modifier.align(
+                                when {
+                                    position < 0.2f -> Alignment.CenterStart
+                                    position > 0.8f -> Alignment.CenterEnd
+                                    position < 0.4f -> Alignment.Start
+                                    position > 0.6f -> Alignment.End
+                                    else -> Alignment.Center
+                                } as Alignment
+                            )
+                        )
+                    }
                 }
             }
         }
