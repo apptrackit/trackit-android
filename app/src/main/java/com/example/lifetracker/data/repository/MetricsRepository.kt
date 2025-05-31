@@ -3,6 +3,9 @@ package com.example.lifetracker.data.repository
 import android.content.Context
 import com.example.lifetracker.data.model.HealthMetrics
 import com.example.lifetracker.data.model.HistoryEntry
+import androidx.core.content.edit
+import kotlin.compareTo
+import kotlin.text.contains
 
 class MetricsRepository(private val context: Context) {
 
@@ -57,7 +60,7 @@ class MetricsRepository(private val context: Context) {
 
         // Check if this value already exists
         val valueExists = entries.any { it.value == value }
-        
+
         if (!valueExists) {
             // Create new entry only if value doesn't exist
             val newEntry = if (weight != null && height != null) {
@@ -66,7 +69,7 @@ class MetricsRepository(private val context: Context) {
                 "$date:$value"
             }
             entries.add(EntryData(date, value, weight, height))
-            
+
             // Convert back to string format and save
             val updatedHistory = entries
                 .sortedByDescending { it.date }
@@ -101,7 +104,7 @@ class MetricsRepository(private val context: Context) {
                         val parts = entry.split(":")
                         val date = parts[0].toLong()
                         val value = parts[1].toFloat()
-                        
+
                         // Check if weight and height are included
                         if (parts.size >= 4) {
                             val weight = parts[2].toFloat()
@@ -122,7 +125,8 @@ class MetricsRepository(private val context: Context) {
     }
 
     fun deleteHistoryEntry(metricName: String, entry: HistoryEntry) {
-        val sharedPrefs = context.getSharedPreferences("health_metrics_history", Context.MODE_PRIVATE)
+        val sharedPrefs =
+            context.getSharedPreferences("health_metrics_history", Context.MODE_PRIVATE)
         val historyKey = "${metricName.lowercase()}_history"
         val historyString = sharedPrefs.getString(historyKey, "") ?: ""
 
@@ -146,6 +150,37 @@ class MetricsRepository(private val context: Context) {
             remove(historyKey)
             apply()
         }
+    }
+
+// --- User Profile Data ---
+
+    fun getUserName(): String? {
+        val sharedPrefs = context.getSharedPreferences("user_profile", Context.MODE_PRIVATE)
+        return sharedPrefs.getString("user_name", null)
+    }
+
+    fun setUserName(name: String) {
+        val sharedPrefs = context.getSharedPreferences("user_profile", Context.MODE_PRIVATE)
+        sharedPrefs.edit { putString("user_name", name) }
+    }
+
+    fun getBirthYear(): Int? {
+        val sharedPrefs = context.getSharedPreferences("user_profile", Context.MODE_PRIVATE)
+        return if (sharedPrefs.contains("birth_year")) sharedPrefs.getInt("birth_year", 0).takeIf { it > 0 } else null
+    }
+
+    fun setBirthYear(year: Int) {
+        val sharedPrefs = context.getSharedPreferences("user_profile", Context.MODE_PRIVATE)
+        sharedPrefs.edit { putInt("birth_year", year) }
+    }
+    fun getGender(): String? {
+        val sharedPrefs = context.getSharedPreferences("user_profile", Context.MODE_PRIVATE)
+        return sharedPrefs.getString("gender", null)
+    }
+
+    fun setGender(gender: String) {
+        val sharedPrefs = context.getSharedPreferences("user_profile", Context.MODE_PRIVATE)
+        sharedPrefs.edit { putString("gender", gender) }
     }
 
     private data class EntryData(

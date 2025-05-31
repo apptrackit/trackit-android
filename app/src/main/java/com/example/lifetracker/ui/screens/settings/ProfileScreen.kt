@@ -6,37 +6,48 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.lifetracker.data.repository.MetricsRepository
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
+import java.util.Calendar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    viewModel: HealthViewModel
+    viewModel: HealthViewModel,
 ) {
     val context = LocalContext.current
 
-    // Example user data (replace with real data if available)
-    val userName = "User"
-    val gender = "Not set"
-    val birthYear = 2000
-    val age = remember {
-        val now = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
-        now - birthYear
+    var userName by rememberSaveable { mutableStateOf(viewModel.getUserName() ?: "User") }
+    var gender by rememberSaveable { mutableStateOf(viewModel.getGender() ?: "Not set") }
+    var birthYear by rememberSaveable { mutableStateOf(viewModel.getBirthYear() ?: 2000) }
+
+    var showNameDialog by remember { mutableStateOf(false) }
+    var showGenderDialog by remember { mutableStateOf(false) }
+    var showBirthYearDialog by remember { mutableStateOf(false) }
+
+    val age = remember(birthYear) {
+        Calendar.getInstance().get(Calendar.YEAR) - birthYear
     }
+
     val appVersion = try {
         context.packageManager.getPackageInfo(context.packageName, 0).versionName
     } catch (e: PackageManager.NameNotFoundException) {
@@ -61,22 +72,10 @@ fun ProfileScreen(
                     .padding(top = 24.dp, bottom = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Profile",
-                    tint = Color(0xFF4CAF50),
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF222222))
-                        .padding(4.dp)
-                        .clickable() { navController.popBackStack() } // <-- open profile page
-                )
-                /*IconButton(
+                IconButton( // Changed back to IconButton for proper animation handling
                     onClick = { navController.popBackStack() },
                     modifier = Modifier
-                        .size(24.dp) // Reduced size of the IconButton
+                        .size(28.dp)
                         .clip(CircleShape)
                         .background(Color(0xFF222222))
                 ) {
@@ -84,9 +83,9 @@ fun ProfileScreen(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(16.dp) // Adjusted icon size
+                        modifier = Modifier.size(20.dp)
                     )
-                }*/
+                }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "Profile",
@@ -116,20 +115,42 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // User name
-            Text(
-                text = userName,
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
+            // User name - Clickable to edit
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { showNameDialog = true }
+            ) {
+                Text(
+                    text = userName,
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit Name",
+                    tint = Color(0xFF4CAF50),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .padding(start = 8.dp)
+                )
+            }
+
 
             Spacer(modifier = Modifier.height(28.dp))
 
             // Info cards
-            ProfileInfoCard(label = "Gender", value = gender)
+            ProfileInfoCard(
+                label = "Gender",
+                value = gender,
+                onClick = { showGenderDialog = true }
+            )
             Spacer(modifier = Modifier.height(12.dp))
-            ProfileInfoCard(label = "Age", value = "$age")
+            ProfileInfoCard(
+                label = "Age",
+                value = age.toString(),
+                onClick = { showBirthYearDialog = true }
+            )
             Spacer(modifier = Modifier.height(12.dp))
             ProfileInfoCard(label = "App Version", value = appVersion.toString())
 
@@ -144,15 +165,119 @@ fun ProfileScreen(
                 modifier = Modifier.padding(top = 12.dp)
             )
         }
+
+        // Name Dialog
+        if (showNameDialog) {
+            var nameInput by rememberSaveable { mutableStateOf(userName) }
+            AlertDialog(
+                onDismissRequest = { showNameDialog = false },
+                title = { Text("Set Name") },
+                text = {
+                    OutlinedTextField(
+                        value = nameInput,
+                        onValueChange = { nameInput = it },
+                        label = { Text("Name") },
+                        singleLine = true
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (nameInput.isNotBlank()) {
+                                userName = nameInput
+                                viewModel.setUserName(nameInput)
+                                showNameDialog = false
+                            }
+                        }
+                    ) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showNameDialog = false }) { Text("Cancel") }
+                }
+            )
+        }
+
+        // Gender Dialog
+        if (showGenderDialog) {
+            AlertDialog(
+                onDismissRequest = { showGenderDialog = false },
+                title = { Text("Select Gender") },
+                text = {
+                    Column {
+                        val genderOptions = listOf("Male", "Female", "Not set")
+                        genderOptions.forEach { option ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        gender = option
+                                        viewModel.setGender(option)
+                                        showGenderDialog = false
+                                    }
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = gender == option,
+                                    onClick = {
+                                        gender = option
+                                        viewModel.setGender(option)
+                                        showGenderDialog = false
+                                    }
+                                )
+                                Text(option, modifier = Modifier.padding(start = 8.dp))
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {}
+            )
+        }
+
+        // Birth Year Dialog
+        if (showBirthYearDialog) {
+            var birthYearInput by rememberSaveable { mutableStateOf(birthYear.toString()) }
+            val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+            AlertDialog(
+                onDismissRequest = { showBirthYearDialog = false },
+                title = { Text("Set Birth Year") },
+                text = {
+                    OutlinedTextField(
+                        value = birthYearInput,
+                        onValueChange = { birthYearInput = it.filter { char -> char.isDigit() }.take(4) },
+                        label = { Text("Birth Year (YYYY)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val year = birthYearInput.toIntOrNull()
+                            if (year != null && year in 1900..currentYear) {
+                                birthYear = year
+                                viewModel.setBirthYear(year)
+                                showBirthYearDialog = false
+                            }
+                        }
+                    ) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showBirthYearDialog = false }) { Text("Cancel") }
+                }
+            )
+        }
     }
 }
 
 @Composable
-private fun ProfileInfoCard(label: String, value: String) {
+private fun ProfileInfoCard(label: String, value: String, onClick: (() -> Unit)? = null) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp),
+            .height(56.dp)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         color = Color(0xFF181818),
         shape = RoundedCornerShape(14.dp),
         shadowElevation = 2.dp
@@ -176,6 +301,15 @@ private fun ProfileInfoCard(label: String, value: String) {
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
+            if (onClick != null) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit $label",
+                    tint = Color(0xFF4CAF50).copy(alpha = 0.7f),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
     }
 }

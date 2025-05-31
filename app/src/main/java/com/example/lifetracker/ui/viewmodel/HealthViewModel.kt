@@ -1,8 +1,10 @@
 package com.example.lifetracker.ui.viewmodel
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.data.repository.MetricsRepository
@@ -16,6 +18,8 @@ import com.example.lifetracker.utils.calculateLeanBodyMass
 class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
     var metrics by mutableStateOf(repository.loadMetrics())
         private set
+
+
 
     fun updateWeight(value: String, date: Long) {
         value.toFloatOrNull()?.let {
@@ -46,7 +50,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             recalculateAllMetrics()
         }
     }
-    
+
     // New methods for additional body measurements
     fun updateWaist(value: String, date: Long) {
         value.toFloatOrNull()?.let {
@@ -57,7 +61,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             recalculateAllMetrics()
         }
     }
-    
+
     fun updateBicep(value: String, date: Long) {
         value.toFloatOrNull()?.let {
             val newMetrics = metrics.copy(bicep = it, date = date)
@@ -67,7 +71,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             recalculateAllMetrics()
         }
     }
-    
+
     fun updateChest(value: String, date: Long) {
         value.toFloatOrNull()?.let {
             val newMetrics = metrics.copy(chest = it, date = date)
@@ -77,7 +81,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             recalculateAllMetrics()
         }
     }
-    
+
     fun updateThigh(value: String, date: Long) {
         value.toFloatOrNull()?.let {
             val newMetrics = metrics.copy(thigh = it, date = date)
@@ -87,7 +91,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             recalculateAllMetrics()
         }
     }
-    
+
     fun updateShoulder(value: String, date: Long) {
         value.toFloatOrNull()?.let {
             val newMetrics = metrics.copy(shoulder = it, date = date)
@@ -114,18 +118,18 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
     fun getHistoryEntryAtDate(metricName: String, unit: String, targetDate: Long): Float? {
         val history = getMetricHistory(metricName, unit)
         if (history.isEmpty()) return null
-        
+
         // Find entries within a 24-hour window of the target date
         val window = 24 * 60 * 60 * 1000L // 24 hours in milliseconds
-        val entriesInWindow = history.filter { 
-            targetDate - window <= it.date && it.date <= targetDate + window 
+        val entriesInWindow = history.filter {
+            targetDate - window <= it.date && it.date <= targetDate + window
         }
-        
+
         // If entries exist in window, get the one closest to the target date
         if (entriesInWindow.isNotEmpty()) {
             return entriesInWindow.minByOrNull { Math.abs(it.date - targetDate) }?.value
         }
-        
+
         // If no entries in window, get the entry closest to the target date
         // This is a fallback and might return entries far from the target date
         return history.minByOrNull { Math.abs(it.date - targetDate) }?.value
@@ -145,7 +149,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
         // Remove automatic recalculation to prevent recursive calls
         return repository.getMetricHistory(metricName, unit)
     }
-    
+
     /**
      * Recalculates all past BMIs based on historical weight and height data.
      * This ensures that BMI history is complete and accurate, even for past entries.
@@ -163,7 +167,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             }
         }
     }
-    
+
     /**
      * Ensures that all metrics have proper history entries.
      * This is called when the app starts to make sure all metrics have history.
@@ -226,7 +230,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
         if (latestWeight > 0 && latestBodyFat != null && latestBodyFat > 0) {
             result["Lean Body Mass"] = calculateLeanBodyMass(latestWeight, latestBodyFat)
             result["Fat Mass"] = calculateFatMass(latestWeight, latestBodyFat)
-            
+
             // FFMI requires height as well
             if (latestHeight > 0) {
                 val leanMass = calculateLeanBodyMass(latestWeight, latestBodyFat)
@@ -246,7 +250,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             "Basal Metabolic Rate",
             "Body Surface Area"
         )
-        
+
         calculatedMetrics.forEach { metric ->
             val existingHistory = getMetricHistory(metric, "")
             existingHistory.forEach { entry ->
@@ -259,10 +263,10 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
         try {
             clearCalculatedMetrics()
             val weightHistory = repository.getMetricHistory("Weight", "kg")
-            
+
             // Sort weight entries chronologically
             val sortedWeightHistory = weightHistory.sortedBy { it.date }
-            
+
             // Recalculate for each weight entry date
             sortedWeightHistory.forEach { weightEntry ->
                 recalculateMetricsForDate(weightEntry.date)
@@ -276,7 +280,7 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
     private fun findClosestHistoricalValue(targetDate: Long, metricName: String, unit: String): Float? {
         val history = repository.getMetricHistory(metricName, unit)
         if (history.isEmpty()) return null
-        
+
         // Get only values that existed before or on the target date
         return history
             .filter { it.date <= targetDate }
@@ -295,10 +299,10 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             if (height != null) {
                 val bmi = calculateBMI(weight, height)
                 repository.saveMetricHistory("BMI", bmi, "", targetDate, weight, height)
-                
+
                 val bmr = calculateBMR(weight, height)
                 repository.saveMetricHistory("Basal Metabolic Rate", bmr, "kcal", targetDate)
-                
+
                 val bsa = calculateBodySurfaceArea(weight, height)
                 repository.saveMetricHistory("Body Surface Area", bsa, "m²", targetDate)
 
@@ -306,10 +310,10 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
                 if (bodyFat != null) {
                     val leanMass = calculateLeanBodyMass(weight, bodyFat)
                     repository.saveMetricHistory("Lean Body Mass", leanMass, "kg", targetDate)
-                    
+
                     val fatMass = calculateFatMass(weight, bodyFat)
                     repository.saveMetricHistory("Fat Mass", fatMass, "kg", targetDate)
-                    
+
                     val ffmi = calculateFatFreeMassIndex(leanMass, height)
                     repository.saveMetricHistory("Fat-Free Mass Index", ffmi, "", targetDate)
                 }
@@ -356,6 +360,32 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
         }
         return filteredHistory.sortedBy { it.date }
     }
+
+    fun getUserName(): String? {
+        return repository.getUserName()
+    }
+
+    fun setUserName(name: String) {
+        repository.setUserName(name)
+    }
+
+    fun getBirthYear(): Int? {
+        return repository.getBirthYear()
+
+    }
+
+    fun setBirthYear(year: Int) {
+        repository.setBirthYear(year)
+    }
+    fun getGender(): String? {
+        return repository.getGender()
+
+    }
+
+    fun setGender(gender: String) {
+        repository.setGender(gender)
+    }
+
 
     init {
         // Initialize calculated metrics on startup
