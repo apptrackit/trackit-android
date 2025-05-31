@@ -8,17 +8,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.lifetracker.data.model.HistoryEntry
-import com.example.lifetracker.ui.screens.dashboard.DashboardScreen
 import com.example.lifetracker.ui.screens.dashboard.MainScreen
 import com.example.lifetracker.ui.screens.health.AddMetricDataScreen
 import com.example.lifetracker.ui.screens.health.EditMetricDataScreen
 import com.example.lifetracker.ui.screens.health.EditMetricScreen
 import com.example.lifetracker.ui.screens.health.ViewBMIHistoryScreen
 import com.example.lifetracker.ui.screens.health.ViewCalculatedHistoryScreen
-import com.example.lifetracker.ui.screens.nutrition.NutritionScreen
 import com.example.lifetracker.ui.screens.photos.*
 import com.example.lifetracker.ui.screens.settings.ProfileScreen
-import com.example.lifetracker.ui.screens.settings.SettingsScreen
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
