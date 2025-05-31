@@ -23,9 +23,7 @@ import com.guru.fontawesomecomposelib.FaIcons
 import com.guru.fontawesomecomposelib.FaIconType
 import kotlinx.coroutines.launch
 import com.example.lifetracker.ui.screens.health.ProgressScreen
-import com.example.lifetracker.ui.screens.nutrition.NutritionScreen
 import com.example.lifetracker.ui.screens.photos.PhotosScreen
-import com.example.lifetracker.ui.screens.settings.ProfileScreen
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -40,10 +38,8 @@ fun MainScreen(
 
     val pages = listOf(
         NavigationItem(DASHBOARD_ROUTE, FontAwesomeIcons.Home, "Dashboard"),
-        NavigationItem(NUTRITION_ROUTE, FontAwesomeIcons.List, "Nutrition"),
         NavigationItem(PHOTOS_ROUTE, FontAwesomeIcons.Images, "Photos"),
-        NavigationItem(PROGRESS_ROUTE, FontAwesomeIcons.ChartLine, "Progress"),
-        NavigationItem(PROFILE_ROUTE, FontAwesomeIcons.User, "Profile")
+        NavigationItem(PROGRESS_ROUTE, FontAwesomeIcons.ChartLine, "Progress")
     )
 
     Scaffold(
@@ -144,9 +140,8 @@ fun MainScreen(
                         viewModel = viewModel,
                         navController = navController
                     )
-                    1 -> NutritionScreen(navController = navController, viewModel = viewModel)
-                    2 -> PhotosScreen(navController = navController, viewModel = viewModel)
-                    3 -> ProgressScreen(
+                    1 -> PhotosScreen(navController = navController, viewModel = viewModel)
+                    2 -> ProgressScreen(
                         onNavigateToEditMetric = { metricName ->
                             when (metricName) {
                                 "Weight" -> navController.navigate(EDIT_WEIGHT_ROUTE)
@@ -190,7 +185,6 @@ fun MainScreen(
                         viewModel = viewModel,
                         navController = navController
                     )
-                    4 -> ProfileScreen(navController = navController, viewModel = viewModel)
                 }
             }
 

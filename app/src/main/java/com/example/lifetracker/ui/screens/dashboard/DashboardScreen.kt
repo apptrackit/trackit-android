@@ -41,6 +41,7 @@ import com.example.lifetracker.ui.components.MetricHistoryChart
 import com.example.lifetracker.ui.theme.FontAwesomeIcon
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.Map.entry
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -139,7 +140,6 @@ fun DashboardScreen(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { navController.navigate("profile") }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Person,
@@ -150,6 +150,7 @@ fun DashboardScreen(
                                 .clip(CircleShape)
                                 .background(Color(0xFF222222))
                                 .padding(4.dp)
+                                .clickable { navController.navigate("profile") } // <-- open profile page
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {

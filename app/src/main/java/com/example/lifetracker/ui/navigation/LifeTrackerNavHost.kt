@@ -1,5 +1,6 @@
 package com.example.lifetracker.ui.navigation
 
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -19,6 +20,10 @@ import com.example.lifetracker.ui.screens.photos.*
 import com.example.lifetracker.ui.screens.settings.ProfileScreen
 import com.example.lifetracker.ui.screens.settings.SettingsScreen
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 
 @Composable
 fun LifeTrackerNavHost(
@@ -277,6 +282,28 @@ fun LifeTrackerNavHost(
                 metricName = metricName,
                 unit = unit,
                 title = title
+            )
+        }
+
+        // Add this block to handle the profile route
+        composable(
+            "profile",
+            enterTransition = {
+                slideInHorizontally(
+                    initialOffsetX = { -it }, // Slide in from the left
+                    animationSpec = tween(durationMillis = 500)
+                ) + fadeIn(animationSpec = tween(500))
+            },
+            exitTransition = {
+                slideOutHorizontally(
+                    targetOffsetX = { it }, // Slide out to the right
+                    animationSpec = tween(durationMillis = 1000)
+                ) + fadeOut(animationSpec = tween(1000))
+            }
+        ) {
+            ProfileScreen(
+                navController = navController,
+                viewModel = viewModel
             )
         }
     }
