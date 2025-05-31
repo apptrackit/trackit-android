@@ -181,7 +181,7 @@ fun EditMetricScreen(
                                 .padding(16.dp)
                         ) {
                             Text(
-                                text = "BMI Statistics",
+                                text = "Stats",
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,

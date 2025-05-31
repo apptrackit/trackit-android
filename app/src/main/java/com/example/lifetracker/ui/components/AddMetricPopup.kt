@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.lifetracker.ui.theme.FontAwesomeIcon
+import com.example.lifetracker.ui.theme.IconChoose
 import com.guru.fontawesomecomposelib.FaIcons
 
 @Composable
@@ -50,86 +51,28 @@ fun AddMetricPopup(
                 
                 Divider(color = Color(0xFF333333), thickness = 1.dp)
 
-                
-                MetricOption(
-                    title = "Weight",
-                    icon = FaIcons.Weight,
-                    iconTint = Color(0xFF2196F3),
-                    onClick = { 
-                        onNavigateToEditMetric("Weight")
-                        onDismiss()
-                    }
+                val metrics = listOf(
+                    "Weight",
+                    "Height",
+                    "Body Fat",
+                    "Chest",
+                    "Waist",
+                    "Bicep",
+                    "Thigh",
+                    "Shoulder"
                 )
-                
-                MetricOption(
-                    title = "Height",
-                    icon = FaIcons.RulerVertical,
-                    iconTint = Color(0xFF9C27B0),
-                    onClick = { 
-                        onNavigateToEditMetric("Height")
-                        onDismiss()
-                    }
-                )
-                
-                MetricOption(
-                    title = "Body Fat",
-                    icon = FaIcons.Percent,
-                    iconTint = Color(0xFF4CAF50),
-                    onClick = { 
-                        onNavigateToEditMetric("Body Fat")
-                        onDismiss()
-                    }
-                )
-                
-                MetricOption(
-                    title = "Chest",
-                    icon = FaIcons.Male,
-                    iconTint = Color(0xFFFF9800),
-                    onClick = { 
-                        onNavigateToEditMetric("Chest")
-                        onDismiss()
-                    }
-                )
-                
-                MetricOption(
-                    title = "Waist",
-                    icon = FaIcons.Tape,
-                    iconTint = Color(0xFF00BCD4),
-                    onClick = { 
-                        onNavigateToEditMetric("Waist")
-                        onDismiss()
-                    }
-                )
-                
-                MetricOption(
-                    title = "Bicep",
-                    icon = FaIcons.Dumbbell,
-                    iconTint = Color(0xFFFF5722),
-                    onClick = { 
-                        onNavigateToEditMetric("Bicep")
-                        onDismiss()
-                    }
-                )
-                
-                MetricOption(
-                    title = "Thigh",
-                    icon = FaIcons.Child,
-                    iconTint = Color(0xFF00BCD4),
-                    onClick = { 
-                        onNavigateToEditMetric("Thigh")
-                        onDismiss()
-                    }
-                )
-                
-                MetricOption(
-                    title = "Shoulder",
-                    icon = FaIcons.Male,
-                    iconTint = Color(0xFFFF9800),
-                    onClick = { 
-                        onNavigateToEditMetric("Shoulder")
-                        onDismiss()
-                    }
-                )
+                metrics.forEach { metric ->
+                    val (icon, iconTint) = IconChoose.getIcon(metric)
+                    MetricOption(
+                        title = metric,
+                        icon = icon,
+                        iconTint = iconTint,
+                        onClick = { 
+                            onNavigateToEditMetric(metric)
+                            onDismiss()
+                        }
+                    )
+                }
                 
                 // Removed Custom Measurement section
             }

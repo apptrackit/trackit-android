@@ -21,7 +21,7 @@ class IconChoose {
                 "Lean Body Mass" -> Pair(FaIcons.Heartbeat, Color(0xFF4CAF50))
                 "Fat Mass" -> Pair(FaIcons.Weight, Color(0xFFB71C1C))
                 "Fat-Free Mass Index" -> Pair(FaIcons.ChartLine, Color(0xFF2196F3))
-                "Basal Metabolic Rate" -> Pair(FaIcons.Fire, Color(0xFFFF5722))
+                "Basal Metabolic Rate", "BMR"-> Pair(FaIcons.Fire, Color(0xFFFF5722))
                 "Body Surface Area" -> Pair(FaIcons.RulerCombined, Color(0xFF00BCD4))
                 else -> Pair(FaIcons.QuestionCircle, Color(0xFFAAAAAA))
             }

@@ -18,6 +18,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
+import com.example.lifetracker.ui.theme.FontAwesomeIcon
+import com.example.lifetracker.ui.theme.IconChoose
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 
 
 @SuppressLint("DefaultLocale")
@@ -275,7 +279,7 @@ fun ProgressScreen(
                             
                             // Basal Metabolic Rate
                             MetricRowWithArrow(
-                                title = "Basal Metabolic Rate",
+                                title = "BMR",
                                 value = calculatedMetrics["Basal Metabolic Rate"]?.let { 
                                     String.format("%.0f", it)
                                 } ?: "-",
@@ -317,6 +321,7 @@ private fun MetricRowWithArrow(
     unit: String,
     onClick: () -> Unit
 ) {
+    val (icon, iconTint) = IconChoose.getIcon(title)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -325,11 +330,26 @@ private fun MetricRowWithArrow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = title,
-            color = Color.White,
-            fontSize = 16.sp
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(28.dp) // Keeping circle size consistent
+                    .background(iconTint.copy(alpha = 0.12f), CircleShape), 
+                contentAlignment = Alignment.Center
+            ) {
+                FontAwesomeIcon(
+                    icon = icon,
+                    tint = iconTint,
+                    modifier = Modifier.size(30.dp) // Increased icon size for better proportion
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp)) // Increased spacing
+            Text(
+                text = title,
+                color = Color.White,
+                fontSize = 16.sp
+            )
+        }
         
         Row(
             verticalAlignment = Alignment.CenterVertically

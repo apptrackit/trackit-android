@@ -2,8 +2,6 @@ package com.example.lifetracker.ui.screens.dashboard
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
-import com.guru.fontawesomecomposelib.FaIcons
-import com.guru.fontawesomecomposelib.FaIconType
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -16,10 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.lifetracker.ui.components.AddMetricPopup
-import com.example.lifetracker.ui.components.ClickableMetricCardWithChart
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.utils.calculateBMI
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,13 +31,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.lifetracker.data.model.HistoryEntry
-import com.example.lifetracker.ui.components.MetricCardRedesigned
 import com.example.lifetracker.ui.components.MetricCardRedesignedWithFaIcon
-import com.example.lifetracker.ui.components.MetricHistoryChart
 import com.example.lifetracker.ui.theme.FontAwesomeIcon
+import com.example.lifetracker.ui.theme.IconChoose
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.Map.entry
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -198,8 +192,8 @@ fun DashboardScreen(
                             title = "Weight",
                             value = formattedWeight,
                             unit = "kg",
-                            icon = FaIcons.Weight,
-                            iconTint = Color(0xFF2196F3),
+                            icon = IconChoose.getIcon("Weight").first,
+                            iconTint = IconChoose.getIcon("Weight").second,
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable { onNavigateToEditMetric("Weight") }
@@ -208,8 +202,8 @@ fun DashboardScreen(
                             title = "Body Fat",
                             value = formattedBodyFat,
                             unit = "%",
-                            icon = FaIcons.Percent,
-                            iconTint = Color(0xFF4CAF50),
+                            icon = IconChoose.getIcon("Body Fat").first,
+                            iconTint = IconChoose.getIcon("Body Fat").second,
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable { onNavigateToEditMetric("Body Fat") }
@@ -223,18 +217,18 @@ fun DashboardScreen(
                             title = "BMI",
                             value = formattedBmi,
                             unit = "",
-                            icon = FaIcons.User,
-                            iconTint = Color(0xFFFF9800),
+                            icon = IconChoose.getIcon("BMI").first,
+                            iconTint = IconChoose.getIcon("BMI").second,
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable { onNavigateToViewBMIHistory() }
+                                .clickable { onNavigateToViewBMIHistory }
                         )
                         MetricCardRedesignedWithFaIcon(
                             title = "Height",
                             value = formattedHeight,
                             unit = "cm",
-                            icon = FaIcons.RulerVertical,
-                            iconTint = Color(0xFF9C27B0),
+                            icon = IconChoose.getIcon("Height").first,
+                            iconTint = IconChoose.getIcon("Height").second,
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable { onNavigateToEditMetric("Height") }
@@ -362,15 +356,7 @@ fun DashboardScreen(
 
 @Composable
 fun RecentMeasurementRow(entry: HistoryEntry, onClick: () -> Unit) {
-    val iconAndColor = when (entry.metricName) {
-        "Weight" -> Pair(FaIcons.Weight, Color(0xFF2196F3))
-        "Body Fat" -> Pair(FaIcons.Percent, Color(0xFF4CAF50))
-        "Thigh" -> Pair(FaIcons.Child, Color(0xFF00BCD4))
-        "Bicep" -> Pair(FaIcons.Dumbbell, Color(0xFFFF9800))
-        "Height" -> Pair(FaIcons.RulerVertical, Color(0xFF9C27B0))
-        "BMI" -> Pair(FaIcons.User, Color(0xFFFF9800))
-        else -> Pair(FaIcons.QuestionCircle, Color(0xFFAAAAAA))
-    }
+    val iconAndColor = IconChoose.getIcon(entry.metricName)
     val dateFormat = SimpleDateFormat("MMM d, yyyy 'at' HH:mm", Locale.getDefault())
     Row(
         modifier = Modifier
@@ -419,6 +405,7 @@ fun RecentMeasurementRow(entry: HistoryEntry, onClick: () -> Unit) {
         )
     }
 }
+
 
 @Composable
 fun TimeFilterButton(label: String, selected: Boolean, onClick: () -> Unit) {

@@ -85,7 +85,7 @@ fun ViewBMIHistoryScreen(
                 }
 
                 Text(
-                    text = "BMI History",
+                    text = "Stats",
                     color = Color.White,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
@@ -133,7 +133,7 @@ fun ViewBMIHistoryScreen(
                             .padding(16.dp)
                     ) {
                         Text(
-                            text = "BMI Statistics",
+                            text = "Stats",
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
