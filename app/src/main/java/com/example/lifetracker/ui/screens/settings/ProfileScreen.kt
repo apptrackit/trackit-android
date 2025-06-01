@@ -1,6 +1,9 @@
 package com.example.lifetracker.ui.screens.settings
 
 import android.content.pm.PackageManager
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,6 +14,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,7 +31,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.lifetracker.data.repository.MetricsRepository
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
-import java.util.Calendar
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStreamReader
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +46,7 @@ fun ProfileScreen(
     viewModel: HealthViewModel,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var userName by rememberSaveable { mutableStateOf(viewModel.getUserName() ?: "User") }
     var gender by rememberSaveable { mutableStateOf(viewModel.getGender() ?: "Not set") }
@@ -43,6 +55,7 @@ fun ProfileScreen(
     var showNameDialog by remember { mutableStateOf(false) }
     var showGenderDialog by remember { mutableStateOf(false) }
     var showBirthYearDialog by remember { mutableStateOf(false) }
+    var showImportExportDialog by remember { mutableStateOf(false) }
 
     val age = remember(birthYear) {
         Calendar.getInstance().get(Calendar.YEAR) - birthYear
@@ -52,6 +65,20 @@ fun ProfileScreen(
         context.packageManager.getPackageInfo(context.packageName, 0).versionName
     } catch (e: PackageManager.NameNotFoundException) {
         "Unknown"
+    }
+
+    // File picker for import
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri?.let { importMetricsFromCsv(context, it, viewModel) }
+    }
+
+    // File saver for export
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/csv")
+    ) { uri: Uri? ->
+        uri?.let { exportMetricsToCsv(context, it, viewModel) }
     }
 
     Surface(
@@ -153,6 +180,14 @@ fun ProfileScreen(
             )
             Spacer(modifier = Modifier.height(12.dp))
             ProfileInfoCard(label = "App Version", value = appVersion.toString())
+
+            // Add Import/Export buttons after the info cards
+            Spacer(modifier = Modifier.height(12.dp))
+            ProfileInfoCard(
+                label = "Import/Export Data",
+                value = "",
+                onClick = { showImportExportDialog = true }
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -268,6 +303,58 @@ fun ProfileScreen(
                 }
             )
         }
+
+        // Import/Export Dialog
+        if (showImportExportDialog) {
+            AlertDialog(
+                onDismissRequest = { showImportExportDialog = false },
+                title = { Text("Import/Export Data") },
+                text = {
+                    Column {
+                        Button(
+                            onClick = {
+                                importLauncher.launch(arrayOf("text/csv", "text/comma-separated-values"))
+                                showImportExportDialog = false
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowUp,
+                                contentDescription = "Import",
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                            Text("Import from CSV")
+                        }
+                        
+                        Button(
+                            onClick = {
+                                val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                                exportLauncher.launch("lifetracker_metrics_$timestamp.csv")
+                                showImportExportDialog = false
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Export",
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                            Text("Export to CSV")
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = { showImportExportDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -311,5 +398,92 @@ private fun ProfileInfoCard(label: String, value: String, onClick: (() -> Unit)?
                 )
             }
         }
+    }
+}
+
+private fun importMetricsFromCsv(context: android.content.Context, uri: Uri, viewModel: HealthViewModel) {
+    try {
+        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                // Skip header
+                reader.readLine()
+                
+                // Read data rows
+                reader.lineSequence().forEach { line ->
+                    val parts = line.split(",")
+                    if (parts.size >= 3) {
+                        val metricName = parts[0].trim()
+                        val value = parts[1].trim().toFloatOrNull()
+                        val date = parts[2].trim().toLongOrNull()
+                        
+                        if (value != null && date != null) {
+                            // Check if this value already exists in the history
+                            val existingHistory = viewModel.getMetricHistory(metricName, getUnitForMetric(metricName))
+                            val isDuplicate = existingHistory.any { entry ->
+                                entry.value == value && entry.date == date
+                            }
+                            
+                            if (!isDuplicate) {
+                                when (metricName) {
+                                    "Weight" -> viewModel.updateWeight(value.toString(), date)
+                                    "Height" -> viewModel.updateHeight(value.toString(), date)
+                                    "Body Fat" -> viewModel.updateBodyFat(value.toString(), date)
+                                    "Waist" -> viewModel.updateWaist(value.toString(), date)
+                                    "Bicep" -> viewModel.updateBicep(value.toString(), date)
+                                    "Chest" -> viewModel.updateChest(value.toString(), date)
+                                    "Thigh" -> viewModel.updateThigh(value.toString(), date)
+                                    "Shoulder" -> viewModel.updateShoulder(value.toString(), date)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+private fun getUnitForMetric(metricName: String): String {
+    return when (metricName) {
+        "Weight" -> "kg"
+        "Height" -> "cm"
+        "Body Fat" -> "%"
+        else -> "cm" // For all other measurements (Waist, Bicep, Chest, Thigh, Shoulder)
+    }
+}
+
+private fun exportMetricsToCsv(context: android.content.Context, uri: Uri, viewModel: HealthViewModel) {
+    try {
+        context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+            val writer = outputStream.bufferedWriter()
+            
+            // Write header
+            writer.write("Metric,Value,Date\n")
+            
+            // Get all metrics
+            val metrics = listOf(
+                "Weight" to "kg",
+                "Height" to "cm",
+                "Body Fat" to "%",
+                "Waist" to "cm",
+                "Bicep" to "cm",
+                "Chest" to "cm",
+                "Thigh" to "cm",
+                "Shoulder" to "cm"
+            )
+            
+            // Write data for each metric
+            metrics.forEach { (metricName, unit) ->
+                viewModel.getMetricHistory(metricName, unit).forEach { entry ->
+                    writer.write("$metricName,${entry.value},${entry.date}\n")
+                }
+            }
+            
+            writer.flush()
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
