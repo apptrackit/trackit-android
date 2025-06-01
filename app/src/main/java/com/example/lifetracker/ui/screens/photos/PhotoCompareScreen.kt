@@ -43,15 +43,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import com.example.lifetracker.ui.theme.IconChoose
 import com.guru.fontawesomecomposelib.FaIcon
 
-// Custom icon mapping to avoid missing Material icons
-private object CustomIcons {
-    val Scale = Icons.Outlined.Person // Fallback icon
-    val FitnessCenter = Icons.Outlined.Person
-    val Straighten = Icons.Outlined.Person
-    val Height = Icons.Outlined.Person
-    val DirectionsWalk = Icons.Outlined.Person
-    val AccessibilityNew = Icons.Outlined.Person
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -236,7 +227,7 @@ fun PhotoCompareScreen(
                                     FaIcon(
                                         faIcon = icon1,
                                         tint = Color.White,
-                                        modifier = Modifier.size(15.dp)
+                                        modifier = Modifier.size(18.dp) // Bigger icon in badge
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
@@ -307,7 +298,7 @@ fun PhotoCompareScreen(
                                     FaIcon(
                                         faIcon = icon2,
                                         tint = Color.White,
-                                        modifier = Modifier.size(15.dp)
+                                        modifier = Modifier.size(18.dp) // Bigger icon in badge
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
@@ -546,8 +537,8 @@ internal fun MetricRow(
             faIcon = icon,
             tint = color,
             modifier = Modifier
-                .size(24.dp)
-                .padding(end = 12.dp)
+                .size(20.dp) // Bigger icon in row
+                .padding(end = 10.dp)
         )
         
         // Metric name

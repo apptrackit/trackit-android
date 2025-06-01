@@ -1,6 +1,8 @@
 package com.example.lifetracker.ui.screens.photos
 
 import android.Manifest
+import android.R.attr.contentDescription
+import android.R.attr.tint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -54,16 +56,20 @@ import com.guru.fontawesomecomposelib.FaIcon
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import coil.compose.AsyncImagePainter.State.Empty.painter
 
 @Composable
 fun PhotosScreen(
     navController: NavController,
-    viewModel: HealthViewModel
+    viewModel: HealthViewModel,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val photoViewModel = remember { PhotoViewModel() }
-    
+
     // Permission launcher
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -77,7 +83,7 @@ fun PhotosScreen(
     var showCategorySelectionDialog by remember { mutableStateOf(false) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var selectedCategory by remember { mutableStateOf(PhotoCategory.OTHER) }
-    
+
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
@@ -93,9 +99,13 @@ fun PhotosScreen(
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
-        
+
         permissions.forEach { permission ->
-            if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    permission
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 permissionLauncher.launch(permission)
             }
         }
@@ -105,12 +115,12 @@ fun PhotosScreen(
     LaunchedEffect(Unit) {
         photoViewModel.loadPhotos(context)
     }
-    
+
     // Watch for category changes and apply filter
     LaunchedEffect(photoViewModel.selectedCategory) {
         photoViewModel.applyFilter()
     }
-    
+
     // Greeting and date (dashboard style)
     val now = remember { Calendar.getInstance() }
     val greeting = remember {
@@ -223,88 +233,77 @@ fun PhotosScreen(
             ) {
                 Column {
                     Text(
-                        text = greeting,
+                        text = "Photos",
                         color = Color.White,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
-                        text = dateString,
-                        color = Color(0xFFAAAAAA),
-                        fontSize = 15.sp
-                    )
                 }
-                // Add photo button
-                FloatingActionButton(
-                    onClick = { galleryLauncher.launch("image/*") },
-                    containerColor = Color(0xFF232323),
-                    contentColor = Color.White,
-                    elevation = FloatingActionButtonDefaults.elevation(6.dp)
+                // Add photo button styled exactly like dashboard
+
+                IconButton(
+                    onClick = { galleryLauncher.launch("image/*") }
                 ) {
-                    FaIcon(
-                        faIcon = com.guru.fontawesomecomposelib.FaIcons.Plus,
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                    Icon(
+                        painter = painterResource(id = android.R.drawable.ic_input_add),
+                        contentDescription = "Add",
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }
 
-            // Category filter chips (dashboard style, more pill-like)
+            // --- Lowkey Category Chooser, centered icon above text ---
+            val categories = listOf<Pair<String, PhotoCategory?>>(
+                "All" to null
+            ) + PhotoCategory.values().map { it.displayName to it }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    .padding(start = 12.dp, end = 12.dp, bottom = 12.dp, top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(vertical = 8.dp, horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // All categories chip
-                Surface(
-                    shape = RoundedCornerShape(50),
-                    color = if (photoViewModel.selectedCategory == null) Color(0xFF2196F3) else Color(0xFF333333),
-                    shadowElevation = if (photoViewModel.selectedCategory == null) 4.dp else 0.dp,
-                    modifier = Modifier
-                        .clickable { photoViewModel.selectedCategory = null }
-                ) {
-                    Text(
-                        text = "All",
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp)
-                    )
-                }
-                // Category chips with icons
-                PhotoCategory.values().forEach { category ->
-                    val (icon, color) = IconChoose.getIcon(category.displayName)
-                    Surface(
-                        shape = RoundedCornerShape(50),
-                        color = if (photoViewModel.selectedCategory == category) color else Color(0xFF333333),
-                        shadowElevation = if (photoViewModel.selectedCategory == category) 4.dp else 0.dp,
+                categories.forEach { (label, category) ->
+                    val isSelected = photoViewModel.selectedCategory == category
+                    val (icon, color) = if (category == null)
+                        IconChoose.getIcon("Other")
+                    else
+                        IconChoose.getIcon(category.displayName)
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(
+                                if (isSelected) color.copy(alpha = 0.13f) else Color.Transparent
+                            )
                             .clickable { photoViewModel.selectedCategory = category }
+                            .padding(vertical = 6.dp, horizontal = 8.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .background(color.copy(alpha = 0.18f), shape = CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                FaIcon(
-                                    faIcon = icon,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(12.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = category.displayName,
-                                color = Color.White,
-                                fontSize = 14.sp
+                            FaIcon(
+                                faIcon = icon,
+                                tint = if (isSelected) color else Color(0xFFAAAAAA),
+                                modifier = Modifier.size(28.dp)
                             )
                         }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = label,
+                            color = if (isSelected) color else Color(0xFFAAAAAA),
+                            fontSize = 12.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .widthIn(min = 40.dp, max = 70.dp)
+                                .align(Alignment.CenterHorizontally)
+                        )
                     }
                 }
             }
@@ -345,7 +344,6 @@ fun PhotosScreen(
                             )
                         }
                         item {
-                            // Fix: Use .toFloat() for the Int multiplication to avoid type mismatch
                             val gridHeight = ((photos.size + 1) / 2) * 220
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(2),
@@ -359,18 +357,29 @@ fun PhotosScreen(
                                 itemsIndexed(photos) { _, photo ->
                                     val uri = photo.uri
                                     val file = File(photo.filePath)
-                                    val date = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(file.lastModified()))
+                                    val date = SimpleDateFormat(
+                                        "MMM dd, yyyy",
+                                        Locale.getDefault()
+                                    ).format(Date(file.lastModified()))
                                     val (icon, color) = IconChoose.getIcon(photo.category.displayName)
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
                                                 val filePath = photo.filePath
-                                                val encodedPath = java.net.URLEncoder.encode(filePath, "UTF-8")
+                                                val encodedPath =
+                                                    java.net.URLEncoder.encode(
+                                                        filePath,
+                                                        "UTF-8"
+                                                    )
                                                 navController.navigate("photo_detail/$encodedPath")
                                             },
                                         shape = RoundedCornerShape(16.dp),
-                                        colors = CardDefaults.cardColors(containerColor = Color(0xFF181818)),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = Color(
+                                                0xFF181818
+                                            )
+                                        ),
                                         elevation = CardDefaults.cardElevation(6.dp)
                                     ) {
                                         Column(
@@ -381,7 +390,12 @@ fun PhotosScreen(
                                                 modifier = Modifier
                                                     .aspectRatio(1f)
                                                     .fillMaxWidth()
-                                                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                                                    .clip(
+                                                        RoundedCornerShape(
+                                                            topStart = 16.dp,
+                                                            topEnd = 16.dp
+                                                        )
+                                                    )
                                             ) {
                                                 AsyncImage(
                                                     model = uri,
@@ -398,7 +412,10 @@ fun PhotosScreen(
                                                             color = Color.Black.copy(alpha = 0.55f),
                                                             shape = RoundedCornerShape(10.dp)
                                                         )
-                                                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                                                        .padding(
+                                                            horizontal = 10.dp,
+                                                            vertical = 4.dp
+                                                        )
                                                 ) {
                                                     Text(
                                                         text = date,
@@ -413,13 +430,16 @@ fun PhotosScreen(
                                             Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                                                    .padding(
+                                                        horizontal = 10.dp,
+                                                        vertical = 8.dp
+                                                    ),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 FaIcon(
                                                     faIcon = icon,
                                                     tint = color,
-                                                    modifier = Modifier.size(18.dp)
+                                                    modifier = Modifier.size(22.dp)
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Text(

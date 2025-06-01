@@ -150,14 +150,14 @@ fun PhotoCategoryScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(32.dp)
+                                    .size(36.dp) // Larger circle
                                     .background(color, shape = CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 FaIcon(
                                     faIcon = icon,
                                     tint = Color.White,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(22.dp) // Bigger icon in circle
                                 )
                             }
                             Spacer(modifier = Modifier.width(16.dp))
