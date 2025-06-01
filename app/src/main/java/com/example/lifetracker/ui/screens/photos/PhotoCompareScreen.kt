@@ -83,18 +83,23 @@ fun PhotoCompareScreen(
     val mainPhoto = photoViewModel.photos.find { it.filePath == decodedMainPath }
     val comparePhoto = photoViewModel.photos.find { it.filePath == decodedComparePath }
     
-    val mainCategory = mainPhoto?.category ?: PhotoCategory.OTHER
-    val compareCategory = comparePhoto?.category ?: PhotoCategory.OTHER
-    
-    val mainDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        .format(Date(mainFile.lastModified()))
-    val compareDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        .format(Date(compareFile.lastModified()))
+    // --- Ensure left is always the older photo, right is newer ---
+    val (leftPhoto, rightPhoto) = if (mainFile.lastModified() <= compareFile.lastModified()) {
+        Pair(mainPhoto to mainFile, comparePhoto to compareFile)
+    } else {
+        Pair(comparePhoto to compareFile, mainPhoto to mainFile)
+    }
+    val leftUri = Uri.fromFile(leftPhoto.second)
+    val rightUri = Uri.fromFile(rightPhoto.second)
+    val leftCategory = leftPhoto.first?.category ?: PhotoCategory.OTHER
+    val rightCategory = rightPhoto.first?.category ?: PhotoCategory.OTHER
+    val leftDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        .format(Date(leftPhoto.second.lastModified()))
+    val rightDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        .format(Date(rightPhoto.second.lastModified()))
+    val leftMetadata = leftPhoto.first?.metadata ?: PhotoMetadata()
+    val rightMetadata = rightPhoto.first?.metadata ?: PhotoMetadata()
 
-    val mainMetadata = mainPhoto?.metadata ?: PhotoMetadata()
-    val compareMetadata = comparePhoto?.metadata ?: PhotoMetadata()
-    
-    // Get metrics for both photos
     val getPhotoMetrics = { photoFile: File ->
         val photoDate = photoFile.lastModified()
         val metrics = listOf(
@@ -129,18 +134,18 @@ fun PhotoCompareScreen(
         }
     }
     
-    val mainMetricEntries = getPhotoMetrics(mainFile)
-    val compareMetricEntries = getPhotoMetrics(compareFile)
+    val leftMetricEntries = getPhotoMetrics(leftPhoto.second)
+    val rightMetricEntries = getPhotoMetrics(rightPhoto.second)
     
     // Log metric entries for debugging
-    Log.d("PhotoMetrics", "Main photo (${mainDate}): Found ${mainMetricEntries.size} metrics")
-    mainMetricEntries.forEach { (metric, data) ->
+    Log.d("PhotoMetrics", "Main photo (${leftDate}): Found ${leftMetricEntries.size} metrics")
+    leftMetricEntries.forEach { (metric, data) ->
         val (entry, unit) = data
         Log.d("PhotoMetrics", "  $metric: ${entry.value} $unit (recorded on ${Date(entry.date)})")
     }
     
-    Log.d("PhotoMetrics", "Compare photo (${compareDate}): Found ${compareMetricEntries.size} metrics")
-    compareMetricEntries.forEach { (metric, data) ->
+    Log.d("PhotoMetrics", "Compare photo (${rightDate}): Found ${rightMetricEntries.size} metrics")
+    rightMetricEntries.forEach { (metric, data) ->
         val (entry, unit) = data
         Log.d("PhotoMetrics", "  $metric: ${entry.value} $unit (recorded on ${Date(entry.date)})")
     }
@@ -212,12 +217,12 @@ fun PhotoCompareScreen(
                             .padding(horizontal = 4.dp, vertical = 4.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Before photo
+                        // Left (older) photo
                         Column(
                             modifier = Modifier.weight(1f),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            val (icon1, color1) = IconChoose.getIcon(mainCategory.displayName)
+                            val (icon1, color1) = IconChoose.getIcon(leftCategory.displayName)
                             Surface(
                                 shape = RoundedCornerShape(14.dp),
                                 color = color1.copy(alpha = 0.92f),
@@ -235,7 +240,7 @@ fun PhotoCompareScreen(
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
-                                        text = mainCategory.displayName,
+                                        text = leftCategory.displayName,
                                         color = Color.White,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Medium
@@ -250,8 +255,8 @@ fun PhotoCompareScreen(
                                 var scale by remember { mutableStateOf(1f) }
                                 var offset by remember { mutableStateOf(Offset.Zero) }
                                 AsyncImage(
-                                    model = mainUri,
-                                    contentDescription = "Before Photo",
+                                    model = leftUri,
+                                    contentDescription = "Older Photo",
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .graphicsLayer(
@@ -277,18 +282,18 @@ fun PhotoCompareScreen(
                                 )
                             }
                             Text(
-                                text = mainDate,
+                                text = leftDate,
                                 color = Color(0xFFB3B3B3),
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(top = 6.dp)
                             )
                         }
-                        // After photo
+                        // Right (newer) photo
                         Column(
                             modifier = Modifier.weight(1f),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            val (icon2, color2) = IconChoose.getIcon(compareCategory.displayName)
+                            val (icon2, color2) = IconChoose.getIcon(rightCategory.displayName)
                             Surface(
                                 shape = RoundedCornerShape(14.dp),
                                 color = color2.copy(alpha = 0.92f),
@@ -306,7 +311,7 @@ fun PhotoCompareScreen(
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
-                                        text = compareCategory.displayName,
+                                        text = rightCategory.displayName,
                                         color = Color.White,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Medium
@@ -321,8 +326,8 @@ fun PhotoCompareScreen(
                                 var scale by remember { mutableStateOf(1f) }
                                 var offset by remember { mutableStateOf(Offset.Zero) }
                                 AsyncImage(
-                                    model = compareUri,
-                                    contentDescription = "After Photo",
+                                    model = rightUri,
+                                    contentDescription = "Newer Photo",
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .graphicsLayer(
@@ -348,7 +353,7 @@ fun PhotoCompareScreen(
                                 )
                             }
                             Text(
-                                text = compareDate,
+                                text = rightDate,
                                 color = Color(0xFFB3B3B3),
                                 fontSize = 13.sp,
                                 modifier = Modifier.padding(top = 6.dp)
@@ -366,8 +371,8 @@ fun PhotoCompareScreen(
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
                         MetricsComparison(
-                            mainMetricEntries = mainMetricEntries,
-                            compareMetricEntries = compareMetricEntries,
+                            mainMetricEntries = leftMetricEntries,
+                            compareMetricEntries = rightMetricEntries,
                             modifier = Modifier.padding(18.dp)
                         )
                     }
