@@ -172,125 +172,205 @@ fun PhotoCompareScreen(
                 )
             )
         },
-        containerColor = Color(0xFF000000)
+        containerColor = Color.Transparent
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(Color(0xFF181818), Color(0xFF232323), Color.Black)
+                    )
+                )
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
         ) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(18.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFF1A1A1A)
-                )
+                ),
+                elevation = CardDefaults.cardElevation(8.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(18.dp)
                 ) {
                     Text(
                         text = "Comparison",
                         color = Color.White,
-                        fontSize = 20.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 18.dp)
                     )
 
-                    // Photos
+                    // Photos with category badges
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 4.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         // Before photo
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(3f/4f)
-                                .clip(RoundedCornerShape(4.dp))
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            var scale by remember { mutableStateOf(1f) }
-                            var offset by remember { mutableStateOf(Offset.Zero) }
-                            
-                            AsyncImage(
-                                model = mainUri,
-                                contentDescription = "Before Photo",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .graphicsLayer(
-                                        scaleX = scale,
-                                        scaleY = scale,
-                                        translationX = offset.x.coerceIn(-200f, 200f),
-                                        translationY = offset.y.coerceIn(-200f, 200f)
+                            val (icon1, color1) = IconChoose.getIcon(mainCategory.displayName)
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = color1.copy(alpha = 0.92f),
+                                shadowElevation = 2.dp,
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    FaIcon(
+                                        faIcon = icon1,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(15.dp)
                                     )
-                                    .pointerInput(Unit) {
-                                        detectTransformGestures(
-                                            onGesture = { centroid: Offset, pan: Offset, zoom: Float, rotation: Float ->
-                                                scale = (scale * zoom).coerceIn(0.5f, 4f)
-                                                offset += pan
-                                                // Constrain offset based on scale
-                                                val maxOffset = 200f * (scale - 0.5f)
-                                                offset = Offset(
-                                                    offset.x.coerceIn(-maxOffset, maxOffset),
-                                                    offset.y.coerceIn(-maxOffset, maxOffset)
-                                                )
-                                            }
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text(
+                                        text = mainCategory.displayName,
+                                        color = Color.White,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .aspectRatio(3f / 4f)
+                                    .clip(RoundedCornerShape(10.dp))
+                            ) {
+                                var scale by remember { mutableStateOf(1f) }
+                                var offset by remember { mutableStateOf(Offset.Zero) }
+                                AsyncImage(
+                                    model = mainUri,
+                                    contentDescription = "Before Photo",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer(
+                                            scaleX = scale,
+                                            scaleY = scale,
+                                            translationX = offset.x.coerceIn(-200f, 200f),
+                                            translationY = offset.y.coerceIn(-200f, 200f)
                                         )
-                                    },
-                                contentScale = ContentScale.Fit
+                                        .pointerInput(Unit) {
+                                            detectTransformGestures(
+                                                onGesture = { _, pan, zoom, _ ->
+                                                    scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                                    offset += pan
+                                                    val maxOffset = 200f * (scale - 0.5f)
+                                                    offset = Offset(
+                                                        offset.x.coerceIn(-maxOffset, maxOffset),
+                                                        offset.y.coerceIn(-maxOffset, maxOffset)
+                                                    )
+                                                }
+                                            )
+                                        },
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                            Text(
+                                text = mainDate,
+                                color = Color(0xFFB3B3B3),
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(top = 6.dp)
                             )
                         }
-
                         // After photo
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(3f/4f)
-                                .clip(RoundedCornerShape(4.dp))
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            var scale by remember { mutableStateOf(1f) }
-                            var offset by remember { mutableStateOf(Offset.Zero) }
-                            
-                            AsyncImage(
-                                model = compareUri,
-                                contentDescription = "After Photo",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .graphicsLayer(
-                                        scaleX = scale,
-                                        scaleY = scale,
-                                        translationX = offset.x.coerceIn(-200f, 200f),
-                                        translationY = offset.y.coerceIn(-200f, 200f)
+                            val (icon2, color2) = IconChoose.getIcon(compareCategory.displayName)
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = color2.copy(alpha = 0.92f),
+                                shadowElevation = 2.dp,
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    FaIcon(
+                                        faIcon = icon2,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(15.dp)
                                     )
-                                    .pointerInput(Unit) {
-                                        detectTransformGestures(
-                                            onGesture = { centroid: Offset, pan: Offset, zoom: Float, rotation: Float ->
-                                                scale = (scale * zoom).coerceIn(0.5f, 4f)
-                                                offset += pan
-                                                // Constrain offset based on scale
-                                                val maxOffset = 200f * (scale - 0.5f)
-                                                offset = Offset(
-                                                    offset.x.coerceIn(-maxOffset, maxOffset),
-                                                    offset.y.coerceIn(-maxOffset, maxOffset)
-                                                )
-                                            }
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text(
+                                        text = compareCategory.displayName,
+                                        color = Color.White,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .aspectRatio(3f / 4f)
+                                    .clip(RoundedCornerShape(10.dp))
+                            ) {
+                                var scale by remember { mutableStateOf(1f) }
+                                var offset by remember { mutableStateOf(Offset.Zero) }
+                                AsyncImage(
+                                    model = compareUri,
+                                    contentDescription = "After Photo",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer(
+                                            scaleX = scale,
+                                            scaleY = scale,
+                                            translationX = offset.x.coerceIn(-200f, 200f),
+                                            translationY = offset.y.coerceIn(-200f, 200f)
                                         )
-                                    },
-                                contentScale = ContentScale.Fit
+                                        .pointerInput(Unit) {
+                                            detectTransformGestures(
+                                                onGesture = { _, pan, zoom, _ ->
+                                                    scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                                    offset += pan
+                                                    val maxOffset = 200f * (scale - 0.5f)
+                                                    offset = Offset(
+                                                        offset.x.coerceIn(-maxOffset, maxOffset),
+                                                        offset.y.coerceIn(-maxOffset, maxOffset)
+                                                    )
+                                                }
+                                            )
+                                        },
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                            Text(
+                                text = compareDate,
+                                color = Color(0xFFB3B3B3),
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(top = 6.dp)
                             )
                         }
                     }
-                    
+
                     // Metrics comparison
-                    MetricsComparison(
-                        mainMetricEntries = mainMetricEntries,
-                        compareMetricEntries = compareMetricEntries,
-                        modifier = Modifier.padding(top = 24.dp)
-                    )
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 28.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF232323)),
+                        elevation = CardDefaults.cardElevation(4.dp)
+                    ) {
+                        MetricsComparison(
+                            mainMetricEntries = mainMetricEntries,
+                            compareMetricEntries = compareMetricEntries,
+                            modifier = Modifier.padding(18.dp)
+                        )
+                    }
                 }
             }
         }

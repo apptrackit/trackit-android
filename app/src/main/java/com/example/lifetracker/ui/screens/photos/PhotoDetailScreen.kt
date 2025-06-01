@@ -57,6 +57,8 @@ import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.screens.photos.MetricRow
 import android.app.DatePickerDialog
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.zIndex
 import com.example.lifetracker.ui.theme.IconChoose
 import com.guru.fontawesomecomposelib.FaIcon
 
@@ -212,11 +214,16 @@ fun PhotoDetailScreen(
                 )
             )
         },
-        containerColor = Color(0xFF000000)
+        containerColor = Color.Transparent
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(Color(0xFF181818), Color(0xFF232323), Color.Black)
+                    )
+                )
                 .verticalScroll(rememberScrollState())
                 .padding(
                     start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
@@ -224,72 +231,114 @@ fun PhotoDetailScreen(
                     end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
                     bottom = paddingValues.calculateBottomPadding()
                 )
-                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .padding(horizontal = 0.dp, vertical = 0.dp)
         ) {
-            // Photo display
+            // Floating badge icon above photo card
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFF181818))
-                    .padding(12.dp)
+                    .height(0.dp) // No height, just for overlay
             ) {
-                var scale by remember { mutableStateOf(1f) }
-                var offset by remember { mutableStateOf(Offset.Zero) }
-
-                AsyncImage(
-                    model = uri,
-                    contentDescription = "Photo",
+                val (icon, color) = IconChoose.getIcon(category.displayName)
+                Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer(
-                            scaleX = scale,
-                            scaleY = scale,
-                            translationX = offset.x.coerceIn(-200f, 200f),
-                            translationY = offset.y.coerceIn(-200f, 200f)
+                        .size(68.dp)
+                        .align(Alignment.TopCenter)
+                        .offset(y = 34.dp) // half of size, will overlap card below
+                        .zIndex(2f)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color, shape = CircleShape)
+                            .border(
+                                width = 4.dp,
+                                color = Color.Black,
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        FaIcon(
+                            faIcon = icon,
+                            tint = Color.White,
+                            modifier = Modifier.size(36.dp)
                         )
-                        .pointerInput(Unit) {
-                            detectTransformGestures(
-                                onGesture = { _, pan, zoom, _ ->
-                                    scale = (scale * zoom).coerceIn(0.5f, 4f)
-                                    offset += pan
-                                    val maxOffset = 200f * (scale - 0.5f)
-                                    offset = Offset(
-                                        offset.x.coerceIn(-maxOffset, maxOffset),
-                                        offset.y.coerceIn(-maxOffset, maxOffset)
-                                    )
-                                }
-                            )
-                        },
-                    contentScale = ContentScale.Fit
-                )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Date and Category
-            Surface(
+            // Photo card (with top padding for badge)
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                color = Color(0xFF232323),
-                shape = RoundedCornerShape(12.dp),
-                shadowElevation = 2.dp
+                    .padding(horizontal = 24.dp, vertical = 12.dp)
+                    .padding(top = 34.dp), // space for badge
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF181818)),
+                elevation = CardDefaults.cardElevation(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(28.dp))
+                        .background(Color(0xFF181818))
+                ) {
+                    var scale by remember { mutableStateOf(1f) }
+                    var offset by remember { mutableStateOf(Offset.Zero) }
+
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = "Photo",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer(
+                                scaleX = scale,
+                                scaleY = scale,
+                                translationX = offset.x.coerceIn(-200f, 200f),
+                                translationY = offset.y.coerceIn(-200f, 200f)
+                            )
+                            .pointerInput(Unit) {
+                                detectTransformGestures(
+                                    onGesture = { _, pan, zoom, _ ->
+                                        scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                        offset += pan
+                                        val maxOffset = 200f * (scale - 0.5f)
+                                        offset = Offset(
+                                            offset.x.coerceIn(-maxOffset, maxOffset),
+                                            offset.y.coerceIn(-maxOffset, maxOffset)
+                                        )
+                                    }
+                                )
+                            },
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+
+            // Date and Change Date button
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 36.dp)
+                    .padding(bottom = 10.dp),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF232323)),
+                elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 20.dp, horizontal = 18.dp),
+                        .padding(vertical = 20.dp, horizontal = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = date,
                         color = Color(0xFFB3B3B3),
-                        fontSize = 16.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Medium
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
                     OutlinedButton(
                         onClick = { showDatePicker = true },
                         border = ButtonDefaults.outlinedButtonBorder.copy(
@@ -299,37 +348,22 @@ fun PhotoDetailScreen(
                             contentColor = Color.White
                         ),
                         modifier = Modifier
-                            .height(38.dp)
-                            .widthIn(min = 140.dp)
-                            .clip(RoundedCornerShape(20.dp))
+                            .height(44.dp)
+                            .widthIn(min = 180.dp)
+                            .clip(RoundedCornerShape(22.dp))
                     ) {
-                        Text("Change Date", fontSize = 14.sp)
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Surface(
-                        color = Color(0xFF333333),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = category.displayName,
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
-                        )
+                        Text("Change Date", fontSize = 16.sp)
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(18.dp))
 
             // Action Buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 2.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(horizontal = 36.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Category button
                 OutlinedButton(
                     onClick = {
                         val path = uri.path ?: return@OutlinedButton
@@ -345,12 +379,10 @@ fun PhotoDetailScreen(
                     border = ButtonDefaults.outlinedButtonBorder.copy(
                         brush = SolidColor(Color(0xFF2A2A2A))
                     ),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(18.dp)
                 ) {
                     Text("CATEGORY")
                 }
-
-                // Notes button
                 OutlinedButton(
                     onClick = { showMetadataDialog = true },
                     modifier = Modifier.weight(1f),
@@ -360,48 +392,44 @@ fun PhotoDetailScreen(
                     border = ButtonDefaults.outlinedButtonBorder.copy(
                         brush = SolidColor(Color(0xFF2A2A2A))
                     ),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(18.dp)
                 ) {
                     Text("NOTES")
                 }
             }
-
-            Spacer(modifier = Modifier.height(10.dp))
 
             // Compare button
             OutlinedButton(
                 onClick = { showPhotoSelectionDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .height(44.dp),
+                    .padding(horizontal = 36.dp, vertical = 14.dp)
+                    .height(52.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.White
                 ),
                 border = ButtonDefaults.outlinedButtonBorder.copy(
                     brush = SolidColor(Color(0xFF2A2A2A))
                 ),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(18.dp)
             ) {
-                Text("COMPARE")
+                Text("COMPARE", fontSize = 17.sp)
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
-
             // Metrics section
-            Surface(
+            Card(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                color = Color(0xFF1A1A1A),
-                shadowElevation = 2.dp
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 10.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+                elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp)
+                        .padding(22.dp)
                 ) {
-                    // Metrics rows
                     val allMetrics = listOf(
                         "Weight" to "kg",
                         "Height" to "cm",
@@ -412,7 +440,6 @@ fun PhotoDetailScreen(
                         "Thigh" to "cm",
                         "Shoulder" to "cm"
                     )
-
                     allMetrics.forEachIndexed { idx, (metricName, unit) ->
                         val entry = metricEntries.find { it.first == metricName }
                         val value = entry?.second?.first?.value
@@ -425,7 +452,6 @@ fun PhotoDetailScreen(
                                 String.format("%.1f", it)
                             }
                         } ?: "-"
-
                         val (icon, color) = IconChoose.getIcon(metricName)
                         Row(
                             modifier = Modifier
@@ -433,35 +459,39 @@ fun PhotoDetailScreen(
                                 .padding(vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            FaIcon(
-                                faIcon = icon,
-                                tint = color,
-                                modifier = Modifier.size(22.dp)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .background(color.copy(alpha = 0.16f), shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                FaIcon(
+                                    faIcon = icon,
+                                    tint = color,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                             Text(
                                 text = metricName,
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(start = 10.dp)
+                                    .padding(start = 12.dp)
                             )
-
                             Text(
                                 text = "$valueString ${if (valueString != "-") unit else ""}",
                                 color = Color.White,
                                 fontSize = 16.sp
                             )
                         }
-
                         if (idx != allMetrics.lastIndex) {
                             Divider(color = Color(0xFF333333), thickness = 0.7.dp)
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
