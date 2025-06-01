@@ -221,7 +221,7 @@ fun DashboardScreen(
                             iconTint = IconChoose.getIcon("BMI").second,
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable { onNavigateToViewBMIHistory }
+                                .clickable { onNavigateToViewBMIHistory() }
                         )
                         MetricCardRedesignedWithFaIcon(
                             title = "Height",
