@@ -19,6 +19,10 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
+import android.media.ExifInterface
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 
 /**
  * ViewModel responsible for managing photos and their metadata.
@@ -81,13 +85,26 @@ class PhotoViewModel : ViewModel() {
                 val photosDir = ensureDirectoryExists(context, PHOTOS_DIR)
                 val metadataDir = ensureDirectoryExists(context, METADATA_DIR)
 
-                val timestamp = SimpleDateFormat(DATE_FORMAT, Locale.getDefault()).format(Date())
-                val fileName = "IMG_$timestamp.jpg"
+                // Try to get EXIF date
+                val exifDate = getExifDate(context, uri)
+                val timestamp = exifDate ?: System.currentTimeMillis()
+                val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
+                val fileName = "IMG_${dateFormat.format(Date(timestamp))}.jpg"
                 val photoFile = File(photosDir, fileName)
 
                 savePhotoFile(context, uri, photoFile)
-                savePhotoMetadata(metadataDir, fileName, category)
-                
+                // Set file's last modified to EXIF date if available
+                photoFile.setLastModified(timestamp)
+                savePhotoMetadata(metadataDir, fileName, category, exifTimestamp = timestamp)
+
+                // Show toast with EXIF date if available
+                if (exifDate != null) {
+                    Handler(Looper.getMainLooper()).post {
+                        val dateStr = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()).format(Date(exifDate))
+                        Toast.makeText(context, "Photo date: $dateStr", Toast.LENGTH_LONG).show()
+                    }
+                }
+
                 loadPhotos(context)
             }
         }
@@ -200,12 +217,17 @@ class PhotoViewModel : ViewModel() {
         }
     }
 
-    private fun savePhotoMetadata(metadataDir: File, fileName: String, category: PhotoCategory, metadata: PhotoMetadata = PhotoMetadata()) {
+    private fun savePhotoMetadata(
+        metadataDir: File,
+        fileName: String,
+        category: PhotoCategory,
+        metadata: PhotoMetadata = PhotoMetadata(),
+        exifTimestamp: Long? = null
+    ) {
         val metadataFile = File(metadataDir, "$fileName.json")
         val json = JSONObject().apply {
             put("category", category.name)
-            put("timestamp", Date().time)
-            
+            put("timestamp", exifTimestamp ?: Date().time)
             // Save additional metadata
             metadata.weight?.let { put("weight", it.toDouble()) }
             metadata.bodyFatPercentage?.let { put("bodyFatPercentage", it.toDouble()) }
@@ -242,6 +264,48 @@ class PhotoViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Updates the date (timestamp) of a photo and its metadata.
+     */
+    fun updatePhotoDate(context: Context, photo: Photo, newDateMillis: Long) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val file = File(photo.filePath)
+                if (file.exists()) {
+                    file.setLastModified(newDateMillis)
+                    val metadataDir = ensureDirectoryExists(context, METADATA_DIR)
+                    val metadataFile = File(metadataDir, "${file.name}.json")
+                    if (metadataFile.exists()) {
+                        try {
+                            val json = JSONObject(metadataFile.readText())
+                            json.put("timestamp", newDateMillis)
+                            metadataFile.writeText(json.toString())
+                        } catch (_: Exception) {}
+                    }
+                    loadPhotos(context)
+                }
+            }
+        }
+    }
+
+    // Helper to extract EXIF date from image
+    private fun getExifDate(context: Context, uri: Uri): Long? {
+        return try {
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                val exif = ExifInterface(input)
+                val dateStr = exif.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL)
+                    ?: exif.getAttribute(ExifInterface.TAG_DATETIME)
+                if (dateStr != null) {
+                    // EXIF date format: "yyyy:MM:dd HH:mm:ss"
+                    val sdf = SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.getDefault())
+                    sdf.parse(dateStr)?.time
+                } else null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     fun applyFilter() {
         filteredPhotos = if (selectedCategory == null) {
             photos
@@ -249,4 +313,4 @@ class PhotoViewModel : ViewModel() {
             photos.filter { it.category == selectedCategory }
         }
     }
-} 
+}

@@ -55,6 +55,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.screens.photos.MetricRow
+import android.app.DatePickerDialog
+import androidx.compose.foundation.shape.CircleShape
+import com.example.lifetracker.ui.theme.IconChoose
+import com.guru.fontawesomecomposelib.FaIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +73,7 @@ fun PhotoDetailScreen(
     // For photo selection dialog
     var showPhotoSelectionDialog by remember { mutableStateOf(false) }
     var showMetadataDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     // Load all photos for comparison dialog
     LaunchedEffect(Unit) {
@@ -89,10 +94,39 @@ fun PhotoDetailScreen(
     val photo = photoViewModel.photos.find { it.filePath == decodedPath }
     val category = photo?.category ?: PhotoCategory.OTHER
 
+    // Date state for editing
+    var dateMillis by remember { mutableStateOf(file.lastModified()) }
     val date = try {
-        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(file.lastModified()))
+        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(dateMillis))
     } catch (e: Exception) {
         "Unknown date"
+    }
+
+    // Date picker dialog
+    if (showDatePicker) {
+        val calendar = Calendar.getInstance().apply { timeInMillis = dateMillis }
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val newCal = Calendar.getInstance()
+                newCal.set(year, month, dayOfMonth, 12, 0, 0)
+                val newDateMillis = newCal.timeInMillis
+                dateMillis = newDateMillis
+                // Update file lastModified and metadata timestamp
+                photo?.let {
+                    photoViewModel.updatePhotoDate(context, it, newDateMillis)
+                }
+                showDatePicker = false
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).apply {
+            datePicker.maxDate = System.currentTimeMillis()
+            show()
+        }
+        // Prevent dialog from showing twice
+        showDatePicker = false
     }
 
     // Calculate metric entries
@@ -190,17 +224,20 @@ fun PhotoDetailScreen(
                     end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
                     bottom = paddingValues.calculateBottomPadding()
                 )
+                .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
             // Photo display
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .clip(RoundedCornerShape(4.dp))
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFF181818))
+                    .padding(12.dp)
             ) {
                 var scale by remember { mutableStateOf(1f) }
                 var offset by remember { mutableStateOf(Offset.Zero) }
-                
+
                 AsyncImage(
                     model = uri,
                     contentDescription = "Photo",
@@ -214,7 +251,7 @@ fun PhotoDetailScreen(
                         )
                         .pointerInput(Unit) {
                             detectTransformGestures(
-                                onGesture = { centroid: Offset, pan: Offset, zoom: Float, rotation: Float ->
+                                onGesture = { _, pan, zoom, _ ->
                                     scale = (scale * zoom).coerceIn(0.5f, 4f)
                                     offset += pan
                                     val maxOffset = 200f * (scale - 0.5f)
@@ -229,32 +266,68 @@ fun PhotoDetailScreen(
                 )
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
             // Date and Category
-            Row(
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(bottom = 12.dp),
+                color = Color(0xFF232323),
+                shape = RoundedCornerShape(12.dp),
+                shadowElevation = 2.dp
             ) {
-                Text(
-                    text = date,
-                    color = Color(0xFFB3B3B3),
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = category.displayName,
-                    color = Color(0xFFB3B3B3),
-                    fontSize = 14.sp
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp, horizontal = 18.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = date,
+                        color = Color(0xFFB3B3B3),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedButton(
+                        onClick = { showDatePicker = true },
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            brush = SolidColor(Color(0xFF2A2A2A))
+                        ),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier
+                            .height(38.dp)
+                            .widthIn(min = 140.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                    ) {
+                        Text("Change Date", fontSize = 14.sp)
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Surface(
+                        color = Color(0xFF333333),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = category.displayName,
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                        )
+                    }
+                }
             }
+
+            Spacer(modifier = Modifier.height(18.dp))
 
             // Action Buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(horizontal = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Category button
                 OutlinedButton(
@@ -271,7 +344,8 @@ fun PhotoDetailScreen(
                     ),
                     border = ButtonDefaults.outlinedButtonBorder.copy(
                         brush = SolidColor(Color(0xFF2A2A2A))
-                    )
+                    ),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Text("CATEGORY")
                 }
@@ -285,40 +359,47 @@ fun PhotoDetailScreen(
                     ),
                     border = ButtonDefaults.outlinedButtonBorder.copy(
                         brush = SolidColor(Color(0xFF2A2A2A))
-                    )
+                    ),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Text("NOTES")
                 }
             }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Compare button
             OutlinedButton(
                 onClick = { showPhotoSelectionDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(vertical = 8.dp)
+                    .height(44.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.White
                 ),
                 border = ButtonDefaults.outlinedButtonBorder.copy(
                     brush = SolidColor(Color(0xFF2A2A2A))
-                )
+                ),
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Text("COMPARE")
             }
 
+            Spacer(modifier = Modifier.height(18.dp))
+
             // Metrics section
             Surface(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(8.dp),
-                color = Color(0xFF1A1A1A)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                color = Color(0xFF1A1A1A),
+                shadowElevation = 2.dp
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(20.dp)
                 ) {
                     // Metrics rows
                     val allMetrics = listOf(
@@ -332,10 +413,10 @@ fun PhotoDetailScreen(
                         "Shoulder" to "cm"
                     )
 
-                    allMetrics.forEach { (metricName, unit) ->
+                    allMetrics.forEachIndexed { idx, (metricName, unit) ->
                         val entry = metricEntries.find { it.first == metricName }
                         val value = entry?.second?.first?.value
-                        val valueString = value?.let { 
+                        val valueString = value?.let {
                             if (unit == "cm" && metricName != "Height") {
                                 String.format("%.1f", it)
                             } else if (metricName == "Height") {
@@ -345,17 +426,17 @@ fun PhotoDetailScreen(
                             }
                         } ?: "-"
 
+                        val (icon, color) = IconChoose.getIcon(metricName)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp),
+                                .padding(vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
+                            FaIcon(
+                                faIcon = icon,
+                                tint = color,
+                                modifier = Modifier.size(22.dp)
                             )
                             Text(
                                 text = metricName,
@@ -363,22 +444,24 @@ fun PhotoDetailScreen(
                                 fontSize = 16.sp,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(start = 8.dp)
+                                    .padding(start = 10.dp)
                             )
-                            
+
                             Text(
                                 text = "$valueString ${if (valueString != "-") unit else ""}",
                                 color = Color.White,
                                 fontSize = 16.sp
                             )
                         }
-                        
-                        if (metricName != allMetrics.last().first) {
-                            Divider(color = Color(0xFF333333), thickness = 0.5.dp)
+
+                        if (idx != allMetrics.lastIndex) {
+                            Divider(color = Color(0xFF333333), thickness = 0.7.dp)
                         }
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -388,6 +471,7 @@ private fun MetricRow(
     title: String,
     value: String
 ) {
+    val (icon, color) = IconChoose.getIcon(title)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -395,10 +479,16 @@ private fun MetricRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        FaIcon(
+            faIcon = icon,
+            tint = color,
+            modifier = Modifier.size(18.dp)
+        )
         Text(
             text = title,
             color = Color.White,
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            modifier = Modifier.weight(1f).padding(start = 8.dp)
         )
         Text(
             text = value,
@@ -653,4 +743,4 @@ private fun formatValue(value: Float, unit: String): String {
         unit == "%" -> String.format("%.1f%s", value, unit)
         else -> String.format("%.1f %s", value, unit)
     }
-} 
+}

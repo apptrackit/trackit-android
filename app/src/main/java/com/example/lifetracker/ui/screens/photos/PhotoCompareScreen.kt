@@ -40,6 +40,8 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
+import com.example.lifetracker.ui.theme.IconChoose
+import com.guru.fontawesomecomposelib.FaIcon
 
 // Custom icon mapping to avoid missing Material icons
 private object CustomIcons {
@@ -447,6 +449,7 @@ internal fun MetricRow(
     afterValue: Float?,
     unit: String
 ) {
+    val (icon, color) = IconChoose.getIcon(metricName)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -454,19 +457,9 @@ internal fun MetricRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Icon based on metric type
-        Icon(
-            imageVector = when (metricName) {
-                "Weight" -> CustomIcons.Scale
-                "Body Fat" -> Icons.Outlined.Person
-                "Bicep" -> CustomIcons.FitnessCenter
-                "Chest" -> CustomIcons.Straighten
-                "Waist" -> CustomIcons.Height
-                "Thigh" -> CustomIcons.DirectionsWalk
-                "Shoulder" -> CustomIcons.AccessibilityNew
-                else -> CustomIcons.Straighten
-            },
-            contentDescription = metricName,
-            tint = Color.White,
+        FaIcon(
+            faIcon = icon,
+            tint = color,
             modifier = Modifier
                 .size(24.dp)
                 .padding(end = 12.dp)
@@ -545,4 +538,4 @@ private fun formatValue(value: Float, unit: String): String {
         unit == "%" -> String.format("%.1f", value)
         else -> String.format("%.1f", value)
     }
-} 
+}
