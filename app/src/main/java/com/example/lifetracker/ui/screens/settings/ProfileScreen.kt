@@ -170,26 +170,34 @@ fun ProfileScreen(
             ProfileInfoCard(
                 label = "Gender",
                 value = gender,
-                onClick = { showGenderDialog = true }
+                onClick = { showGenderDialog = true },
+                showEditIcon = true
             )
             Spacer(modifier = Modifier.height(12.dp))
             ProfileInfoCard(
-                label = "Age",
-                value = age.toString(),
-                onClick = { showBirthYearDialog = true }
+                label = "Birth year",
+                value = birthYear.toString(),
+                onClick = { showBirthYearDialog = true },
+                showEditIcon = true
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            ProfileInfoCard(label = "App Version", value = appVersion.toString())
+
 
             // Add Import/Export buttons after the info cards
             Spacer(modifier = Modifier.height(12.dp))
             ProfileInfoCard(
                 label = "Import/Export Data",
                 value = "",
-                onClick = { showImportExportDialog = true }
+                onClick = { showImportExportDialog = true },
+                showEditIcon = false
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+            ProfileInfoCard(
+                label = "App Version",
+                value = appVersion.toString(),
+                showEditIcon = false
+            )
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Creative: motivational quote
             Text(
@@ -359,7 +367,12 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun ProfileInfoCard(label: String, value: String, onClick: (() -> Unit)? = null) {
+private fun ProfileInfoCard(
+    label: String,
+    value: String,
+    onClick: (() -> Unit)? = null,
+    showEditIcon: Boolean = false
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -388,7 +401,7 @@ private fun ProfileInfoCard(label: String, value: String, onClick: (() -> Unit)?
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
-            if (onClick != null) {
+            if (onClick != null && showEditIcon) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     imageVector = Icons.Default.Edit,
