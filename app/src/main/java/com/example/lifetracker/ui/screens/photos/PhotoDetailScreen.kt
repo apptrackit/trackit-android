@@ -55,6 +55,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
 import com.example.lifetracker.data.model.HistoryEntry
 import com.example.lifetracker.ui.screens.photos.MetricRow
+import android.app.DatePickerDialog
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.zIndex
+import com.example.lifetracker.ui.theme.IconChoose
+import com.guru.fontawesomecomposelib.FaIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +75,7 @@ fun PhotoDetailScreen(
     // For photo selection dialog
     var showPhotoSelectionDialog by remember { mutableStateOf(false) }
     var showMetadataDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     // Load all photos for comparison dialog
     LaunchedEffect(Unit) {
@@ -89,10 +96,39 @@ fun PhotoDetailScreen(
     val photo = photoViewModel.photos.find { it.filePath == decodedPath }
     val category = photo?.category ?: PhotoCategory.OTHER
 
+    // Date state for editing
+    var dateMillis by remember { mutableStateOf(file.lastModified()) }
     val date = try {
-        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(file.lastModified()))
+        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(dateMillis))
     } catch (e: Exception) {
         "Unknown date"
+    }
+
+    // Date picker dialog
+    if (showDatePicker) {
+        val calendar = Calendar.getInstance().apply { timeInMillis = dateMillis }
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val newCal = Calendar.getInstance()
+                newCal.set(year, month, dayOfMonth, 12, 0, 0)
+                val newDateMillis = newCal.timeInMillis
+                dateMillis = newDateMillis
+                // Update file lastModified and metadata timestamp
+                photo?.let {
+                    photoViewModel.updatePhotoDate(context, it, newDateMillis)
+                }
+                showDatePicker = false
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).apply {
+            datePicker.maxDate = System.currentTimeMillis()
+            show()
+        }
+        // Prevent dialog from showing twice
+        showDatePicker = false
     }
 
     // Calculate metric entries
@@ -178,11 +214,16 @@ fun PhotoDetailScreen(
                 )
             )
         },
-        containerColor = Color(0xFF000000)
+        containerColor = Color.Transparent
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(Color(0xFF181818), Color(0xFF232323), Color.Black)
+                    )
+                )
                 .verticalScroll(rememberScrollState())
                 .padding(
                     start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
@@ -190,73 +231,139 @@ fun PhotoDetailScreen(
                     end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
                     bottom = paddingValues.calculateBottomPadding()
                 )
+                .padding(horizontal = 0.dp, vertical = 0.dp)
         ) {
-            // Photo display
+            // Floating badge icon above photo card
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(4.dp))
+                    .height(0.dp) // No height, just for overlay
             ) {
-                var scale by remember { mutableStateOf(1f) }
-                var offset by remember { mutableStateOf(Offset.Zero) }
-                
-                AsyncImage(
-                    model = uri,
-                    contentDescription = "Photo",
+                val (icon, color) = IconChoose.getIcon(category.displayName)
+                Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer(
-                            scaleX = scale,
-                            scaleY = scale,
-                            translationX = offset.x.coerceIn(-200f, 200f),
-                            translationY = offset.y.coerceIn(-200f, 200f)
+                        .size(68.dp)
+                        .align(Alignment.TopCenter)
+                        .offset(y = 34.dp) // half of size, will overlap card below
+                        .zIndex(2f)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color, shape = CircleShape)
+                            .border(
+                                width = 4.dp,
+                                color = Color.Black,
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        FaIcon(
+                            faIcon = icon,
+                            tint = Color.White,
+                            modifier = Modifier.size(36.dp)
                         )
-                        .pointerInput(Unit) {
-                            detectTransformGestures(
-                                onGesture = { centroid: Offset, pan: Offset, zoom: Float, rotation: Float ->
-                                    scale = (scale * zoom).coerceIn(0.5f, 4f)
-                                    offset += pan
-                                    val maxOffset = 200f * (scale - 0.5f)
-                                    offset = Offset(
-                                        offset.x.coerceIn(-maxOffset, maxOffset),
-                                        offset.y.coerceIn(-maxOffset, maxOffset)
-                                    )
-                                }
-                            )
-                        },
-                    contentScale = ContentScale.Fit
-                )
+                    }
+                }
             }
 
-            // Date and Category
-            Row(
+            // Photo card (with top padding for badge)
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 24.dp, vertical = 12.dp)
+                    .padding(top = 34.dp), // space for badge
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF181818)),
+                elevation = CardDefaults.cardElevation(10.dp)
             ) {
-                Text(
-                    text = date,
-                    color = Color(0xFFB3B3B3),
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = category.displayName,
-                    color = Color(0xFFB3B3B3),
-                    fontSize = 14.sp
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(28.dp))
+                        .background(Color(0xFF181818))
+                ) {
+                    var scale by remember { mutableStateOf(1f) }
+                    var offset by remember { mutableStateOf(Offset.Zero) }
+
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = "Photo",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer(
+                                scaleX = scale,
+                                scaleY = scale,
+                                translationX = offset.x.coerceIn(-200f, 200f),
+                                translationY = offset.y.coerceIn(-200f, 200f)
+                            )
+                            .pointerInput(Unit) {
+                                detectTransformGestures(
+                                    onGesture = { _, pan, zoom, _ ->
+                                        scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                        offset += pan
+                                        val maxOffset = 200f * (scale - 0.5f)
+                                        offset = Offset(
+                                            offset.x.coerceIn(-maxOffset, maxOffset),
+                                            offset.y.coerceIn(-maxOffset, maxOffset)
+                                        )
+                                    }
+                                )
+                            },
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+
+            // Date and Change Date button
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 36.dp)
+                    .padding(bottom = 10.dp),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF232323)),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp, horizontal = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = date,
+                        color = Color(0xFFB3B3B3),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    OutlinedButton(
+                        onClick = { showDatePicker = true },
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            brush = SolidColor(Color(0xFF2A2A2A))
+                        ),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier
+                            .height(44.dp)
+                            .widthIn(min = 180.dp)
+                            .clip(RoundedCornerShape(22.dp))
+                    ) {
+                        Text("Change Date", fontSize = 16.sp)
+                    }
+                }
             }
 
             // Action Buttons
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(horizontal = 36.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Category button
                 OutlinedButton(
                     onClick = {
                         val path = uri.path ?: return@OutlinedButton
@@ -271,12 +378,11 @@ fun PhotoDetailScreen(
                     ),
                     border = ButtonDefaults.outlinedButtonBorder.copy(
                         brush = SolidColor(Color(0xFF2A2A2A))
-                    )
+                    ),
+                    shape = RoundedCornerShape(18.dp)
                 ) {
                     Text("CATEGORY")
                 }
-
-                // Notes button
                 OutlinedButton(
                     onClick = { showMetadataDialog = true },
                     modifier = Modifier.weight(1f),
@@ -285,7 +391,8 @@ fun PhotoDetailScreen(
                     ),
                     border = ButtonDefaults.outlinedButtonBorder.copy(
                         brush = SolidColor(Color(0xFF2A2A2A))
-                    )
+                    ),
+                    shape = RoundedCornerShape(18.dp)
                 ) {
                     Text("NOTES")
                 }
@@ -296,31 +403,33 @@ fun PhotoDetailScreen(
                 onClick = { showPhotoSelectionDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 36.dp, vertical = 14.dp)
+                    .height(52.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color.White
                 ),
                 border = ButtonDefaults.outlinedButtonBorder.copy(
                     brush = SolidColor(Color(0xFF2A2A2A))
-                )
+                ),
+                shape = RoundedCornerShape(18.dp)
             ) {
-                Text("COMPARE")
+                Text("COMPARE", fontSize = 17.sp)
             }
 
             // Metrics section
-            Surface(
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(8.dp),
-                color = Color(0xFF1A1A1A)
+                    .padding(horizontal = 24.dp, vertical = 10.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+                elevation = CardDefaults.cardElevation(4.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(22.dp)
                 ) {
-                    // Metrics rows
                     val allMetrics = listOf(
                         "Weight" to "kg",
                         "Height" to "cm",
@@ -331,11 +440,10 @@ fun PhotoDetailScreen(
                         "Thigh" to "cm",
                         "Shoulder" to "cm"
                     )
-
-                    allMetrics.forEach { (metricName, unit) ->
+                    allMetrics.forEachIndexed { idx, (metricName, unit) ->
                         val entry = metricEntries.find { it.first == metricName }
                         val value = entry?.second?.first?.value
-                        val valueString = value?.let { 
+                        val valueString = value?.let {
                             if (unit == "cm" && metricName != "Height") {
                                 String.format("%.1f", it)
                             } else if (metricName == "Height") {
@@ -344,41 +452,46 @@ fun PhotoDetailScreen(
                                 String.format("%.1f", it)
                             }
                         } ?: "-"
-
+                        val (icon, color) = IconChoose.getIcon(metricName)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp),
+                                .padding(vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp) // Larger for better fit
+                                    .background(color.copy(alpha = 0.16f), shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                FaIcon(
+                                    faIcon = icon,
+                                    tint = color,
+                                    modifier = Modifier.size(20.dp) // Bigger icon in 32dp circle
+                                )
+                            }
                             Text(
                                 text = metricName,
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .padding(start = 8.dp)
+                                    .padding(start = 12.dp)
                             )
-                            
                             Text(
                                 text = "$valueString ${if (valueString != "-") unit else ""}",
                                 color = Color.White,
                                 fontSize = 16.sp
                             )
                         }
-                        
-                        if (metricName != allMetrics.last().first) {
-                            Divider(color = Color(0xFF333333), thickness = 0.5.dp)
+                        if (idx != allMetrics.lastIndex) {
+                            Divider(color = Color(0xFF333333), thickness = 0.7.dp)
                         }
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -388,6 +501,7 @@ private fun MetricRow(
     title: String,
     value: String
 ) {
+    val (icon, color) = IconChoose.getIcon(title)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -395,10 +509,16 @@ private fun MetricRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        FaIcon(
+            faIcon = icon,
+            tint = color,
+            modifier = Modifier.size(18.dp) // Bigger icon in row
+        )
         Text(
             text = title,
             color = Color.White,
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            modifier = Modifier.weight(1f).padding(start = 8.dp)
         )
         Text(
             text = value,
@@ -653,4 +773,4 @@ private fun formatValue(value: Float, unit: String): String {
         unit == "%" -> String.format("%.1f%s", value, unit)
         else -> String.format("%.1f %s", value, unit)
     }
-} 
+}

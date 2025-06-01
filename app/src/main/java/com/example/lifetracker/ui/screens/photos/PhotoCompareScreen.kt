@@ -40,16 +40,9 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
+import com.example.lifetracker.ui.theme.IconChoose
+import com.guru.fontawesomecomposelib.FaIcon
 
-// Custom icon mapping to avoid missing Material icons
-private object CustomIcons {
-    val Scale = Icons.Outlined.Person // Fallback icon
-    val FitnessCenter = Icons.Outlined.Person
-    val Straighten = Icons.Outlined.Person
-    val Height = Icons.Outlined.Person
-    val DirectionsWalk = Icons.Outlined.Person
-    val AccessibilityNew = Icons.Outlined.Person
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,18 +74,23 @@ fun PhotoCompareScreen(
     val mainPhoto = photoViewModel.photos.find { it.filePath == decodedMainPath }
     val comparePhoto = photoViewModel.photos.find { it.filePath == decodedComparePath }
     
-    val mainCategory = mainPhoto?.category ?: PhotoCategory.OTHER
-    val compareCategory = comparePhoto?.category ?: PhotoCategory.OTHER
-    
-    val mainDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        .format(Date(mainFile.lastModified()))
-    val compareDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        .format(Date(compareFile.lastModified()))
+    // --- Ensure left is always the older photo, right is newer ---
+    val (leftPhoto, rightPhoto) = if (mainFile.lastModified() <= compareFile.lastModified()) {
+        Pair(mainPhoto to mainFile, comparePhoto to compareFile)
+    } else {
+        Pair(comparePhoto to compareFile, mainPhoto to mainFile)
+    }
+    val leftUri = Uri.fromFile(leftPhoto.second)
+    val rightUri = Uri.fromFile(rightPhoto.second)
+    val leftCategory = leftPhoto.first?.category ?: PhotoCategory.OTHER
+    val rightCategory = rightPhoto.first?.category ?: PhotoCategory.OTHER
+    val leftDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        .format(Date(leftPhoto.second.lastModified()))
+    val rightDate = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        .format(Date(rightPhoto.second.lastModified()))
+    val leftMetadata = leftPhoto.first?.metadata ?: PhotoMetadata()
+    val rightMetadata = rightPhoto.first?.metadata ?: PhotoMetadata()
 
-    val mainMetadata = mainPhoto?.metadata ?: PhotoMetadata()
-    val compareMetadata = comparePhoto?.metadata ?: PhotoMetadata()
-    
-    // Get metrics for both photos
     val getPhotoMetrics = { photoFile: File ->
         val photoDate = photoFile.lastModified()
         val metrics = listOf(
@@ -127,18 +125,18 @@ fun PhotoCompareScreen(
         }
     }
     
-    val mainMetricEntries = getPhotoMetrics(mainFile)
-    val compareMetricEntries = getPhotoMetrics(compareFile)
+    val leftMetricEntries = getPhotoMetrics(leftPhoto.second)
+    val rightMetricEntries = getPhotoMetrics(rightPhoto.second)
     
     // Log metric entries for debugging
-    Log.d("PhotoMetrics", "Main photo (${mainDate}): Found ${mainMetricEntries.size} metrics")
-    mainMetricEntries.forEach { (metric, data) ->
+    Log.d("PhotoMetrics", "Main photo (${leftDate}): Found ${leftMetricEntries.size} metrics")
+    leftMetricEntries.forEach { (metric, data) ->
         val (entry, unit) = data
         Log.d("PhotoMetrics", "  $metric: ${entry.value} $unit (recorded on ${Date(entry.date)})")
     }
     
-    Log.d("PhotoMetrics", "Compare photo (${compareDate}): Found ${compareMetricEntries.size} metrics")
-    compareMetricEntries.forEach { (metric, data) ->
+    Log.d("PhotoMetrics", "Compare photo (${rightDate}): Found ${rightMetricEntries.size} metrics")
+    rightMetricEntries.forEach { (metric, data) ->
         val (entry, unit) = data
         Log.d("PhotoMetrics", "  $metric: ${entry.value} $unit (recorded on ${Date(entry.date)})")
     }
@@ -170,125 +168,205 @@ fun PhotoCompareScreen(
                 )
             )
         },
-        containerColor = Color(0xFF000000)
+        containerColor = Color.Transparent
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(Color(0xFF181818), Color(0xFF232323), Color.Black)
+                    )
+                )
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
         ) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(18.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFF1A1A1A)
-                )
+                ),
+                elevation = CardDefaults.cardElevation(8.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(18.dp)
                 ) {
                     Text(
                         text = "Comparison",
                         color = Color.White,
-                        fontSize = 20.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = 18.dp)
                     )
 
-                    // Photos
+                    // Photos with category badges
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 4.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Before photo
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(3f/4f)
-                                .clip(RoundedCornerShape(4.dp))
+                        // Left (older) photo
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            var scale by remember { mutableStateOf(1f) }
-                            var offset by remember { mutableStateOf(Offset.Zero) }
-                            
-                            AsyncImage(
-                                model = mainUri,
-                                contentDescription = "Before Photo",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .graphicsLayer(
-                                        scaleX = scale,
-                                        scaleY = scale,
-                                        translationX = offset.x.coerceIn(-200f, 200f),
-                                        translationY = offset.y.coerceIn(-200f, 200f)
+                            val (icon1, color1) = IconChoose.getIcon(leftCategory.displayName)
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = color1.copy(alpha = 0.92f),
+                                shadowElevation = 2.dp,
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    FaIcon(
+                                        faIcon = icon1,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp) // Bigger icon in badge
                                     )
-                                    .pointerInput(Unit) {
-                                        detectTransformGestures(
-                                            onGesture = { centroid: Offset, pan: Offset, zoom: Float, rotation: Float ->
-                                                scale = (scale * zoom).coerceIn(0.5f, 4f)
-                                                offset += pan
-                                                // Constrain offset based on scale
-                                                val maxOffset = 200f * (scale - 0.5f)
-                                                offset = Offset(
-                                                    offset.x.coerceIn(-maxOffset, maxOffset),
-                                                    offset.y.coerceIn(-maxOffset, maxOffset)
-                                                )
-                                            }
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text(
+                                        text = leftCategory.displayName,
+                                        color = Color.White,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .aspectRatio(3f / 4f)
+                                    .clip(RoundedCornerShape(10.dp))
+                            ) {
+                                var scale by remember { mutableStateOf(1f) }
+                                var offset by remember { mutableStateOf(Offset.Zero) }
+                                AsyncImage(
+                                    model = leftUri,
+                                    contentDescription = "Older Photo",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer(
+                                            scaleX = scale,
+                                            scaleY = scale,
+                                            translationX = offset.x.coerceIn(-200f, 200f),
+                                            translationY = offset.y.coerceIn(-200f, 200f)
                                         )
-                                    },
-                                contentScale = ContentScale.Fit
+                                        .pointerInput(Unit) {
+                                            detectTransformGestures(
+                                                onGesture = { _, pan, zoom, _ ->
+                                                    scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                                    offset += pan
+                                                    val maxOffset = 200f * (scale - 0.5f)
+                                                    offset = Offset(
+                                                        offset.x.coerceIn(-maxOffset, maxOffset),
+                                                        offset.y.coerceIn(-maxOffset, maxOffset)
+                                                    )
+                                                }
+                                            )
+                                        },
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                            Text(
+                                text = leftDate,
+                                color = Color(0xFFB3B3B3),
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(top = 6.dp)
                             )
                         }
-
-                        // After photo
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(3f/4f)
-                                .clip(RoundedCornerShape(4.dp))
+                        // Right (newer) photo
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            var scale by remember { mutableStateOf(1f) }
-                            var offset by remember { mutableStateOf(Offset.Zero) }
-                            
-                            AsyncImage(
-                                model = compareUri,
-                                contentDescription = "After Photo",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .graphicsLayer(
-                                        scaleX = scale,
-                                        scaleY = scale,
-                                        translationX = offset.x.coerceIn(-200f, 200f),
-                                        translationY = offset.y.coerceIn(-200f, 200f)
+                            val (icon2, color2) = IconChoose.getIcon(rightCategory.displayName)
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = color2.copy(alpha = 0.92f),
+                                shadowElevation = 2.dp,
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    FaIcon(
+                                        faIcon = icon2,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp) // Bigger icon in badge
                                     )
-                                    .pointerInput(Unit) {
-                                        detectTransformGestures(
-                                            onGesture = { centroid: Offset, pan: Offset, zoom: Float, rotation: Float ->
-                                                scale = (scale * zoom).coerceIn(0.5f, 4f)
-                                                offset += pan
-                                                // Constrain offset based on scale
-                                                val maxOffset = 200f * (scale - 0.5f)
-                                                offset = Offset(
-                                                    offset.x.coerceIn(-maxOffset, maxOffset),
-                                                    offset.y.coerceIn(-maxOffset, maxOffset)
-                                                )
-                                            }
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text(
+                                        text = rightCategory.displayName,
+                                        color = Color.White,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .aspectRatio(3f / 4f)
+                                    .clip(RoundedCornerShape(10.dp))
+                            ) {
+                                var scale by remember { mutableStateOf(1f) }
+                                var offset by remember { mutableStateOf(Offset.Zero) }
+                                AsyncImage(
+                                    model = rightUri,
+                                    contentDescription = "Newer Photo",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer(
+                                            scaleX = scale,
+                                            scaleY = scale,
+                                            translationX = offset.x.coerceIn(-200f, 200f),
+                                            translationY = offset.y.coerceIn(-200f, 200f)
                                         )
-                                    },
-                                contentScale = ContentScale.Fit
+                                        .pointerInput(Unit) {
+                                            detectTransformGestures(
+                                                onGesture = { _, pan, zoom, _ ->
+                                                    scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                                    offset += pan
+                                                    val maxOffset = 200f * (scale - 0.5f)
+                                                    offset = Offset(
+                                                        offset.x.coerceIn(-maxOffset, maxOffset),
+                                                        offset.y.coerceIn(-maxOffset, maxOffset)
+                                                    )
+                                                }
+                                            )
+                                        },
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                            Text(
+                                text = rightDate,
+                                color = Color(0xFFB3B3B3),
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(top = 6.dp)
                             )
                         }
                     }
-                    
+
                     // Metrics comparison
-                    MetricsComparison(
-                        mainMetricEntries = mainMetricEntries,
-                        compareMetricEntries = compareMetricEntries,
-                        modifier = Modifier.padding(top = 24.dp)
-                    )
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 28.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF232323)),
+                        elevation = CardDefaults.cardElevation(4.dp)
+                    ) {
+                        MetricsComparison(
+                            mainMetricEntries = leftMetricEntries,
+                            compareMetricEntries = rightMetricEntries,
+                            modifier = Modifier.padding(18.dp)
+                        )
+                    }
                 }
             }
         }
@@ -447,6 +525,7 @@ internal fun MetricRow(
     afterValue: Float?,
     unit: String
 ) {
+    val (icon, color) = IconChoose.getIcon(metricName)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -454,22 +533,12 @@ internal fun MetricRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Icon based on metric type
-        Icon(
-            imageVector = when (metricName) {
-                "Weight" -> CustomIcons.Scale
-                "Body Fat" -> Icons.Outlined.Person
-                "Bicep" -> CustomIcons.FitnessCenter
-                "Chest" -> CustomIcons.Straighten
-                "Waist" -> CustomIcons.Height
-                "Thigh" -> CustomIcons.DirectionsWalk
-                "Shoulder" -> CustomIcons.AccessibilityNew
-                else -> CustomIcons.Straighten
-            },
-            contentDescription = metricName,
-            tint = Color.White,
+        FaIcon(
+            faIcon = icon,
+            tint = color,
             modifier = Modifier
-                .size(24.dp)
-                .padding(end = 12.dp)
+                .size(20.dp) // Bigger icon in row
+                .padding(end = 10.dp)
         )
         
         // Metric name
@@ -545,4 +614,4 @@ private fun formatValue(value: Float, unit: String): String {
         unit == "%" -> String.format("%.1f", value)
         else -> String.format("%.1f", value)
     }
-} 
+}

@@ -1,10 +1,11 @@
 package com.example.lifetracker.ui.screens.photos
 
 import android.net.Uri
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -12,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -25,6 +27,10 @@ import com.example.lifetracker.data.model.PhotoCategory
 import com.example.lifetracker.ui.viewmodel.HealthViewModel
 import com.example.lifetracker.ui.viewmodel.PhotoViewModel
 import java.io.File
+import com.example.lifetracker.ui.theme.IconChoose
+import com.guru.fontawesomecomposelib.FaIcon
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,26 +41,26 @@ fun PhotoCategoryScreen(
 ) {
     val context = LocalContext.current
     val photoViewModel = remember { PhotoViewModel() }
-    
+
     // Decode the URL-encoded path
     val decodedPath = try {
         java.net.URLDecoder.decode(photoUri, "UTF-8")
     } catch (e: Exception) {
         photoUri
     }
-    
+
     val file = File(decodedPath)
     val uri = Uri.fromFile(file)
-    
+
     // Load photos to get current category
     LaunchedEffect(Unit) {
         photoViewModel.loadPhotos(context)
     }
-    
+
     // Find the photo in the loaded photos
     val photo = photoViewModel.photos.find { it.filePath == decodedPath }
     var selectedCategory by remember { mutableStateOf(photo?.category ?: PhotoCategory.OTHER) }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -90,14 +96,16 @@ fun PhotoCategoryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             // Display the photo
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .padding(bottom = 16.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(Color(0xFF181818))
+                    .padding(bottom = 18.dp)
             ) {
                 AsyncImage(
                     model = uri,
@@ -106,46 +114,72 @@ fun PhotoCategoryScreen(
                     contentScale = ContentScale.Crop
                 )
             }
-            
+
             Text(
                 text = "Select a category for this photo:",
                 color = Color.White,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 12.dp, top = 2.dp)
             )
-            
-            // Category selection
-            LazyColumn {
+
+            // Category selection, visually rich
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
                 items(PhotoCategory.values()) { category ->
-                    Row(
+                    val (icon, color) = IconChoose.getIcon(category.displayName)
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .selectable(
-                                selected = selectedCategory == category,
-                                onClick = { selectedCategory = category }
-                            )
-                            .padding(vertical = 8.dp, horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(vertical = 6.dp)
+                            .clickable { selectedCategory = category },
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (selectedCategory == category) color.copy(alpha = 0.18f) else Color(0xFF232323)
+                        ),
+                        elevation = CardDefaults.cardElevation(if (selectedCategory == category) 4.dp else 0.dp)
                     ) {
-                        RadioButton(
-                            selected = selectedCategory == category,
-                            onClick = { selectedCategory = category },
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = Color(0xFF2196F3),
-                                unselectedColor = Color.Gray
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 14.dp, horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp) // Larger circle
+                                    .background(color, shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                FaIcon(
+                                    faIcon = icon,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(22.dp) // Bigger icon in circle
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = category.displayName,
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                fontWeight = if (selectedCategory == category) FontWeight.Bold else FontWeight.Normal
                             )
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = category.displayName,
-                            color = Color.White,
-                            fontSize = 16.sp
-                        )
+                            Spacer(modifier = Modifier.weight(1f))
+                            RadioButton(
+                                selected = selectedCategory == category,
+                                onClick = { selectedCategory = category },
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = color,
+                                    unselectedColor = Color.Gray
+                                )
+                            )
+                        }
                     }
-                    Divider(color = Color(0xFF333333))
                 }
             }
         }
     }
-} 
+}
