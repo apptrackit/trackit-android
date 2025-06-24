@@ -40,6 +40,7 @@ import java.util.*
 fun ProfileScreen(
     navController: NavController,
     viewModel: HealthViewModel,
+    authViewModel: com.ballabotond.trackit.ui.viewmodel.AuthViewModel
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -193,6 +194,28 @@ fun ProfileScreen(
                 value = appVersion.toString(),
                 showEditIcon = false
             )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Logout Button
+            Button(
+                onClick = { authViewModel.logout() },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFB71C1C),
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text(
+                    text = "Logout",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            
             Spacer(modifier = Modifier.height(12.dp))
 
             // Creative: motivational quote

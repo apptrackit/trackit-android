@@ -2,12 +2,16 @@ package com.ballabotond.trackit.ui.navigation
 
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.ballabotond.trackit.data.model.HistoryEntry
+import com.ballabotond.trackit.ui.screens.auth.LoginScreen
+import com.ballabotond.trackit.ui.screens.auth.RegisterScreen
 import com.ballabotond.trackit.ui.screens.dashboard.MainScreen
 import com.ballabotond.trackit.ui.screens.health.AddMetricDataScreen
 import com.ballabotond.trackit.ui.screens.health.EditMetricDataScreen
@@ -16,6 +20,7 @@ import com.ballabotond.trackit.ui.screens.health.ViewBMIHistoryScreen
 import com.ballabotond.trackit.ui.screens.health.ViewCalculatedHistoryScreen
 import com.ballabotond.trackit.ui.screens.photos.*
 import com.ballabotond.trackit.ui.screens.settings.ProfileScreen
+import com.ballabotond.trackit.ui.viewmodel.AuthViewModel
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -25,12 +30,44 @@ import androidx.compose.animation.slideOutHorizontally
 @Composable
 fun LifeTrackerNavHost(
     navController: NavHostController,
+    authViewModel: AuthViewModel,
     viewModel: HealthViewModel
 ) {
+    val authUiState by authViewModel.uiState.collectAsState()
+    
     NavHost(
         navController = navController,
-        startDestination = "main"
+        startDestination = if (authUiState.isLoggedIn) "main" else LOGIN_ROUTE
     ) {
+        // Auth screens
+        composable(LOGIN_ROUTE) {
+            LoginScreen(
+                uiState = authUiState,
+                onLogin = { username, password ->
+                    authViewModel.login(username, password)
+                },
+                onNavigateToRegister = {
+                    navController.navigate(REGISTER_ROUTE) {
+                        popUpTo(LOGIN_ROUTE) { inclusive = false }
+                    }
+                }
+            )
+        }
+        
+        composable(REGISTER_ROUTE) {
+            RegisterScreen(
+                uiState = authUiState,
+                onRegister = { username, password, email ->
+                    authViewModel.register(username, password, email)
+                },
+                onNavigateToLogin = {
+                    navController.navigate(LOGIN_ROUTE) {
+                        popUpTo(REGISTER_ROUTE) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable("main") {
             MainScreen(navController = navController, viewModel = viewModel)
         }
@@ -300,7 +337,8 @@ fun LifeTrackerNavHost(
         ) {
             ProfileScreen(
                 navController = navController,
-                viewModel = viewModel
+                viewModel = viewModel,
+                authViewModel = authViewModel
             )
         }
     }

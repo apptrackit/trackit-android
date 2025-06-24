@@ -5,11 +5,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.rememberNavController
+import com.ballabotond.trackit.data.repository.AuthRepository
 import com.ballabotond.trackit.ui.theme.LifeTrackerTheme
 import com.ballabotond.trackit.ui.navigation.LifeTrackerNavHost
+import com.ballabotond.trackit.ui.viewmodel.AuthViewModel
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import com.ballabotond.trackit.data.repository.MetricsRepository
 
@@ -17,16 +22,33 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Create repository and viewModel
-        val repository = MetricsRepository(this)
-        val viewModel = HealthViewModel(repository)
+        // Create repositories and viewModels
+        val metricsRepository = MetricsRepository(this)
+        val authRepository = AuthRepository(this)
+        val healthViewModel = HealthViewModel(metricsRepository)
+        val authViewModel = AuthViewModel(authRepository)
         
         // Ensure all metrics have history entries
-        viewModel.ensureMetricHistory()
+        healthViewModel.ensureMetricHistory()
 
         setContent {
             // Create NavController
             val navController = rememberNavController()
+            val authUiState by authViewModel.uiState.collectAsState()
+
+            // Handle navigation based on auth state
+            LaunchedEffect(authUiState.isLoggedIn) {
+                if (authUiState.isLoggedIn) {
+                    navController.navigate("main") {
+                        popUpTo("login") { inclusive = true }
+                        popUpTo("register") { inclusive = true }
+                    }
+                } else {
+                    navController.navigate("login") {
+                        popUpTo("main") { inclusive = true }
+                    }
+                }
+            }
 
             LifeTrackerTheme {
                 Surface(
@@ -35,7 +57,8 @@ class MainActivity : ComponentActivity() {
                 ) {
                     LifeTrackerNavHost(
                         navController = navController,
-                        viewModel = viewModel
+                        authViewModel = authViewModel,
+                        viewModel = healthViewModel
                     )
                 }
             }

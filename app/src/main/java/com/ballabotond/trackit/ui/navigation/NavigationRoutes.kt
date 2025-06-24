@@ -1,5 +1,9 @@
 package com.ballabotond.trackit.ui.navigation
 
+// Auth routes
+const val LOGIN_ROUTE = "login"
+const val REGISTER_ROUTE = "register"
+
 // Main navigation routes
 const val DASHBOARD_ROUTE = "dashboard"
 const val NUTRITION_ROUTE = "nutrition"

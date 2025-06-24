@@ -23,6 +23,12 @@ class IconChoose {
                 "Fat-Free Mass Index" -> Pair(FaIcons.ChartLine, Color(0xFF2196F3))
                 "Basal Metabolic Rate", "BMR"-> Pair(FaIcons.Fire, Color(0xFFFF5722))
                 "Body Surface Area" -> Pair(FaIcons.RulerCombined, Color(0xFF00BCD4))
+                // Auth Icons
+                "User" -> Pair(FaIcons.User, Color(0xFF4CAF50))
+                "Lock" -> Pair(FaIcons.Lock, Color(0xFF4CAF50))
+                "Eye" -> Pair(FaIcons.Eye, Color(0xFFAAAAAA))
+                "EyeSlash" -> Pair(FaIcons.EyeSlash, Color(0xFFAAAAAA))
+                "Envelope" -> Pair(FaIcons.Envelope, Color(0xFF4CAF50))
                 // Photo Categories
                 "Front" -> Pair(FaIcons.User, Color(0xFF2196F3))
                 "Back" -> Pair(FaIcons.UserAlt, Color(0xFF4CAF50))
