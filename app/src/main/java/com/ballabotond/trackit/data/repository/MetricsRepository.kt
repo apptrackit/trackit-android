@@ -61,11 +61,6 @@ class MetricsRepository(private val context: Context) {
 
         if (!valueExists) {
             // Create new entry only if value doesn't exist
-            val newEntry = if (weight != null && height != null) {
-                "$date:$value:$weight:$height"
-            } else {
-                "$date:$value"
-            }
             entries.add(EntryData(date, value, weight, height))
 
             // Convert back to string format and save

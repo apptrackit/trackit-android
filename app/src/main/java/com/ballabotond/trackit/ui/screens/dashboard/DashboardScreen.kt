@@ -32,6 +32,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.ballabotond.trackit.data.model.HistoryEntry
 import com.ballabotond.trackit.ui.components.MetricCardRedesignedWithFaIcon
+import com.ballabotond.trackit.ui.components.SyncStatusIndicator
 import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
 import com.ballabotond.trackit.ui.theme.IconChoose
 import java.text.SimpleDateFormat
@@ -43,10 +44,14 @@ fun DashboardScreen(
     onNavigateToEditMetric: (String) -> Unit,
     onNavigateToViewBMIHistory: () -> Unit,
     viewModel: HealthViewModel,
-    navController: NavController
+    navController: NavController,
+    syncViewModel: com.ballabotond.trackit.ui.viewmodel.SyncViewModel? = null
 ) {
     // State for showing the popup
     var showAddMetricPopup by remember { mutableStateOf(false) }
+    
+    // Sync state
+    val syncState by syncViewModel?.syncState?.collectAsState() ?: remember { mutableStateOf(com.ballabotond.trackit.data.model.SyncState()) }
     
     // Time filter state (must be before usage)
     var selectedTimeFilter by remember { mutableStateOf("6M") }
@@ -174,6 +179,18 @@ fun DashboardScreen(
 
             item {
                 Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Sync Status Indicator
+            if (syncViewModel != null) {
+                item {
+                    SyncStatusIndicator(
+                        syncState = syncState,
+                        onRetrySync = { syncViewModel.performSync() },
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
 
             item {

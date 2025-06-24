@@ -23,7 +23,8 @@ import com.ballabotond.trackit.ui.screens.photos.PhotosScreen
 @Composable
 fun MainScreen(
     navController: NavController,
-    viewModel: HealthViewModel
+    viewModel: HealthViewModel,
+    syncViewModel: com.ballabotond.trackit.ui.viewmodel.SyncViewModel? = null
 ) {
     val pagerState = rememberPagerState()
     val scope = rememberCoroutineScope()
@@ -132,7 +133,8 @@ fun MainScreen(
                             navController.navigate(VIEW_BMI_HISTORY_ROUTE)
                         },
                         viewModel = viewModel,
-                        navController = navController
+                        navController = navController,
+                        syncViewModel = syncViewModel
                     )
                     1 -> PhotosScreen(navController = navController, viewModel = viewModel)
                     2 -> ProgressScreen(

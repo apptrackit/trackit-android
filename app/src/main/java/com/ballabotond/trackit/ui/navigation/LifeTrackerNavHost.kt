@@ -31,7 +31,8 @@ import androidx.compose.animation.slideOutHorizontally
 fun LifeTrackerNavHost(
     navController: NavHostController,
     authViewModel: AuthViewModel,
-    viewModel: HealthViewModel
+    viewModel: HealthViewModel,
+    syncViewModel: com.ballabotond.trackit.ui.viewmodel.SyncViewModel
 ) {
     val authUiState by authViewModel.uiState.collectAsState()
     
@@ -69,7 +70,7 @@ fun LifeTrackerNavHost(
         }
 
         composable("main") {
-            MainScreen(navController = navController, viewModel = viewModel)
+            MainScreen(navController = navController, viewModel = viewModel, syncViewModel = syncViewModel)
         }
 
         composable(EDIT_WEIGHT_ROUTE) {
