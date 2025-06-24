@@ -2,6 +2,11 @@ package com.ballabotond.trackit.ui.screens.health
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.PullRefreshState
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,16 +28,36 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("DefaultLocale")
 @Composable
 fun ProgressScreen(
     onNavigateToEditMetric: (String) -> Unit,
     onNavigateToViewBMIHistory: () -> Unit,
     viewModel: HealthViewModel,
-    navController: NavController
+    navController: NavController,
+    syncViewModel: com.ballabotond.trackit.ui.viewmodel.SyncViewModel? = null
 ) {
     // State for showing the popup
     var showAddMetricPopup by remember { mutableStateOf(false) }
+    
+    // Sync state and pull to refresh
+    val syncState by syncViewModel?.syncState?.collectAsState() ?: remember { mutableStateOf(com.ballabotond.trackit.data.model.SyncState()) }
+    var isRefreshing by remember { mutableStateOf(false) }
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = {
+            isRefreshing = true
+            syncViewModel?.performSync()
+        }
+    )
+    
+    // Listen for sync completion to stop refreshing
+    LaunchedEffect(syncState.isSyncing) {
+        if (!syncState.isSyncing) {
+            isRefreshing = false
+        }
+    }
 
     // Get latest values from history
     val latestWeight = viewModel.getLatestHistoryEntry("Weight", "kg")
@@ -92,11 +117,16 @@ fun ProgressScreen(
         modifier = Modifier.fillMaxSize(),
         color = Color.Black
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .pullRefresh(pullRefreshState)
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
             // Header with title
             Text(
                 text = "Progress",
@@ -309,6 +339,16 @@ fun ProgressScreen(
                     }
                 }
             }
+        }
+            
+            // Pull refresh indicator
+            PullRefreshIndicator(
+                refreshing = isRefreshing,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter),
+                backgroundColor = Color(0xFF333333),
+                contentColor = Color.White
+            )
         }
     }
 }

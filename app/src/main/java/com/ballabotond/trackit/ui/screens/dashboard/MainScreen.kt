@@ -179,7 +179,8 @@ fun MainScreen(
                             navController.navigate(VIEW_BMI_HISTORY_ROUTE)
                         },
                         viewModel = viewModel,
-                        navController = navController
+                        navController = navController,
+                        syncViewModel = syncViewModel
                     )
                 }
             }

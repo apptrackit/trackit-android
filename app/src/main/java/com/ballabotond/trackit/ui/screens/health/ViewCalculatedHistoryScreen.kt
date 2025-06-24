@@ -20,7 +20,7 @@ import com.ballabotond.trackit.data.model.HistoryEntry
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import com.ballabotond.trackit.utils.formatDate
 import com.ballabotond.trackit.ui.components.TimeFilterButton
-import com.ballabotond.trackit.ui.screens.dashboard.SmoothMetricChart
+import com.ballabotond.trackit.ui.components.SmoothMetricChart
 import com.ballabotond.trackit.utils.TimeFilter
 
 @Composable

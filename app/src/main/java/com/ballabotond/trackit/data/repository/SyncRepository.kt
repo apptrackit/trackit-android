@@ -33,7 +33,8 @@ class SyncRepository(
         private val PENDING_SYNC_ENTRIES_KEY = stringPreferencesKey("pending_sync_entries")
         private val METRIC_TYPE_MAPPINGS_KEY = stringPreferencesKey("metric_type_mappings")
         
-        // Default metric type mappings - you may need to adjust these based on your server setup
+        // Default metric type mappings - will be updated from server
+        // Only include base measurements, not calculated metrics
         private val DEFAULT_METRIC_MAPPINGS = mapOf(
             "Weight" to 1,
             "Height" to 2,
@@ -42,7 +43,11 @@ class SyncRepository(
             "Waist" to 5,
             "Bicep" to 6,
             "Thigh" to 7,
-            "Shoulder" to 8
+            "Shoulder" to 8,
+            "Glutes" to 9,
+            "Calf" to 10,
+            "Neck" to 11,
+            "Forearm" to 12
         )
     }
     
@@ -269,7 +274,7 @@ class SyncRepository(
             "Weight" -> "kg"
             "Height" -> "cm"
             "Body Fat" -> "%"
-            "Chest", "Waist", "Bicep", "Thigh", "Shoulder" -> "cm"
+            "Chest", "Waist", "Bicep", "Thigh", "Shoulder", "Glutes", "Calf", "Neck", "Forearm" -> "cm"
             else -> ""
         }
     }
