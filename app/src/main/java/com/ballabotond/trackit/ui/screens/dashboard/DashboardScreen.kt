@@ -41,7 +41,6 @@ import com.ballabotond.trackit.ui.components.RecentMeasurementRow
 import com.ballabotond.trackit.ui.components.SmoothMetricChart
 import com.ballabotond.trackit.ui.components.SyncStatusIndicator
 import com.ballabotond.trackit.ui.components.TimeFilterButton
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
 import com.ballabotond.trackit.ui.theme.IconChoose
 import java.text.SimpleDateFormat
 import java.util.*
