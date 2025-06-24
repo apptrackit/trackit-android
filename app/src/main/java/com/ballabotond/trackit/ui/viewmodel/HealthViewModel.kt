@@ -6,14 +6,19 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.ballabotond.trackit.data.model.HistoryEntry
 import com.ballabotond.trackit.data.repository.MetricsRepository
+import com.ballabotond.trackit.data.repository.SyncRepository
 import com.ballabotond.trackit.utils.calculateBMI
 import com.ballabotond.trackit.utils.calculateBMR
 import com.ballabotond.trackit.utils.calculateBodySurfaceArea
 import com.ballabotond.trackit.utils.calculateFatFreeMassIndex
 import com.ballabotond.trackit.utils.calculateFatMass
 import com.ballabotond.trackit.utils.calculateLeanBodyMass
+import kotlinx.coroutines.launch
 
-class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
+class HealthViewModel(
+    private val repository: MetricsRepository,
+    private val syncRepository: SyncRepository? = null
+) : ViewModel() {
     var metrics by mutableStateOf(repository.loadMetrics())
         private set
 
@@ -24,7 +29,13 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             val newMetrics = metrics.copy(weight = it, date = date)
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
+            val historyEntry = HistoryEntry(it, "kg", date, "Weight")
             repository.saveMetricHistory("Weight", it, "kg", date)
+            syncRepository?.let { sync ->
+                kotlinx.coroutines.GlobalScope.launch {
+                    sync.queueForSync(historyEntry)
+                }
+            }
             recalculateAllMetrics() // Changed from recalculateMetricsForDate
         }
     }
@@ -34,7 +45,13 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             val newMetrics = metrics.copy(height = it, date = date)
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
+            val historyEntry = HistoryEntry(it, "cm", date, "Height")
             repository.saveMetricHistory("Height", it, "cm", date)
+            syncRepository?.let { sync ->
+                kotlinx.coroutines.GlobalScope.launch {
+                    sync.queueForSync(historyEntry)
+                }
+            }
             recalculateAllMetrics()
         }
     }
@@ -44,7 +61,13 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             val newMetrics = metrics.copy(bodyFat = it, date = date)
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
+            val historyEntry = HistoryEntry(it, "%", date, "Body Fat")
             repository.saveMetricHistory("Body Fat", it, "%", date)
+            syncRepository?.let { sync ->
+                kotlinx.coroutines.GlobalScope.launch {
+                    sync.queueForSync(historyEntry)
+                }
+            }
             recalculateAllMetrics()
         }
     }
@@ -55,7 +78,13 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             val newMetrics = metrics.copy(waist = it, date = date)
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
+            val historyEntry = HistoryEntry(it, "cm", date, "Waist")
             repository.saveMetricHistory("Waist", it, "cm", date)
+            syncRepository?.let { sync ->
+                kotlinx.coroutines.GlobalScope.launch {
+                    sync.queueForSync(historyEntry)
+                }
+            }
             recalculateAllMetrics()
         }
     }
@@ -65,7 +94,13 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             val newMetrics = metrics.copy(bicep = it, date = date)
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
+            val historyEntry = HistoryEntry(it, "cm", date, "Bicep")
             repository.saveMetricHistory("Bicep", it, "cm", date)
+            syncRepository?.let { sync ->
+                kotlinx.coroutines.GlobalScope.launch {
+                    sync.queueForSync(historyEntry)
+                }
+            }
             recalculateAllMetrics()
         }
     }
@@ -75,7 +110,13 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             val newMetrics = metrics.copy(chest = it, date = date)
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
+            val historyEntry = HistoryEntry(it, "cm", date, "Chest")
             repository.saveMetricHistory("Chest", it, "cm", date)
+            syncRepository?.let { sync ->
+                kotlinx.coroutines.GlobalScope.launch {
+                    sync.queueForSync(historyEntry)
+                }
+            }
             recalculateAllMetrics()
         }
     }
@@ -85,7 +126,13 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             val newMetrics = metrics.copy(thigh = it, date = date)
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
+            val historyEntry = HistoryEntry(it, "cm", date, "Thigh")
             repository.saveMetricHistory("Thigh", it, "cm", date)
+            syncRepository?.let { sync ->
+                kotlinx.coroutines.GlobalScope.launch {
+                    sync.queueForSync(historyEntry)
+                }
+            }
             recalculateAllMetrics()
         }
     }
@@ -95,7 +142,13 @@ class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
             val newMetrics = metrics.copy(shoulder = it, date = date)
             metrics = newMetrics
             repository.saveMetrics(newMetrics)
+            val historyEntry = HistoryEntry(it, "cm", date, "Shoulder")
             repository.saveMetricHistory("Shoulder", it, "cm", date)
+            syncRepository?.let { sync ->
+                kotlinx.coroutines.GlobalScope.launch {
+                    sync.queueForSync(historyEntry)
+                }
+            }
             recalculateAllMetrics()
         }
     }

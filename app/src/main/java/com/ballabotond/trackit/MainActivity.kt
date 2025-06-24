@@ -12,11 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.rememberNavController
 import com.ballabotond.trackit.data.repository.AuthRepository
+import com.ballabotond.trackit.data.repository.MetricsRepository
+import com.ballabotond.trackit.data.repository.SyncRepository
 import com.ballabotond.trackit.ui.theme.LifeTrackerTheme
 import com.ballabotond.trackit.ui.navigation.LifeTrackerNavHost
 import com.ballabotond.trackit.ui.viewmodel.AuthViewModel
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
-import com.ballabotond.trackit.data.repository.MetricsRepository
+import com.ballabotond.trackit.ui.viewmodel.SyncViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,8 +27,10 @@ class MainActivity : ComponentActivity() {
         // Create repositories and viewModels
         val metricsRepository = MetricsRepository(this)
         val authRepository = AuthRepository(this)
-        val healthViewModel = HealthViewModel(metricsRepository)
+        val syncRepository = SyncRepository(this, authRepository, metricsRepository)
+        val healthViewModel = HealthViewModel(metricsRepository, syncRepository)
         val authViewModel = AuthViewModel(authRepository)
+        val syncViewModel = SyncViewModel(syncRepository)
         
         // Ensure all metrics have history entries
         healthViewModel.ensureMetricHistory()
@@ -58,7 +62,8 @@ class MainActivity : ComponentActivity() {
                     LifeTrackerNavHost(
                         navController = navController,
                         authViewModel = authViewModel,
-                        viewModel = healthViewModel
+                        viewModel = healthViewModel,
+                        syncViewModel = syncViewModel
                     )
                 }
             }

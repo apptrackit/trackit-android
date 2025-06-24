@@ -29,6 +29,7 @@ class IconChoose {
                 "Eye" -> Pair(FaIcons.Eye, Color(0xFFAAAAAA))
                 "EyeSlash" -> Pair(FaIcons.EyeSlash, Color(0xFFAAAAAA))
                 "Envelope" -> Pair(FaIcons.Envelope, Color(0xFF4CAF50))
+                "SyncAlt" -> Pair(FaIcons.SyncAlt, Color(0xFF4CAF50))
                 // Photo Categories
                 "Front" -> Pair(FaIcons.User, Color(0xFF2196F3))
                 "Back" -> Pair(FaIcons.UserAlt, Color(0xFF4CAF50))

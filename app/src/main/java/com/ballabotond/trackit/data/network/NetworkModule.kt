@@ -1,6 +1,7 @@
 package com.ballabotond.trackit.data.network
 
 import com.ballabotond.trackit.data.api.AuthApiService
+import com.ballabotond.trackit.data.api.MetricsApiService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -28,4 +29,5 @@ object NetworkModule {
         .build()
     
     val authApiService: AuthApiService = retrofit.create(AuthApiService::class.java)
+    val metricsApiService: MetricsApiService = retrofit.create(MetricsApiService::class.java)
 }
