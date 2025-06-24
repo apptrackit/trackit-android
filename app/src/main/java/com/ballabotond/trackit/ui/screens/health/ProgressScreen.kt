@@ -1,4 +1,4 @@
-package com.example.trackit.ui.screens.health
+package com.ballabotond.trackit.ui.screens.health
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
@@ -11,14 +11,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.trackit.ui.viewmodel.HealthViewModel
-import com.example.trackit.utils.calculateBMI
+import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.utils.calculateBMI
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
-import com.example.trackit.ui.theme.FontAwesomeIcon
-import com.example.trackit.ui.theme.IconChoose
+import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
+import com.ballabotond.trackit.ui.theme.IconChoose
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 

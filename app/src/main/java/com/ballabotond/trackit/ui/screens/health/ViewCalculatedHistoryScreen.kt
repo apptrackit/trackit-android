@@ -1,4 +1,4 @@
-package com.example.trackit.ui.screens.health
+package com.ballabotond.trackit.ui.screens.health
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,12 +16,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.trackit.data.model.HistoryEntry
-import com.example.trackit.ui.viewmodel.HealthViewModel
-import com.example.trackit.utils.formatDate
-import com.example.trackit.ui.components.TimeFilterButton
-import com.example.trackit.ui.screens.dashboard.SmoothMetricChart
-import com.example.trackit.utils.TimeFilter
+import com.ballabotond.trackit.data.model.HistoryEntry
+import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.utils.formatDate
+import com.ballabotond.trackit.ui.components.TimeFilterButton
+import com.ballabotond.trackit.ui.screens.dashboard.SmoothMetricChart
+import com.ballabotond.trackit.utils.TimeFilter
 
 @Composable
 fun ViewBMIHistoryScreen(

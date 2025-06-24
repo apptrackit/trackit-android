@@ -1,4 +1,4 @@
-package com.example.trackit.data.model
+package com.ballabotond.trackit.data.model
 
 
 

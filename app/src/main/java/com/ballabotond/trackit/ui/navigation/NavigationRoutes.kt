@@ -1,4 +1,4 @@
-package com.example.trackit.ui.navigation
+package com.ballabotond.trackit.ui.navigation
 
 // Main navigation routes
 const val DASHBOARD_ROUTE = "dashboard"

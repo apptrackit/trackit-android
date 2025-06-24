@@ -1,4 +1,4 @@
-package com.example.trackit.utils
+package com.ballabotond.trackit.utils
 
 import kotlin.math.pow
 import kotlin.math.sqrt

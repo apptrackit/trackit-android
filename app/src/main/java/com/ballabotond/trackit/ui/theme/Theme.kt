@@ -1,4 +1,4 @@
-package com.example.trackit.ui.theme
+package com.ballabotond.trackit.ui.theme
 
 import android.annotation.SuppressLint
 import android.os.Build

@@ -1,4 +1,4 @@
-package com.example.trackit
+package com.ballabotond.trackit
 
 import org.junit.Test
 

@@ -1,4 +1,4 @@
-package com.example.trackit.ui.screens.photos
+package com.ballabotond.trackit.ui.screens.photos
 
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -23,11 +23,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.trackit.data.model.PhotoCategory
-import com.example.trackit.data.model.PhotoMetadata
-import com.example.trackit.data.model.HistoryEntry
-import com.example.trackit.ui.viewmodel.HealthViewModel
-import com.example.trackit.ui.viewmodel.PhotoViewModel
+import com.ballabotond.trackit.data.model.PhotoCategory
+import com.ballabotond.trackit.data.model.PhotoMetadata
+import com.ballabotond.trackit.data.model.HistoryEntry
+import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -37,7 +37,7 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
-import com.example.trackit.ui.theme.IconChoose
+import com.ballabotond.trackit.ui.theme.IconChoose
 import com.guru.fontawesomecomposelib.FaIcon
 
 

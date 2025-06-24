@@ -1,4 +1,4 @@
-package com.example.trackit.ui.screens.photos
+package com.ballabotond.trackit.ui.screens.photos
 
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -22,11 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.trackit.data.model.PhotoCategory
-import com.example.trackit.ui.viewmodel.HealthViewModel
-import com.example.trackit.ui.viewmodel.PhotoViewModel
+import com.ballabotond.trackit.data.model.PhotoCategory
+import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
 import java.io.File
-import com.example.trackit.ui.theme.IconChoose
+import com.ballabotond.trackit.ui.theme.IconChoose
 import com.guru.fontawesomecomposelib.FaIcon
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape

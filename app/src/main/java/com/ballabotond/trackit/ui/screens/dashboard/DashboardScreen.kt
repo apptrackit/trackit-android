@@ -1,4 +1,4 @@
-package com.example.trackit.ui.screens.dashboard
+package com.ballabotond.trackit.ui.screens.dashboard
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
@@ -13,9 +13,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.trackit.ui.components.AddMetricPopup
-import com.example.trackit.ui.viewmodel.HealthViewModel
-import com.example.trackit.utils.calculateBMI
+import com.ballabotond.trackit.ui.components.AddMetricPopup
+import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.utils.calculateBMI
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,10 +30,10 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import com.example.trackit.data.model.HistoryEntry
-import com.example.trackit.ui.components.MetricCardRedesignedWithFaIcon
-import com.example.trackit.ui.theme.FontAwesomeIcon
-import com.example.trackit.ui.theme.IconChoose
+import com.ballabotond.trackit.data.model.HistoryEntry
+import com.ballabotond.trackit.ui.components.MetricCardRedesignedWithFaIcon
+import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
+import com.ballabotond.trackit.ui.theme.IconChoose
 import java.text.SimpleDateFormat
 import java.util.*
 

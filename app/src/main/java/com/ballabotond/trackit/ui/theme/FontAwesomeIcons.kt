@@ -1,4 +1,4 @@
-package com.example.trackit.ui.theme
+package com.ballabotond.trackit.ui.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color

@@ -1,4 +1,4 @@
-package com.example.trackit.data.model
+package com.ballabotond.trackit.data.model
 
 import android.net.Uri
 import java.util.*

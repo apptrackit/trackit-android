@@ -1,4 +1,4 @@
-package com.example.trackit.ui.components
+package com.ballabotond.trackit.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.example.trackit.ui.theme.FontAwesomeIcon
-import com.example.trackit.ui.theme.IconChoose
+import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
+import com.ballabotond.trackit.ui.theme.IconChoose
 
 @Composable
 fun AddMetricPopup(

@@ -1,4 +1,4 @@
-package com.example.trackit.ui.components
+package com.ballabotond.trackit.ui.components
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.width

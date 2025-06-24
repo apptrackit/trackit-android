@@ -1,4 +1,4 @@
-package com.example.trackit.ui.viewmodel
+package com.ballabotond.trackit.ui.viewmodel
 
 import android.content.Context
 import android.net.Uri
@@ -7,9 +7,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.trackit.data.model.Photo
-import com.example.trackit.data.model.PhotoCategory
-import com.example.trackit.data.model.PhotoMetadata
+import com.ballabotond.trackit.data.model.Photo
+import com.ballabotond.trackit.data.model.PhotoCategory
+import com.ballabotond.trackit.data.model.PhotoMetadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

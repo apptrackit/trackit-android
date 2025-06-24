@@ -1,4 +1,4 @@
-package com.example.trackit.ui.screens.dashboard
+package com.ballabotond.trackit.ui.screens.dashboard
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -9,15 +9,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.trackit.ui.navigation.*
-import com.example.trackit.ui.theme.FontAwesomeIcons
-import com.example.trackit.ui.theme.FontAwesomeIcon
-import com.example.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.ui.navigation.*
+import com.ballabotond.trackit.ui.theme.FontAwesomeIcons
+import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
+import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import com.google.accompanist.pager.*
 import com.guru.fontawesomecomposelib.FaIconType
 import kotlinx.coroutines.launch
-import com.example.trackit.ui.screens.health.ProgressScreen
-import com.example.trackit.ui.screens.photos.PhotosScreen
+import com.ballabotond.trackit.ui.screens.health.ProgressScreen
+import com.ballabotond.trackit.ui.screens.photos.PhotosScreen
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable

@@ -1,5 +1,5 @@
 // app/src/main/java/com/example/lifetracker/ui/screens/AddMetricDataScreen.kt
-package com.example.trackit.ui.screens.health
+package com.ballabotond.trackit.ui.screens.health
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,9 +16,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.trackit.ui.components.DatePickerDialog
-import com.example.trackit.ui.viewmodel.HealthViewModel
-import com.example.trackit.utils.formatDate
+import com.ballabotond.trackit.ui.components.DatePickerDialog
+import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.utils.formatDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

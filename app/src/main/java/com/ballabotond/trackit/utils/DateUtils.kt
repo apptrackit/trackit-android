@@ -1,4 +1,4 @@
-package com.example.trackit.utils
+package com.ballabotond.trackit.utils
 
 import java.text.SimpleDateFormat
 import java.util.Date

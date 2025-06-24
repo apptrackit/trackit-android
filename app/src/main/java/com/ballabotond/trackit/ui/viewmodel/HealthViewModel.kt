@@ -1,17 +1,17 @@
-package com.example.trackit.ui.viewmodel
+package com.ballabotond.trackit.ui.viewmodel
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.trackit.data.model.HistoryEntry
-import com.example.trackit.data.repository.MetricsRepository
-import com.example.trackit.utils.calculateBMI
-import com.example.trackit.utils.calculateBMR
-import com.example.trackit.utils.calculateBodySurfaceArea
-import com.example.trackit.utils.calculateFatFreeMassIndex
-import com.example.trackit.utils.calculateFatMass
-import com.example.trackit.utils.calculateLeanBodyMass
+import com.ballabotond.trackit.data.model.HistoryEntry
+import com.ballabotond.trackit.data.repository.MetricsRepository
+import com.ballabotond.trackit.utils.calculateBMI
+import com.ballabotond.trackit.utils.calculateBMR
+import com.ballabotond.trackit.utils.calculateBodySurfaceArea
+import com.ballabotond.trackit.utils.calculateFatFreeMassIndex
+import com.ballabotond.trackit.utils.calculateFatMass
+import com.ballabotond.trackit.utils.calculateLeanBodyMass
 
 class HealthViewModel(private val repository: MetricsRepository) : ViewModel() {
     var metrics by mutableStateOf(repository.loadMetrics())

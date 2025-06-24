@@ -1,4 +1,4 @@
-package com.example.trackit.data.model
+package com.ballabotond.trackit.data.model
 
 enum class PhotoCategory(val displayName: String) {
     FRONT("Front"),

@@ -1,4 +1,4 @@
-package com.example.trackit.ui.components
+package com.ballabotond.trackit.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.trackit.ui.theme.FontAwesomeIcon
+import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
 import com.guru.fontawesomecomposelib.FaIconType
 
 @Composable

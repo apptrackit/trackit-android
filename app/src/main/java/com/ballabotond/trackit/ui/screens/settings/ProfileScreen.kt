@@ -1,4 +1,4 @@
-package com.example.trackit.ui.screens.settings
+package com.ballabotond.trackit.ui.screens.settings
 
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -29,7 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.text.SimpleDateFormat

@@ -1,4 +1,4 @@
-package com.example.trackit.ui.navigation
+package com.ballabotond.trackit.ui.navigation
 
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -7,16 +7,16 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.trackit.data.model.HistoryEntry
-import com.example.trackit.ui.screens.dashboard.MainScreen
-import com.example.trackit.ui.screens.health.AddMetricDataScreen
-import com.example.trackit.ui.screens.health.EditMetricDataScreen
-import com.example.trackit.ui.screens.health.EditMetricScreen
-import com.example.trackit.ui.screens.health.ViewBMIHistoryScreen
-import com.example.trackit.ui.screens.health.ViewCalculatedHistoryScreen
-import com.example.trackit.ui.screens.photos.*
-import com.example.trackit.ui.screens.settings.ProfileScreen
-import com.example.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.data.model.HistoryEntry
+import com.ballabotond.trackit.ui.screens.dashboard.MainScreen
+import com.ballabotond.trackit.ui.screens.health.AddMetricDataScreen
+import com.ballabotond.trackit.ui.screens.health.EditMetricDataScreen
+import com.ballabotond.trackit.ui.screens.health.EditMetricScreen
+import com.ballabotond.trackit.ui.screens.health.ViewBMIHistoryScreen
+import com.ballabotond.trackit.ui.screens.health.ViewCalculatedHistoryScreen
+import com.ballabotond.trackit.ui.screens.photos.*
+import com.ballabotond.trackit.ui.screens.settings.ProfileScreen
+import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally

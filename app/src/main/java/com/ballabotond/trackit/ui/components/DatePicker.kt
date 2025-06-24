@@ -1,4 +1,4 @@
-package com.example.trackit.ui.components
+package com.ballabotond.trackit.ui.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
