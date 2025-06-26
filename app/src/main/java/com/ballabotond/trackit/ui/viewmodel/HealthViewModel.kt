@@ -192,6 +192,11 @@ class HealthViewModel(
 
     fun deleteHistoryEntry(metricName: String, entry: HistoryEntry) {
         repository.deleteHistoryEntry(metricName, entry)
+        syncRepository?.let { sync ->
+            kotlinx.coroutines.GlobalScope.launch {
+                sync.queueForDeletion(entry)
+            }
+        }
         // Always recalculate all metrics when any entry is deleted
         recalculateAllMetrics()
     }

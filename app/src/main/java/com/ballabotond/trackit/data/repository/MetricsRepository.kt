@@ -56,29 +56,27 @@ class MetricsRepository(private val context: Context) {
             }
             .toMutableList()
 
-        // Check if this value already exists
-        val valueExists = entries.any { it.value == value }
+        // Remove any entry with the same date (to prevent duplicates on edit)
+        entries.removeAll { it.date == date }
 
-        if (!valueExists) {
-            // Create new entry only if value doesn't exist
-            entries.add(EntryData(date, value, weight, height))
+        // Add the new/edited entry
+        entries.add(EntryData(date, value, weight, height))
 
-            // Convert back to string format and save
-            val updatedHistory = entries
-                .sortedByDescending { it.date }
-                .map { entry ->
-                    if (entry.weight != null && entry.height != null) {
-                        "${entry.date}:${entry.value}:${entry.weight}:${entry.height}"
-                    } else {
-                        "${entry.date}:${entry.value}"
-                    }
+        // Convert back to string format and save
+        val updatedHistory = entries
+            .sortedByDescending { it.date }
+            .map { entry ->
+                if (entry.weight != null && entry.height != null) {
+                    "${entry.date}:${entry.value}:${entry.weight}:${entry.height}"
+                } else {
+                    "${entry.date}:${entry.value}"
                 }
-                .joinToString("|")
-
-            with(sharedPrefs.edit()) {
-                putString(historyKey, updatedHistory)
-                apply()
             }
+            .joinToString("|")
+
+        with(sharedPrefs.edit()) {
+            putString(historyKey, updatedHistory)
+            apply()
         }
     }
 
@@ -110,7 +108,7 @@ class MetricsRepository(private val context: Context) {
                         null
                     }
                 }
-                .distinctBy { it.value } // Keep only unique values
+                .distinctBy { "${it.date}_${it.value}" } // Keep only unique date-value combinations
                 .sortedByDescending { it.date }
         } catch (e: Exception) {
             emptyList()
@@ -126,9 +124,17 @@ class MetricsRepository(private val context: Context) {
         if (historyString.isEmpty()) return
 
         val entries = historyString.split("|").toMutableList()
-        val targetEntry = "${entry.date}:${entry.value}"
-
-        entries.removeAll { it.startsWith(targetEntry) }
+        // Remove entries that match date and value (and weight/height if present)
+        entries.removeAll { raw ->
+            val parts = raw.split(":")
+            val entryDate = parts.getOrNull(0)?.toLongOrNull()
+            val entryValue = parts.getOrNull(1)?.toFloatOrNull()
+            val entryWeight = parts.getOrNull(2)?.toFloatOrNull()
+            val entryHeight = parts.getOrNull(3)?.toFloatOrNull()
+            entryDate == entry.date && entryValue == entry.value &&
+                (entry.weight == null || entryWeight == entry.weight) &&
+                (entry.height == null || entryHeight == entry.height)
+        }
 
         with(sharedPrefs.edit()) {
             putString(historyKey, entries.joinToString("|"))

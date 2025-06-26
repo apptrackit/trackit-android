@@ -17,7 +17,9 @@ data class SyncMetricEntry(
     val date: String, // ISO 8601 format
     val isAppleHealth: Boolean = false,
     val syncStatus: SyncStatus = SyncStatus.PENDING,
-    val lastSyncAttempt: Long = 0L
+    val lastSyncAttempt: Long = 0L,
+    val weight: Float? = null,
+    val height: Float? = null
 )
 
 @Serializable

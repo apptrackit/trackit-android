@@ -17,6 +17,7 @@ import kotlinx.serialization.json.Json
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
+import com.ballabotond.trackit.utils.toIso8601Utc
 
 private val Context.syncDataStore: DataStore<Preferences> by preferencesDataStore(name = "sync_prefs")
 
@@ -222,6 +223,51 @@ class SyncRepository(
                     System.currentTimeMillis()
                 }
                 
+                // Check if this entry is marked for deletion locally
+                val pendingEntries = getPendingEntries()
+                val markedForDeletion = pendingEntries.any { pendingEntry ->
+                    // Check by server ID if available
+                    if (pendingEntry.serverId == serverEntry.id && pendingEntry.syncStatus == SyncStatus.DELETED_LOCALLY) {
+                        return@any true
+                    }
+                    
+                    // Check by value, date, and optional weight/height matching
+                    if (pendingEntry.syncStatus == SyncStatus.DELETED_LOCALLY) {
+                        val pendingDate = try {
+                            dateFormat.parse(pendingEntry.date)?.time ?: 0L
+                        } catch (e: Exception) {
+                            0L
+                        }
+                        
+                        val valuesMatch = abs(pendingEntry.value - serverEntry.value) < 0.01f
+                        val datesMatch = abs(pendingDate - date) < 60000 // Within 1 minute
+                        
+                        // If the entry has weight/height, also check those for better matching
+                        val weightHeightMatch = if (pendingEntry.weight != null || pendingEntry.height != null) {
+                            // For entries with weight/height, we need more precise matching
+                            val weightMatch = pendingEntry.weight?.let { w -> 
+                                // Assuming server doesn't return weight/height, we just check if we have it locally
+                                true 
+                            } ?: true
+                            val heightMatch = pendingEntry.height?.let { h -> 
+                                true 
+                            } ?: true
+                            weightMatch && heightMatch
+                        } else {
+                            true
+                        }
+                        
+                        return@any valuesMatch && datesMatch && weightHeightMatch
+                    }
+                    
+                    false
+                }
+                
+                if (markedForDeletion) {
+                    // Skip this entry as it's marked for deletion locally
+                    return
+                }
+                
                 // Check if we already have this entry locally
                 val localHistory = metricsRepository.getMetricHistory(localMetricName, getUnitForMetric(localMetricName))
                 val existingEntry = localHistory.find { entry ->
@@ -284,7 +330,7 @@ class SyncRepository(
             val request = CreateMetricRequest(
                 metric_type_id = entry.metricTypeId,
                 value = entry.value,
-                date = entry.date,
+                date = toIso8601Utc(entry.date.toLongOrNull() ?: System.currentTimeMillis()),
                 is_apple_health = entry.isAppleHealth
             )
             
@@ -324,7 +370,9 @@ class SyncRepository(
             metricTypeId = metricTypeId,
             value = historyEntry.value,
             date = dateFormat.format(Date(historyEntry.date)),
-            syncStatus = SyncStatus.PENDING
+            syncStatus = SyncStatus.PENDING,
+            weight = historyEntry.weight,
+            height = historyEntry.height
         )
         
         addToPendingEntries(syncEntry)
@@ -346,6 +394,20 @@ class SyncRepository(
             val updatedEntry = existingEntry.copy(syncStatus = SyncStatus.DELETED_LOCALLY)
             pendingEntries.removeAll { it.localId == existingEntry.localId }
             pendingEntries.add(updatedEntry)
+            savePendingEntries(pendingEntries)
+        } else {
+            // Entry is not in pending list, create a new deletion entry
+            val deletionEntry = SyncMetricEntry(
+                localId = "${historyEntry.metricName}_${historyEntry.date}",
+                metricTypeId = metricTypeId,
+                value = historyEntry.value,
+                date = dateFormat.format(Date(historyEntry.date)),
+                syncStatus = SyncStatus.DELETED_LOCALLY,
+                // If we have weight/height info, include it for better matching
+                weight = historyEntry.weight,
+                height = historyEntry.height
+            )
+            pendingEntries.add(deletionEntry)
             savePendingEntries(pendingEntries)
         }
     }
