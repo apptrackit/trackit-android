@@ -13,8 +13,8 @@ android {
         applicationId = "com.ballabotond.trackit"
         minSdk = 30
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.9.0"
+        versionCode = 4
+        versionName = "0.9.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
