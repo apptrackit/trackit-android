@@ -94,3 +94,18 @@ data class SyncState(
     val pendingUploads: Int = 0,
     val failedUploads: Int = 0
 )
+
+data class ServerImageEntry(
+    val id: String,
+    val image_type_id: Int,
+    val filename: String,
+    val date: String,
+    val file_size: Int,
+    val mime_type: String
+)
+
+data class GetImagesResponse(
+    val success: Boolean,
+    val images: List<ServerImageEntry>,
+    val total: Int
+)
