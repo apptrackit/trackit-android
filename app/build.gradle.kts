@@ -13,8 +13,8 @@ android {
         applicationId = "com.ballabotond.trackit"
         minSdk = 30
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.9.0"
+        versionCode = 4
+        versionName = "0.9.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -71,6 +71,7 @@ dependencies {
     // Network
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     
     // Shared Preferences

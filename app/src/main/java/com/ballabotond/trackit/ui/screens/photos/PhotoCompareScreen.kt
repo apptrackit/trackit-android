@@ -45,12 +45,12 @@ import com.guru.fontawesomecomposelib.FaIcon
 @Composable
 fun PhotoCompareScreen(
     navController: NavController,
-    viewModel: HealthViewModel,
+    healthViewModel: HealthViewModel,
+    photoViewModel: PhotoViewModel,
     mainPhotoUri: String,
     comparePhotoUri: String
 ) {
     val context = LocalContext.current
-    val photoViewModel = remember { PhotoViewModel() }
     
     // Load photos to get categories
     LaunchedEffect(Unit) {
@@ -102,7 +102,7 @@ fun PhotoCompareScreen(
         )
         
         metrics.mapNotNull { (metric, unit) ->
-            val history = viewModel.getMetricHistory(metric, unit)
+            val history = healthViewModel.getMetricHistory(metric, unit)
             if (history.isEmpty()) return@mapNotNull null
             
             // Find entries recorded before or on the photo date

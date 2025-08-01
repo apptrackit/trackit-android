@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Build trackit-android after dependency fix",
+			"command": "./gradlew :app:assembleDebug",
+			"group": "build",
+			"problemMatcher": [
+				"$javac"
+			],
+			"args": []
+		}
+	]
+}

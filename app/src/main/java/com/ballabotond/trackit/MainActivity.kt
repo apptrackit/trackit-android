@@ -18,6 +18,7 @@ import com.ballabotond.trackit.ui.theme.LifeTrackerTheme
 import com.ballabotond.trackit.ui.navigation.LifeTrackerNavHost
 import com.ballabotond.trackit.ui.viewmodel.AuthViewModel
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
 import com.ballabotond.trackit.ui.viewmodel.SyncViewModel
 
 class MainActivity : ComponentActivity() {
@@ -27,10 +28,13 @@ class MainActivity : ComponentActivity() {
         // Create repositories and viewModels
         val metricsRepository = MetricsRepository(this)
         val authRepository = AuthRepository(this)
-        val syncRepository = SyncRepository(this, authRepository, metricsRepository)
+        val imagesApiService = com.ballabotond.trackit.data.network.NetworkModule.getRetrofitWithAuth(this, authRepository)
+            .create(com.ballabotond.trackit.data.api.ImagesApiService::class.java)
+        val syncRepository = SyncRepository(this, authRepository, metricsRepository, imagesApiService)
         val healthViewModel = HealthViewModel(metricsRepository, syncRepository)
         val authViewModel = AuthViewModel(authRepository)
         val syncViewModel = SyncViewModel(syncRepository)
+        val photoViewModel = PhotoViewModel(syncRepository)
         
         // Ensure all metrics have history entries
         healthViewModel.ensureMetricHistory()
@@ -63,7 +67,8 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         authViewModel = authViewModel,
                         viewModel = healthViewModel,
-                        syncViewModel = syncViewModel
+                        syncViewModel = syncViewModel,
+                        photoViewModel = photoViewModel
                     )
                 }
             }

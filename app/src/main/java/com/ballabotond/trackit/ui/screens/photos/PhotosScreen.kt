@@ -43,11 +43,13 @@ import androidx.compose.ui.text.style.TextAlign
 @Composable
 fun PhotosScreen(
     navController: NavController,
-    viewModel: HealthViewModel,
+    healthViewModel: HealthViewModel,
+    syncRepository: com.ballabotond.trackit.data.repository.SyncRepository? = null,
+    photoViewModel: PhotoViewModel? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val photoViewModel = remember { PhotoViewModel() }
+    val actualPhotoViewModel = photoViewModel ?: remember { PhotoViewModel() }
 
     // Permission launcher
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -92,12 +94,12 @@ fun PhotosScreen(
 
     // Load photos when screen is first shown
     LaunchedEffect(Unit) {
-        photoViewModel.loadPhotos(context)
+        actualPhotoViewModel.loadPhotos(context)
     }
 
     // Watch for category changes and apply filter
-    LaunchedEffect(photoViewModel.selectedCategory) {
-        photoViewModel.applyFilter()
+    LaunchedEffect(actualPhotoViewModel.selectedCategory) {
+        actualPhotoViewModel.applyFilter()
     }
 
     // Greeting and date (dashboard style)
@@ -156,7 +158,11 @@ fun PhotosScreen(
                 TextButton(
                     onClick = {
                         selectedImageUri?.let {
-                            photoViewModel.savePhoto(context, it, selectedCategory)
+                            if (syncRepository != null) {
+                                actualPhotoViewModel.savePhotoAndUpload(context, it, selectedCategory, syncRepository)
+                            } else {
+                                actualPhotoViewModel.savePhoto(context, it, selectedCategory)
+                            }
                         }
                         showCategorySelectionDialog = false
                     }
@@ -177,8 +183,8 @@ fun PhotosScreen(
     }
 
     // Group photos by year
-    val photosByYear = remember(photoViewModel.filteredPhotos) {
-        photoViewModel.filteredPhotos
+    val photosByYear = remember(actualPhotoViewModel.filteredPhotos) {
+        actualPhotoViewModel.filteredPhotos
             .groupBy { photo ->
                 val file = File(photo.filePath)
                 val cal = Calendar.getInstance().apply { timeInMillis = file.lastModified() }
@@ -245,7 +251,7 @@ fun PhotosScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 categories.forEach { (label, category) ->
-                    val isSelected = photoViewModel.selectedCategory == category
+                    val isSelected = actualPhotoViewModel.selectedCategory == category
                     val (icon, color) = if (category == null)
                         IconChoose.getIcon("Other")
                     else
@@ -258,7 +264,7 @@ fun PhotosScreen(
                             .background(
                                 if (isSelected) color.copy(alpha = 0.13f) else Color.Transparent
                             )
-                            .clickable { photoViewModel.selectedCategory = category }
+                            .clickable { actualPhotoViewModel.selectedCategory = category }
                             .padding(vertical = 6.dp, horizontal = 8.dp)
                     ) {
                         Box(
@@ -288,16 +294,16 @@ fun PhotosScreen(
             }
 
             // Photos by year
-            if (photoViewModel.filteredPhotos.isEmpty()) {
+            if (actualPhotoViewModel.filteredPhotos.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = if (photoViewModel.photos.isEmpty()) {
+                        text = if (actualPhotoViewModel.photos.isEmpty()) {
                             "No photos yet. Add your first photo with the + button."
                         } else {
-                            "No photos in the '${photoViewModel.selectedCategory?.displayName}' category."
+                            "No photos in the '${actualPhotoViewModel.selectedCategory?.displayName}' category."
                         },
                         color = Color.Gray,
                         fontSize = 16.sp,

@@ -1,6 +1,8 @@
 package com.ballabotond.trackit.ui.viewmodel
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.ballabotond.trackit.data.model.Photo
 import com.ballabotond.trackit.data.model.PhotoCategory
 import com.ballabotond.trackit.data.model.PhotoMetadata
+import com.ballabotond.trackit.data.repository.SyncRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -28,7 +31,82 @@ import android.widget.Toast
  * ViewModel responsible for managing photos and their metadata.
  * Handles loading, saving, updating, and deleting photos with their associated categories.
  */
-class PhotoViewModel : ViewModel() {
+class PhotoViewModel(
+    private val syncRepository: SyncRepository? = null
+) : ViewModel() {
+    /**
+     * Save photo and immediately queue for upload to backend.
+     * @param context The application context
+     * @param uri The image URI
+     * @param category The photo category
+     * @param syncRepository The SyncRepository instance
+     */
+    fun savePhotoAndUpload(
+        context: Context,
+        uri: Uri,
+        category: PhotoCategory,
+        syncRepository: com.ballabotond.trackit.data.repository.SyncRepository
+    ) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                // Save photo first and get the file path directly
+                val photosDir = ensureDirectoryExists(context, PHOTOS_DIR)
+                val metadataDir = ensureDirectoryExists(context, METADATA_DIR)
+
+                // Try to get EXIF date
+                val exifDate = getExifDate(context, uri)
+                val timestamp = exifDate ?: System.currentTimeMillis()
+                val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
+                val fileName = "IMG_${dateFormat.format(Date(timestamp))}.jpg"
+                val photoFile = File(photosDir, fileName)
+
+                savePhotoFile(context, uri, photoFile)
+                photoFile.setLastModified(timestamp)
+                savePhotoMetadata(metadataDir, fileName, category, exifTimestamp = timestamp)
+
+                // Now we have the actual file path
+                val filePath = photoFile.absolutePath
+                val imageTypeId = when (category) {
+                    PhotoCategory.FRONT -> 1
+                    PhotoCategory.BACK -> 2
+                    PhotoCategory.SIDE -> 3
+                    PhotoCategory.BICEPS -> 4
+                    PhotoCategory.CHEST -> 5
+                    PhotoCategory.LEGS -> 6
+                    PhotoCategory.FULL_BODY -> 7
+                    else -> 8 // OTHER - matches database
+                }
+                val date = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).format(java.util.Date())
+                
+                println("PhotoViewModel: About to queue image for sync")
+                println("PhotoViewModel: - Category: $category -> ImageTypeId: $imageTypeId")
+                println("PhotoViewModel: - FilePath: $filePath")
+                println("PhotoViewModel: - File exists: ${photoFile.exists()}")
+                println("PhotoViewModel: - File size: ${if (photoFile.exists()) photoFile.length() else "N/A"} bytes")
+                println("PhotoViewModel: - Date: $date")
+                
+                // Queue for sync
+                syncRepository.queueImageForSync(filePath, imageTypeId, date)
+                println("PhotoViewModel: Image queued for sync, now calling syncAllData()")
+                
+                val result = syncRepository.syncAllData()
+                result.fold(
+                    onSuccess = { println("PhotoViewModel: Sync completed successfully") },
+                    onFailure = { error -> 
+                        println("PhotoViewModel: Sync failed with error: ${error.message}")
+                        // Check if this is an authentication error
+                        if (error.message?.contains("User not logged in") == true || 
+                            error.message?.contains("No access token") == true) {
+                            println("PhotoViewModel: Authentication error detected - user needs to log in again")
+                        }
+                    }
+                )
+                
+                // Update the photos list after sync attempt
+                loadPhotos(context)
+            }
+        }
+    }
     // State properties
     var photos by mutableStateOf<List<Photo>>(emptyList())
         private set
@@ -139,17 +217,102 @@ class PhotoViewModel : ViewModel() {
     fun deletePhoto(context: Context, photo: Photo) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
+                println("PhotoViewModel: Deleting photo - path: ${photo.filePath}, category: ${photo.category}")
+                
+                // Queue for sync deletion if sync repository is available
+                syncRepository?.let { sync ->
+                    try {
+                        // Parse the photo metadata to get server information
+                        val metadataDir = ensureDirectoryExists(context, METADATA_DIR)
+                        val file = File(photo.filePath)
+                        val metadataFile = File(metadataDir, "${file.name}.metadata")
+                        
+                        var serverId: String? = null
+                        var imageTypeId: Int? = null
+                        var dateString: String? = null
+                        
+                        if (metadataFile.exists()) {
+                            val metadataContent = metadataFile.readText()
+                            println("PhotoViewModel: Found metadata - $metadataContent")
+                            
+                            // Parse metadata to extract server info
+                            metadataContent.lines().forEach { line ->
+                                when {
+                                    line.startsWith("server_id=") -> serverId = line.substringAfter("=")
+                                    line.startsWith("category=") -> {
+                                        val category = line.substringAfter("=")
+                                        imageTypeId = mapCategoryToImageTypeId(category)
+                                    }
+                                    line.startsWith("timestamp=") -> {
+                                        val timestamp = line.substringAfter("=").toLongOrNull() ?: photo.timestamp.time
+                                        dateString = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+                                            timeZone = TimeZone.getTimeZone("UTC")
+                                        }.format(Date(timestamp))
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Use photo data if metadata doesn't have all info
+                        if (imageTypeId == null) {
+                            imageTypeId = mapCategoryToImageTypeId(photo.category.name)
+                        }
+                        if (dateString == null) {
+                            dateString = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+                                timeZone = TimeZone.getTimeZone("UTC")
+                            }.format(Date(photo.timestamp.time))
+                        }
+                        
+                        println("PhotoViewModel: Queueing for deletion - serverId: $serverId, imageTypeId: $imageTypeId, date: $dateString")
+                        
+                        // Queue for deletion with all available info
+                        imageTypeId?.let { typeId ->
+                            dateString?.let { date ->
+                                sync.queueImageForDeletion(photo.filePath, typeId, date, serverId)
+                                println("PhotoViewModel: Successfully queued image for sync deletion")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        println("PhotoViewModel: Error queueing image for sync deletion: ${e.message}")
+                        e.printStackTrace()
+                    }
+                }
+                
+                // Delete local files
                 val file = File(photo.filePath)
                 if (file.exists()) {
-                    file.delete()
+                    val deleted = file.delete()
+                    println("PhotoViewModel: Local file deletion result: $deleted")
                     
                     val metadataDir = ensureDirectoryExists(context, METADATA_DIR)
-                    val metadataFile = File(metadataDir, "${file.name}.json")
-                    metadataFile.delete()
+                    val metadataFile = File(metadataDir, "${file.name}.metadata")
+                    if (metadataFile.exists()) {
+                        val metadataDeleted = metadataFile.delete()
+                        println("PhotoViewModel: Metadata file deletion result: $metadataDeleted")
+                    }
                     
+                    // Reload photos to update UI
                     loadPhotos(context)
+                    println("PhotoViewModel: Photo deletion completed, photos reloaded")
                 }
             }
+        }
+    }
+    
+    /**
+     * Maps photo category names to image type IDs used by the server.
+     */
+    private fun mapCategoryToImageTypeId(categoryName: String): Int {
+        return when (categoryName.uppercase()) {
+            "FRONT" -> 1
+            "BACK" -> 2 
+            "SIDE" -> 3
+            "BICEPS" -> 4
+            "CHEST" -> 5
+            "LEGS" -> 6
+            "FULL_BODY" -> 7
+            "OTHER" -> 8
+            else -> 8 // Default to "OTHER"
         }
     }
     
@@ -211,8 +374,61 @@ class PhotoViewModel : ViewModel() {
 
     private fun savePhotoFile(context: Context, uri: Uri, photoFile: File) {
         context.contentResolver.openInputStream(uri)?.use { input ->
-            FileOutputStream(photoFile).use { output ->
-                input.copyTo(output)
+            // First, decode the image to get its dimensions
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            BitmapFactory.decodeStream(input, null, options)
+            
+            // Calculate compression ratio to keep image under 2MB
+            val maxFileSize = 2 * 1024 * 1024 // 2MB
+            val originalWidth = options.outWidth
+            val originalHeight = options.outHeight
+            
+            // Calculate scale factor
+            var scaleFactor = 1
+            if (originalHeight > 1920 || originalWidth > 1920) {
+                val heightRatio = originalHeight / 1920
+                val widthRatio = originalWidth / 1920
+                scaleFactor = if (heightRatio > widthRatio) heightRatio else widthRatio
+            }
+            
+            // Decode the actual bitmap with scaling
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val decodingOptions = BitmapFactory.Options().apply {
+                    inSampleSize = scaleFactor
+                }
+                val bitmap = BitmapFactory.decodeStream(inputStream, null, decodingOptions)
+                
+                if (bitmap != null) {
+                    // Start with high quality and reduce if needed
+                    var quality = 90
+                    var tempFile = File.createTempFile("temp_photo", ".jpg", photoFile.parentFile)
+                    
+                    do {
+                        FileOutputStream(tempFile).use { output ->
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, output)
+                        }
+                        val fileSizeBytes = tempFile.length()
+                        if (fileSizeBytes <= maxFileSize || quality <= 50) {
+                            // Copy temp file to final destination
+                            tempFile.copyTo(photoFile, overwrite = true)
+                            println("PhotoViewModel: Compressed image to ${fileSizeBytes / 1024}KB with quality $quality")
+                            break
+                        }
+                        quality -= 10
+                    } while (quality > 50)
+                    
+                    tempFile.delete()
+                    bitmap.recycle()
+                } else {
+                    // Fallback to original method if bitmap decoding fails
+                    context.contentResolver.openInputStream(uri)?.use { fallbackInput ->
+                        FileOutputStream(photoFile).use { output ->
+                            fallbackInput.copyTo(output)
+                        }
+                    }
+                }
             }
         }
     }

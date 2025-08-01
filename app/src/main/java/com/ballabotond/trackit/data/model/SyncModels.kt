@@ -23,6 +23,17 @@ data class SyncMetricEntry(
 )
 
 @Serializable
+data class SyncImageEntry(
+    val localId: String? = null,
+    val serverId: String? = null,
+    val filePath: String,
+    val imageTypeId: Int,
+    val date: String, // ISO 8601 format
+    val syncStatus: SyncStatus = SyncStatus.PENDING,
+    val lastSyncAttempt: Long = 0L
+)
+
+@Serializable
 enum class SyncStatus {
     PENDING,
     SYNCING,
@@ -82,4 +93,19 @@ data class SyncState(
     val isSyncing: Boolean = false,
     val pendingUploads: Int = 0,
     val failedUploads: Int = 0
+)
+
+data class ServerImageEntry(
+    val id: String,
+    val image_type_id: Int,
+    val filename: String,
+    val date: String,
+    val file_size: Int,
+    val mime_type: String
+)
+
+data class GetImagesResponse(
+    val success: Boolean,
+    val images: List<ServerImageEntry>,
+    val total: Int
 )

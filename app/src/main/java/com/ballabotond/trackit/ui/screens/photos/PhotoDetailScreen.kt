@@ -59,11 +59,11 @@ import com.guru.fontawesomecomposelib.FaIcon
 @Composable
 fun PhotoDetailScreen(
     navController: NavController,
-    viewModel: HealthViewModel,
+    healthViewModel: HealthViewModel,
+    photoViewModel: PhotoViewModel,
     photoUri: String
 ) {
     val context = LocalContext.current
-    val photoViewModel = remember { PhotoViewModel() }
 
     // For photo selection dialog
     var showPhotoSelectionDialog by remember { mutableStateOf(false) }
@@ -139,7 +139,7 @@ fun PhotoDetailScreen(
 
     // Get the latest entry before or on the photo date for each metric
     val metricEntries = metrics.map { (metric, unit) ->
-        val history = viewModel.getMetricHistory(metric, unit)
+        val history = healthViewModel.getMetricHistory(metric, unit)
         val entriesBeforePhoto = history.filter { it.date <= photoDate }
         val latestEntry = entriesBeforePhoto.maxByOrNull { it.date }
         

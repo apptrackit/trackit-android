@@ -13,6 +13,7 @@ import com.ballabotond.trackit.ui.navigation.*
 import com.ballabotond.trackit.ui.theme.FontAwesomeIcons
 import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
 import com.google.accompanist.pager.*
 import com.guru.fontawesomecomposelib.FaIconType
 import kotlinx.coroutines.launch
@@ -24,7 +25,8 @@ import com.ballabotond.trackit.ui.screens.photos.PhotosScreen
 fun MainScreen(
     navController: NavController,
     viewModel: HealthViewModel,
-    syncViewModel: com.ballabotond.trackit.ui.viewmodel.SyncViewModel? = null
+    syncViewModel: com.ballabotond.trackit.ui.viewmodel.SyncViewModel? = null,
+    photoViewModel: PhotoViewModel? = null
 ) {
     val pagerState = rememberPagerState()
     val scope = rememberCoroutineScope()
@@ -136,7 +138,7 @@ fun MainScreen(
                         navController = navController,
                         syncViewModel = syncViewModel
                     )
-                    1 -> PhotosScreen(navController = navController, viewModel = viewModel)
+                    1 -> PhotosScreen(navController = navController, healthViewModel = viewModel, syncRepository = viewModel.syncRepository, photoViewModel = photoViewModel)
                     2 -> ProgressScreen(
                         onNavigateToEditMetric = { metricName ->
                             when (metricName) {
