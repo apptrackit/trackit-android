@@ -19,6 +19,11 @@ interface ImagesApiService {
         @Path("id") imageId: String
     ): Response<ResponseBody>
     
+    @DELETE("api/images/{id}")
+    suspend fun deleteImage(
+        @Path("id") imageId: Int
+    ): Response<ResponseBody>
+    
     @Multipart
     @POST("api/images")
     suspend fun uploadImage(

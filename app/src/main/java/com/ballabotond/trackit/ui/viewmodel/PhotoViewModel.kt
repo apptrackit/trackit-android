@@ -12,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.ballabotond.trackit.data.model.Photo
 import com.ballabotond.trackit.data.model.PhotoCategory
 import com.ballabotond.trackit.data.model.PhotoMetadata
+import com.ballabotond.trackit.data.repository.SyncRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -30,7 +31,9 @@ import android.widget.Toast
  * ViewModel responsible for managing photos and their metadata.
  * Handles loading, saving, updating, and deleting photos with their associated categories.
  */
-class PhotoViewModel : ViewModel() {
+class PhotoViewModel(
+    private val syncRepository: SyncRepository? = null
+) : ViewModel() {
     /**
      * Save photo and immediately queue for upload to backend.
      * @param context The application context
@@ -214,17 +217,102 @@ class PhotoViewModel : ViewModel() {
     fun deletePhoto(context: Context, photo: Photo) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
+                println("PhotoViewModel: Deleting photo - path: ${photo.filePath}, category: ${photo.category}")
+                
+                // Queue for sync deletion if sync repository is available
+                syncRepository?.let { sync ->
+                    try {
+                        // Parse the photo metadata to get server information
+                        val metadataDir = ensureDirectoryExists(context, METADATA_DIR)
+                        val file = File(photo.filePath)
+                        val metadataFile = File(metadataDir, "${file.name}.metadata")
+                        
+                        var serverId: String? = null
+                        var imageTypeId: Int? = null
+                        var dateString: String? = null
+                        
+                        if (metadataFile.exists()) {
+                            val metadataContent = metadataFile.readText()
+                            println("PhotoViewModel: Found metadata - $metadataContent")
+                            
+                            // Parse metadata to extract server info
+                            metadataContent.lines().forEach { line ->
+                                when {
+                                    line.startsWith("server_id=") -> serverId = line.substringAfter("=")
+                                    line.startsWith("category=") -> {
+                                        val category = line.substringAfter("=")
+                                        imageTypeId = mapCategoryToImageTypeId(category)
+                                    }
+                                    line.startsWith("timestamp=") -> {
+                                        val timestamp = line.substringAfter("=").toLongOrNull() ?: photo.timestamp.time
+                                        dateString = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+                                            timeZone = TimeZone.getTimeZone("UTC")
+                                        }.format(Date(timestamp))
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Use photo data if metadata doesn't have all info
+                        if (imageTypeId == null) {
+                            imageTypeId = mapCategoryToImageTypeId(photo.category.name)
+                        }
+                        if (dateString == null) {
+                            dateString = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+                                timeZone = TimeZone.getTimeZone("UTC")
+                            }.format(Date(photo.timestamp.time))
+                        }
+                        
+                        println("PhotoViewModel: Queueing for deletion - serverId: $serverId, imageTypeId: $imageTypeId, date: $dateString")
+                        
+                        // Queue for deletion with all available info
+                        imageTypeId?.let { typeId ->
+                            dateString?.let { date ->
+                                sync.queueImageForDeletion(photo.filePath, typeId, date, serverId)
+                                println("PhotoViewModel: Successfully queued image for sync deletion")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        println("PhotoViewModel: Error queueing image for sync deletion: ${e.message}")
+                        e.printStackTrace()
+                    }
+                }
+                
+                // Delete local files
                 val file = File(photo.filePath)
                 if (file.exists()) {
-                    file.delete()
+                    val deleted = file.delete()
+                    println("PhotoViewModel: Local file deletion result: $deleted")
                     
                     val metadataDir = ensureDirectoryExists(context, METADATA_DIR)
-                    val metadataFile = File(metadataDir, "${file.name}.json")
-                    metadataFile.delete()
+                    val metadataFile = File(metadataDir, "${file.name}.metadata")
+                    if (metadataFile.exists()) {
+                        val metadataDeleted = metadataFile.delete()
+                        println("PhotoViewModel: Metadata file deletion result: $metadataDeleted")
+                    }
                     
+                    // Reload photos to update UI
                     loadPhotos(context)
+                    println("PhotoViewModel: Photo deletion completed, photos reloaded")
                 }
             }
+        }
+    }
+    
+    /**
+     * Maps photo category names to image type IDs used by the server.
+     */
+    private fun mapCategoryToImageTypeId(categoryName: String): Int {
+        return when (categoryName.uppercase()) {
+            "FRONT" -> 1
+            "BACK" -> 2 
+            "SIDE" -> 3
+            "BICEPS" -> 4
+            "CHEST" -> 5
+            "LEGS" -> 6
+            "FULL_BODY" -> 7
+            "OTHER" -> 8
+            else -> 8 // Default to "OTHER"
         }
     }
     

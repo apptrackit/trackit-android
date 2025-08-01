@@ -35,11 +35,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 @Composable
 fun PhotoCategoryScreen(
     navController: NavController,
-    viewModel: HealthViewModel,
+    healthViewModel: HealthViewModel,
+    photoViewModel: PhotoViewModel,
     photoUri: String
 ) {
     val context = LocalContext.current
-    val photoViewModel = remember { PhotoViewModel() }
 
     // Decode the URL-encoded path
     val decodedPath = try {

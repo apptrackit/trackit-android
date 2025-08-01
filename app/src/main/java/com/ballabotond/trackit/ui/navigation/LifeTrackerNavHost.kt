@@ -22,6 +22,7 @@ import com.ballabotond.trackit.ui.screens.photos.*
 import com.ballabotond.trackit.ui.screens.settings.ProfileScreen
 import com.ballabotond.trackit.ui.viewmodel.AuthViewModel
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -32,7 +33,8 @@ fun LifeTrackerNavHost(
     navController: NavHostController,
     authViewModel: AuthViewModel,
     viewModel: HealthViewModel,
-    syncViewModel: com.ballabotond.trackit.ui.viewmodel.SyncViewModel
+    syncViewModel: com.ballabotond.trackit.ui.viewmodel.SyncViewModel,
+    photoViewModel: PhotoViewModel
 ) {
     val authUiState by authViewModel.uiState.collectAsState()
     
@@ -70,7 +72,7 @@ fun LifeTrackerNavHost(
         }
 
         composable("main") {
-            MainScreen(navController = navController, viewModel = viewModel, syncViewModel = syncViewModel)
+            MainScreen(navController = navController, viewModel = viewModel, syncViewModel = syncViewModel, photoViewModel = photoViewModel)
         }
 
         composable(EDIT_WEIGHT_ROUTE) {
@@ -249,7 +251,8 @@ fun LifeTrackerNavHost(
             if (uri != null) {
                 PhotoDetailScreen(
                     navController = navController,
-                    viewModel = viewModel,
+                    healthViewModel = viewModel,
+                    photoViewModel = photoViewModel,
                     photoUri = uri
                 )
             }
@@ -273,7 +276,8 @@ fun LifeTrackerNavHost(
             if (mainUri != null && compareUri != null) {
                 PhotoCompareScreen(
                     navController = navController,
-                    viewModel = viewModel,
+                    healthViewModel = viewModel,
+                    photoViewModel = photoViewModel,
                     mainPhotoUri = mainUri,
                     comparePhotoUri = compareUri
                 )
@@ -293,7 +297,8 @@ fun LifeTrackerNavHost(
             if (uri != null) {
                 PhotoCategoryScreen(
                     navController = navController,
-                    viewModel = viewModel,
+                    healthViewModel = viewModel,
+                    photoViewModel = photoViewModel,
                     photoUri = uri
                 )
             }

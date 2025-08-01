@@ -176,7 +176,8 @@ class SyncRepository(
                         val result = uploadImageEntry(accessToken, imageEntry)
                         if (result.isSuccess) {
                             println("SyncRepository: Image upload successful")
-                            updateImageEntryAfterSync(imageEntry, SyncStatus.SYNCED)
+                            val serverId = result.getOrNull()
+                            updateImageEntryAfterUpload(imageEntry, serverId, SyncStatus.SYNCED)
                         } else {
                             println("SyncRepository: Image upload failed: ${result.exceptionOrNull()?.message}")
                             updateImageEntryAfterSync(imageEntry, SyncStatus.FAILED)
@@ -184,8 +185,24 @@ class SyncRepository(
                         }
                     }
                     SyncStatus.DELETED_LOCALLY -> {
-                        // TODO: implement image deletion on server if needed
-                        removeImageEntryFromPending(imageEntry)
+                        println("SyncRepository: Processing DELETED_LOCALLY image - serverId: ${imageEntry.serverId}")
+                        if (imageEntry.serverId != null) {
+                            println("SyncRepository: Image has serverId ${imageEntry.serverId}, attempting server deletion")
+                            val result = deleteImageOnServer(accessToken, imageEntry.serverId)
+                            if (result.isSuccess) {
+                                println("SyncRepository: Server deletion successful for image ${imageEntry.serverId}")
+                                removeImageEntryFromPending(imageEntry)
+                                println("SyncRepository: Removed image entry from pending list")
+                            } else {
+                                println("SyncRepository: Server deletion failed for image ${imageEntry.serverId}: ${result.exceptionOrNull()?.message}")
+                                failCount++
+                            }
+                        } else {
+                            // No server ID means it was never uploaded, just remove from pending
+                            println("SyncRepository: Image has no serverId (never uploaded), removing from pending")
+                            removeImageEntryFromPending(imageEntry)
+                            println("SyncRepository: Removed local-only image from pending list")
+                        }
                     }
                     else -> {
                         println("SyncRepository: Skipping image entry with status: ${imageEntry.syncStatus}")
@@ -332,16 +349,16 @@ class SyncRepository(
                         photoFile.writeBytes(imageBytes)
                         photoFile.setLastModified(date)
                         
-                        // Create metadata file with correct category
+                        // Create metadata file with correct category and server ID
                         val category = mapImageTypeIdToCategory(serverImage.image_type_id)
-                        savePhotoMetadata(metadataDir, fileName, category, date)
+                        savePhotoMetadata(metadataDir, fileName, category, date, serverImage.id)
                         
                         println("SyncRepository: Server image ${serverImage.id} downloaded and saved as $fileName")
                         
                         // Track as synced in sync state
                         val syncEntry = SyncImageEntry(
                             localId = photoFile.absolutePath,
-                            serverId = serverImage.id,
+                            serverId = serverImage.id, // Already a String
                             filePath = photoFile.absolutePath,
                             imageTypeId = serverImage.image_type_id,
                             date = serverImage.date,
@@ -386,14 +403,16 @@ class SyncRepository(
         }
     }
     
-    private fun savePhotoMetadata(metadataDir: java.io.File, fileName: String, category: String, timestamp: Long) {
+    private fun savePhotoMetadata(metadataDir: java.io.File, fileName: String, category: String, timestamp: Long, serverId: String? = null) {
         val metadataFile = java.io.File(metadataDir, "${fileName}.metadata")
-        val metadata = """
-            category=$category
-            timestamp=$timestamp
-            source=server
-        """.trimIndent()
+        val metadata = buildString {
+            appendLine("category=$category")
+            appendLine("timestamp=$timestamp")
+            appendLine("source=server")
+            serverId?.let { appendLine("server_id=$it") }
+        }.trimEnd()
         metadataFile.writeText(metadata)
+        println("SyncRepository: Saved photo metadata with serverId: $serverId")
     }
     
     private suspend fun convertAndSaveServerEntry(serverEntry: ServerMetricEntry) {
@@ -701,6 +720,53 @@ class SyncRepository(
         println("SyncRepository: Image added to pending entries. Current pending count: ${getPendingImageEntries().size}")
     }
 
+    suspend fun queueImageForDeletion(filePath: String, imageTypeId: Int, date: String, serverId: String? = null) {
+        val localId = "$filePath-$imageTypeId-$date"
+        println("SyncRepository: queueImageForDeletion called - localId: $localId, serverId: $serverId")
+        println("SyncRepository: Input parameters - filePath: $filePath, imageTypeId: $imageTypeId, date: $date")
+        
+        // Find the entry in pending list and mark for deletion
+        val pendingImages = getPendingImageEntries().toMutableList()
+        println("SyncRepository: Current pending images count: ${pendingImages.size}")
+        
+        val existingEntry = pendingImages.find { 
+            val localIdMatch = it.localId == localId
+            val serverIdMatch = serverId != null && it.serverId == serverId
+            println("SyncRepository: Checking entry - localId: ${it.localId}, serverId: ${it.serverId}, status: ${it.syncStatus}")
+            println("SyncRepository: Match results - localIdMatch: $localIdMatch, serverIdMatch: $serverIdMatch")
+            localIdMatch || serverIdMatch
+        }
+        
+        if (existingEntry != null) {
+            println("SyncRepository: Found existing entry to update - current status: ${existingEntry.syncStatus}")
+            val updatedEntry = existingEntry.copy(syncStatus = SyncStatus.DELETED_LOCALLY)
+            pendingImages.removeAll { it.localId == existingEntry.localId }
+            pendingImages.add(updatedEntry)
+            savePendingImageEntries(pendingImages)
+            println("SyncRepository: Updated existing image entry to DELETED_LOCALLY - new status: ${updatedEntry.syncStatus}")
+        } else {
+            println("SyncRepository: No existing entry found, creating new deletion entry")
+            // Entry is not in pending list, create a new deletion entry
+            val deletionEntry = SyncImageEntry(
+                localId = localId,
+                serverId = serverId,
+                filePath = filePath,
+                imageTypeId = imageTypeId,
+                date = date,
+                syncStatus = SyncStatus.DELETED_LOCALLY
+            )
+            pendingImages.add(deletionEntry)
+            savePendingImageEntries(pendingImages)
+            println("SyncRepository: Created new image deletion entry - serverId: ${deletionEntry.serverId}, status: ${deletionEntry.syncStatus}")
+        }
+        
+        val finalPendingImages = getPendingImageEntries()
+        println("SyncRepository: Final pending images count: ${finalPendingImages.size}")
+        finalPendingImages.forEach { entry ->
+            println("SyncRepository: Pending entry - localId: ${entry.localId}, serverId: ${entry.serverId}, status: ${entry.syncStatus}")
+        }
+    }
+
     private suspend fun getPendingImageEntries(): List<SyncImageEntry> {
         val preferences = context.syncDataStore.data.first()
         val entriesJson = preferences[PENDING_IMAGE_ENTRIES_KEY] ?: return emptyList()
@@ -736,13 +802,26 @@ class SyncRepository(
         }
     }
 
+    private suspend fun updateImageEntryAfterUpload(entry: SyncImageEntry, serverId: String?, status: SyncStatus) {
+        val currentEntries = getPendingImageEntries().toMutableList()
+        val index = currentEntries.indexOfFirst { it.localId == entry.localId }
+        if (index != -1) {
+            currentEntries[index] = entry.copy(
+                serverId = serverId,
+                syncStatus = status,
+                lastSyncAttempt = System.currentTimeMillis()
+            )
+            savePendingImageEntries(currentEntries)
+        }
+    }
+
     private suspend fun removeImageEntryFromPending(entry: SyncImageEntry) {
         val currentEntries = getPendingImageEntries().toMutableList()
         currentEntries.removeAll { it.localId == entry.localId }
         savePendingImageEntries(currentEntries)
     }
 
-    private suspend fun uploadImageEntry(accessToken: String, entry: SyncImageEntry): Result<Unit> {
+    private suspend fun uploadImageEntry(accessToken: String, entry: SyncImageEntry): Result<String?> {
         return try {
             println("SyncRepository: uploadImageEntry called with filePath: ${entry.filePath}, imageTypeId: ${entry.imageTypeId}")
             val file = java.io.File(entry.filePath)
@@ -765,7 +844,22 @@ class SyncRepository(
             
             if (response.isSuccessful) {
                 println("SyncRepository: Image upload successful")
-                Result.success(Unit)
+                
+                // Try to parse the response to get the server ID
+                val responseBody = response.body()?.string()
+                val serverId = try {
+                    if (responseBody != null) {
+                        val jsonResponse = json.decodeFromString<Map<String, Any>>(responseBody)
+                        // Convert number to string for consistency
+                        (jsonResponse["id"] as? Number)?.toString()
+                    } else null
+                } catch (e: Exception) {
+                    println("SyncRepository: Could not parse server ID from response: ${e.message}")
+                    null
+                }
+                
+                println("SyncRepository: Parsed server ID: $serverId")
+                Result.success(serverId)
             } else {
                 val errorBody = response.errorBody()?.string()
                 println("SyncRepository: Image upload failed - error: $errorBody")
@@ -795,6 +889,63 @@ class SyncRepository(
             // Check if this is likely an authentication-related exception
             if (e.message?.contains("closed") == true || e.message?.contains("401") == true) {
                 return Result.failure(Exception("Upload failed - authentication issue, please log in again"))
+            }
+            
+            Result.failure(e)
+        }
+    }
+
+    private suspend fun deleteImageOnServer(accessToken: String, serverId: String): Result<Unit> {
+        return try {
+            println("SyncRepository: deleteImageOnServer called with serverId: $serverId")
+            
+            // Convert string ID to integer for API call
+            val imageIdInt = try {
+                serverId.toInt()
+            } catch (e: NumberFormatException) {
+                println("SyncRepository: Invalid server ID format: $serverId")
+                return Result.failure(Exception("Invalid server ID format: $serverId"))
+            }
+            
+            println("SyncRepository: Making DELETE request to /api/images/$imageIdInt")
+            val response = imagesApi.deleteImage(imageIdInt)
+            println("SyncRepository: Delete API response - isSuccessful: ${response.isSuccessful}, code: ${response.code()}")
+            
+            if (response.isSuccessful) {
+                val responseBody = response.body()?.string()
+                println("SyncRepository: Image deletion successful - Response: $responseBody")
+                Result.success(Unit)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                println("SyncRepository: Image deletion failed - HTTP ${response.code()}")
+                println("SyncRepository: Error response body: $errorBody")
+                println("SyncRepository: Response headers: ${response.headers()}")
+                
+                // Check for authentication errors
+                if (response.code() == 401) {
+                    if (errorBody?.contains("user not found") == true || 
+                        errorBody?.contains("Unauthorized") == true ||
+                        errorBody?.contains("User not logged in") == true) {
+                        println("SyncRepository: Authentication failed during image deletion")
+                        return Result.failure(Exception("Authentication failed - please log in again"))
+                    }
+                }
+                
+                // If image not found (404), consider it as successful deletion (already deleted)
+                if (response.code() == 404) {
+                    println("SyncRepository: Image not found on server (404), considering deletion successful")
+                    return Result.success(Unit)
+                }
+                
+                Result.failure(Exception(errorBody ?: "Image deletion failed with code ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            println("SyncRepository: Exception during image deletion: ${e.message}")
+            e.printStackTrace()
+            
+            // Check if this is likely an authentication-related exception
+            if (e.message?.contains("closed") == true || e.message?.contains("401") == true) {
+                return Result.failure(Exception("Delete failed - authentication issue, please log in again"))
             }
             
             Result.failure(e)
