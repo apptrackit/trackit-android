@@ -23,6 +23,17 @@ data class SyncMetricEntry(
 )
 
 @Serializable
+data class SyncImageEntry(
+    val localId: String? = null,
+    val serverId: String? = null,
+    val filePath: String,
+    val imageTypeId: Int,
+    val date: String, // ISO 8601 format
+    val syncStatus: SyncStatus = SyncStatus.PENDING,
+    val lastSyncAttempt: Long = 0L
+)
+
+@Serializable
 enum class SyncStatus {
     PENDING,
     SYNCING,

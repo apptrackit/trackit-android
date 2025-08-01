@@ -7,6 +7,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import com.ballabotond.trackit.data.api.MetricsApiService
+import com.ballabotond.trackit.data.api.ImagesApiService
 import com.ballabotond.trackit.data.model.*
 import com.ballabotond.trackit.data.network.NetworkModule
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +15,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
@@ -24,7 +29,8 @@ private val Context.syncDataStore: DataStore<Preferences> by preferencesDataStor
 class SyncRepository(
     private val context: Context,
     private val authRepository: AuthRepository,
-    private val metricsRepository: MetricsRepository
+    private val metricsRepository: MetricsRepository,
+    private val imagesApiService: ImagesApiService
 ) {
     private val metricsApi: MetricsApiService = NetworkModule.metricsApiService
     private val json = Json { ignoreUnknownKeys = true }
@@ -33,6 +39,7 @@ class SyncRepository(
         private val LAST_SYNC_KEY = longPreferencesKey("last_sync_timestamp")
         private val PENDING_SYNC_ENTRIES_KEY = stringPreferencesKey("pending_sync_entries")
         private val METRIC_TYPE_MAPPINGS_KEY = stringPreferencesKey("metric_type_mappings")
+        private val PENDING_IMAGE_ENTRIES_KEY = stringPreferencesKey("pending_image_sync_entries")
         
         // Default metric type mappings - will be updated from server
         // Only include base measurements, not calculated metrics
@@ -156,17 +163,46 @@ class SyncRepository(
                 }
             }
             
+            // --- IMAGE SYNC ---
+            val pendingImages = getPendingImageEntries()
+            println("SyncRepository: Found ${pendingImages.size} pending images to sync")
+            for (imageEntry in pendingImages) {
+                println("SyncRepository: Processing image entry - localId: ${imageEntry.localId}, status: ${imageEntry.syncStatus}, filePath: ${imageEntry.filePath}")
+                when (imageEntry.syncStatus) {
+                    SyncStatus.PENDING, SyncStatus.FAILED -> {
+                        println("SyncRepository: Attempting to upload image: ${imageEntry.filePath}")
+                        val result = uploadImageEntry(accessToken, imageEntry)
+                        if (result.isSuccess) {
+                            println("SyncRepository: Image upload successful")
+                            updateImageEntryAfterSync(imageEntry, SyncStatus.SYNCED)
+                        } else {
+                            println("SyncRepository: Image upload failed: ${result.exceptionOrNull()?.message}")
+                            updateImageEntryAfterSync(imageEntry, SyncStatus.FAILED)
+                            failCount++
+                        }
+                    }
+                    SyncStatus.DELETED_LOCALLY -> {
+                        // TODO: implement image deletion on server if needed
+                        removeImageEntryFromPending(imageEntry)
+                    }
+                    else -> {
+                        println("SyncRepository: Skipping image entry with status: ${imageEntry.syncStatus}")
+                    }
+                }
+            }
+            
             // Update last sync timestamp
             setLastSyncTimestamp(System.currentTimeMillis())
             
             val finalPendingEntries = getPendingEntries()
+            val finalPendingImages = getPendingImageEntries()
             Result.success(
                 SyncState(
                     lastSyncTimestamp = System.currentTimeMillis(),
                     isOnline = true,
                     isSyncing = false,
-                    pendingUploads = finalPendingEntries.count { it.syncStatus == SyncStatus.PENDING },
-                    failedUploads = finalPendingEntries.count { it.syncStatus == SyncStatus.FAILED }
+                    pendingUploads = finalPendingEntries.count { it.syncStatus == SyncStatus.PENDING } + finalPendingImages.count { it.syncStatus == SyncStatus.PENDING },
+                    failedUploads = finalPendingEntries.count { it.syncStatus == SyncStatus.FAILED } + finalPendingImages.count { it.syncStatus == SyncStatus.FAILED }
                 )
             )
         } catch (e: Exception) {
@@ -487,6 +523,132 @@ class SyncRepository(
                 pendingUploads = pendingEntries.count { it.syncStatus == SyncStatus.PENDING },
                 failedUploads = pendingEntries.count { it.syncStatus == SyncStatus.FAILED }
             )
+        }
+    }
+    
+    // --- IMAGE SYNC METHODS ---
+    // Image Type IDs (must match database image_types table):
+    // 1: front, 2: back, 3: side, 4: biceps, 5: chest, 6: legs, 7: full body, 8: other
+    suspend fun queueImageForSync(filePath: String, imageTypeId: Int, date: String) {
+        val localId = "$filePath-$imageTypeId-$date"
+        println("SyncRepository: Queueing image for sync - localId: $localId, filePath: $filePath, imageTypeId: $imageTypeId")
+        
+        // Verify file exists
+        val file = java.io.File(filePath)
+        if (!file.exists()) {
+            println("SyncRepository: ERROR - Image file does not exist: $filePath")
+            return
+        }
+        println("SyncRepository: File verification passed - size: ${file.length()} bytes")
+        
+        val syncEntry = SyncImageEntry(
+            localId = localId,
+            filePath = filePath,
+            imageTypeId = imageTypeId,
+            date = date,
+            syncStatus = SyncStatus.PENDING
+        )
+        addToPendingImageEntries(syncEntry)
+        println("SyncRepository: Image added to pending entries. Current pending count: ${getPendingImageEntries().size}")
+    }
+
+    private suspend fun getPendingImageEntries(): List<SyncImageEntry> {
+        val preferences = context.syncDataStore.data.first()
+        val entriesJson = preferences[PENDING_IMAGE_ENTRIES_KEY] ?: return emptyList()
+        return try {
+            json.decodeFromString<List<SyncImageEntry>>(entriesJson)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    private suspend fun addToPendingImageEntries(entry: SyncImageEntry) {
+        val currentEntries = getPendingImageEntries().toMutableList()
+        currentEntries.removeAll { it.localId == entry.localId }
+        currentEntries.add(entry)
+        savePendingImageEntries(currentEntries)
+    }
+
+    private suspend fun savePendingImageEntries(entries: List<SyncImageEntry>) {
+        context.syncDataStore.edit { preferences ->
+            preferences[PENDING_IMAGE_ENTRIES_KEY] = json.encodeToString(entries)
+        }
+    }
+
+    private suspend fun updateImageEntryAfterSync(entry: SyncImageEntry, status: SyncStatus) {
+        val currentEntries = getPendingImageEntries().toMutableList()
+        val index = currentEntries.indexOfFirst { it.localId == entry.localId }
+        if (index != -1) {
+            currentEntries[index] = entry.copy(
+                syncStatus = status,
+                lastSyncAttempt = System.currentTimeMillis()
+            )
+            savePendingImageEntries(currentEntries)
+        }
+    }
+
+    private suspend fun removeImageEntryFromPending(entry: SyncImageEntry) {
+        val currentEntries = getPendingImageEntries().toMutableList()
+        currentEntries.removeAll { it.localId == entry.localId }
+        savePendingImageEntries(currentEntries)
+    }
+
+    private suspend fun uploadImageEntry(accessToken: String, entry: SyncImageEntry): Result<Unit> {
+        return try {
+            println("SyncRepository: uploadImageEntry called with filePath: ${entry.filePath}, imageTypeId: ${entry.imageTypeId}")
+            val file = java.io.File(entry.filePath)
+            if (!file.exists()) {
+                println("SyncRepository: Image file not found: ${entry.filePath}")
+                return Result.failure(Exception("Image file not found: ${entry.filePath}"))
+            }
+            println("SyncRepository: File exists, size: ${file.length()} bytes")
+            
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+            val imageTypeIdBody = entry.imageTypeId.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+            
+            println("SyncRepository: Making API call to upload image to /api/images...")
+            println("SyncRepository: Using access token: ${accessToken.take(20)}...")
+            println("SyncRepository: File details - name: ${file.name}, path: ${file.absolutePath}")
+            
+            val response = imagesApiService.uploadImage(body, imageTypeIdBody)
+            println("SyncRepository: API response - isSuccessful: ${response.isSuccessful}, code: ${response.code()}")
+            
+            if (response.isSuccessful) {
+                println("SyncRepository: Image upload successful")
+                Result.success(Unit)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                println("SyncRepository: Image upload failed - error: $errorBody")
+                
+                // Check for specific database constraint errors
+                if (response.code() == 500 && errorBody?.contains("foreign key constraint") == true) {
+                    if (errorBody.contains("images_image_type_id_fkey")) {
+                        return Result.failure(Exception("Invalid image type ID: ${entry.imageTypeId}. The image type does not exist in the database."))
+                    }
+                }
+                
+                // Check for authentication errors
+                if (response.code() == 401) {
+                    if (errorBody?.contains("user not found") == true || 
+                        errorBody?.contains("Unauthorized") == true ||
+                        errorBody?.contains("User not logged in") == true) {
+                        return Result.failure(Exception("Authentication failed - please log in again"))
+                    }
+                }
+                
+                Result.failure(Exception(errorBody ?: "Image upload failed with code ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            println("SyncRepository: Exception during image upload: ${e.message}")
+            e.printStackTrace()
+            
+            // Check if this is likely an authentication-related exception
+            if (e.message?.contains("closed") == true || e.message?.contains("401") == true) {
+                return Result.failure(Exception("Upload failed - authentication issue, please log in again"))
+            }
+            
+            Result.failure(e)
         }
     }
 }

@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class HealthViewModel(
     private val repository: MetricsRepository,
-    private val syncRepository: SyncRepository? = null
+    internal val syncRepository: SyncRepository? = null
 ) : ViewModel() {
     var metrics by mutableStateOf(repository.loadMetrics())
         private set

@@ -136,7 +136,7 @@ fun MainScreen(
                         navController = navController,
                         syncViewModel = syncViewModel
                     )
-                    1 -> PhotosScreen(navController = navController, viewModel = viewModel)
+                    1 -> PhotosScreen(navController = navController, viewModel = viewModel, syncRepository = viewModel.syncRepository)
                     2 -> ProgressScreen(
                         onNavigateToEditMetric = { metricName ->
                             when (metricName) {

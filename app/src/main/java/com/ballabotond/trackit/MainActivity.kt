@@ -27,7 +27,9 @@ class MainActivity : ComponentActivity() {
         // Create repositories and viewModels
         val metricsRepository = MetricsRepository(this)
         val authRepository = AuthRepository(this)
-        val syncRepository = SyncRepository(this, authRepository, metricsRepository)
+        val imagesApiService = com.ballabotond.trackit.data.network.NetworkModule.getRetrofitWithAuth(this, authRepository)
+            .create(com.ballabotond.trackit.data.api.ImagesApiService::class.java)
+        val syncRepository = SyncRepository(this, authRepository, metricsRepository, imagesApiService)
         val healthViewModel = HealthViewModel(metricsRepository, syncRepository)
         val authViewModel = AuthViewModel(authRepository)
         val syncViewModel = SyncViewModel(syncRepository)

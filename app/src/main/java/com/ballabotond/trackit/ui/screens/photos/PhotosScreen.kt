@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 fun PhotosScreen(
     navController: NavController,
     viewModel: HealthViewModel,
+    syncRepository: com.ballabotond.trackit.data.repository.SyncRepository? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -156,7 +157,11 @@ fun PhotosScreen(
                 TextButton(
                     onClick = {
                         selectedImageUri?.let {
-                            photoViewModel.savePhoto(context, it, selectedCategory)
+                            if (syncRepository != null) {
+                                photoViewModel.savePhotoAndUpload(context, it, selectedCategory, syncRepository)
+                            } else {
+                                photoViewModel.savePhoto(context, it, selectedCategory)
+                            }
                         }
                         showCategorySelectionDialog = false
                     }
