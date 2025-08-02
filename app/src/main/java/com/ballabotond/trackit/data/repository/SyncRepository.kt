@@ -322,62 +322,198 @@ class SyncRepository(
                 return
             }
             
-            // Check if this image is already in our pending list (to avoid duplicates)
-            val alreadyInPending = pendingImages.any { pendingImage ->
-                pendingImage.serverId == serverImage.id ||
-                (pendingImage.imageTypeId == serverImage.image_type_id && 
-                 abs((try { dateFormat.parse(pendingImage.date)?.time ?: 0L } catch (e: Exception) { 0L }) - date) < 60000)
+            // COMPREHENSIVE DUPLICATE CHECK - Check all possible ways this image might already exist locally
+            if (isImageAlreadyLocal(serverImage, date, pendingImages)) {
+                println("SyncRepository: Server image ${serverImage.id} already exists locally, skipping download")
+                return
             }
             
-            if (!alreadyInPending) {
-                println("SyncRepository: Downloading and saving server image to local storage")
-                
-                // Download the actual image file
-                try {
-                    val downloadResponse = imagesApi.downloadImage(serverImage.id)
-                    if (downloadResponse.isSuccessful && downloadResponse.body() != null) {
-                        val imageBytes = downloadResponse.body()!!.bytes()
-                        
-                        // Save to local photo directory
-                        val photosDir = ensureDirectoryExists(context, "photos")
-                        val metadataDir = ensureDirectoryExists(context, "photo_metadata")
-                        
-                        val fileName = "IMG_${java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.US).format(java.util.Date(date))}_server_${serverImage.id}.jpg"
-                        val photoFile = java.io.File(photosDir, fileName)
-                        
-                        // Write image file
-                        photoFile.writeBytes(imageBytes)
-                        photoFile.setLastModified(date)
-                        
-                        // Create metadata file with correct category and server ID
-                        val category = mapImageTypeIdToCategory(serverImage.image_type_id)
-                        savePhotoMetadata(metadataDir, fileName, category, date, serverImage.id)
-                        
-                        println("SyncRepository: Server image ${serverImage.id} downloaded and saved as $fileName")
-                        
-                        // Track as synced in sync state
-                        val syncEntry = SyncImageEntry(
-                            localId = photoFile.absolutePath,
-                            serverId = serverImage.id, // Already a String
-                            filePath = photoFile.absolutePath,
-                            imageTypeId = serverImage.image_type_id,
-                            date = serverImage.date,
-                            syncStatus = SyncStatus.SYNCED
-                        )
-                        addToPendingImageEntries(syncEntry)
-                        
-                    } else {
-                        println("SyncRepository: Failed to download image ${serverImage.id} - HTTP ${downloadResponse.code()}")
-                    }
-                } catch (e: Exception) {
-                    println("SyncRepository: Exception downloading image ${serverImage.id}: ${e.message}")
+            println("SyncRepository: Downloading and saving server image to local storage")
+            
+            // Download the actual image file
+            try {
+                val downloadResponse = imagesApi.downloadImage(serverImage.id)
+                if (downloadResponse.isSuccessful && downloadResponse.body() != null) {
+                    val imageBytes = downloadResponse.body()!!.bytes()
+                    
+                    // Save to local photo directory
+                    val photosDir = ensureDirectoryExists(context, "photos")
+                    val metadataDir = ensureDirectoryExists(context, "photo_metadata")
+                    
+                    val fileName = "IMG_${java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.US).format(java.util.Date(date))}_server_${serverImage.id}.jpg"
+                    val photoFile = java.io.File(photosDir, fileName)
+                    
+                    // Write image file
+                    photoFile.writeBytes(imageBytes)
+                    photoFile.setLastModified(date)
+                    
+                    // Create metadata file with correct category and server ID
+                    val category = mapImageTypeIdToCategory(serverImage.image_type_id)
+                    savePhotoMetadata(metadataDir, fileName, category, date, serverImage.id)
+                    
+                    println("SyncRepository: Server image ${serverImage.id} downloaded and saved as $fileName")
+                    
+                    // Track as synced in sync state
+                    val syncEntry = SyncImageEntry(
+                        localId = photoFile.absolutePath,
+                        serverId = serverImage.id, // Already a String
+                        filePath = photoFile.absolutePath,
+                        imageTypeId = serverImage.image_type_id,
+                        date = serverImage.date,
+                        syncStatus = SyncStatus.SYNCED
+                    )
+                    addToPendingImageEntries(syncEntry)
+                    
+                } else {
+                    println("SyncRepository: Failed to download image ${serverImage.id} - HTTP ${downloadResponse.code()}")
                 }
-            } else {
-                println("SyncRepository: Server image ${serverImage.id} already exists in pending list")
+            } catch (e: Exception) {
+                println("SyncRepository: Exception downloading image ${serverImage.id}: ${e.message}")
             }
         } catch (e: Exception) {
             println("SyncRepository: Failed to convert server image entry: ${e.message}")
             e.printStackTrace()
+        }
+    }
+    
+    private suspend fun isImageAlreadyLocal(serverImage: ServerImageEntry, serverDate: Long, pendingImages: List<SyncImageEntry>): Boolean {
+        println("SyncRepository: Checking if server image ${serverImage.id} already exists locally")
+        
+        // 1. Check pending list first (most reliable)
+        val alreadyInPending = pendingImages.any { pendingImage ->
+            // Direct server ID match
+            if (pendingImage.serverId == serverImage.id) {
+                println("SyncRepository: Found exact server ID match in pending list: ${serverImage.id}")
+                return true
+            }
+            
+            // Check for same type and similar timing (for recently uploaded images)
+            if (pendingImage.imageTypeId == serverImage.image_type_id) {
+                val pendingDate = try { 
+                    dateFormat.parse(pendingImage.date)?.time ?: 0L 
+                } catch (e: Exception) { 
+                    0L 
+                }
+                val timeDiff = abs(pendingDate - serverDate)
+                
+                // If same type and within 5 minutes, likely duplicate
+                if (timeDiff < 300000) { // 5 minutes
+                    println("SyncRepository: Found pending image with similar characteristics - time diff: ${timeDiff}ms")
+                    return true
+                }
+            }
+            false
+        }
+        
+        if (alreadyInPending) {
+            return true
+        }
+        
+        // 2. Check local files with metadata
+        val photosDir = ensureDirectoryExists(context, "photos")
+        val metadataDir = ensureDirectoryExists(context, "photo_metadata")
+        
+        // Get all local image files
+        val localImageFiles = photosDir.listFiles()?.filter { 
+            it.isFile && it.name.endsWith(".jpg") 
+        } ?: emptyList()
+        
+        println("SyncRepository: Checking ${localImageFiles.size} local image files")
+        
+        for (photoFile in localImageFiles) {
+            val metadataFile = java.io.File(metadataDir, "${photoFile.name}.metadata")
+            
+            if (metadataFile.exists()) {
+                val metadataContent = metadataFile.readText()
+                
+                // Check if this file already has the server ID
+                if (metadataContent.contains("server_id=${serverImage.id}")) {
+                    println("SyncRepository: Found exact server ID match in metadata: ${photoFile.name}")
+                    
+                    // Make sure it's tracked in pending list
+                    ensureImageInPendingList(photoFile, serverImage, metadataContent)
+                    return true
+                }
+                
+                // Check if this is a similar image (same type and similar timestamp)
+                val expectedCategory = mapImageTypeIdToCategory(serverImage.image_type_id)
+                if (metadataContent.contains("category=$expectedCategory")) {
+                    val photoTimestamp = photoFile.lastModified()
+                    val timeDiff = abs(photoTimestamp - serverDate)
+                    
+                    // If it's the same type and within 5 minutes, likely the same image
+                    if (timeDiff < 300000) { // 5 minutes in milliseconds
+                        println("SyncRepository: Found similar local image - type match and time diff: ${timeDiff}ms for file: ${photoFile.name}")
+                        
+                        // Update this file's metadata with the server ID
+                        try {
+                            val updatedMetadata = "$metadataContent\nserver_id=${serverImage.id}\nsource=local_upload_matched"
+                            metadataFile.writeText(updatedMetadata)
+                            println("SyncRepository: Updated existing image metadata with server ID: ${serverImage.id}")
+                            
+                            // Make sure it's tracked in pending list
+                            ensureImageInPendingList(photoFile, serverImage, updatedMetadata)
+                        } catch (e: Exception) {
+                            println("SyncRepository: Failed to update existing metadata: ${e.message}")
+                        }
+                        
+                        return true
+                    }
+                }
+            } else {
+                // No metadata file - check by file characteristics (last resort)
+                val photoTimestamp = photoFile.lastModified()
+                val timeDiff = abs(photoTimestamp - serverDate)
+                
+                // If timestamp is very close (within 2 minutes), might be the same image
+                if (timeDiff < 120000) { // 2 minutes
+                    println("SyncRepository: Found file with similar timestamp (no metadata): ${photoFile.name}, time diff: ${timeDiff}ms")
+                    
+                    // Create metadata for this file with server ID
+                    try {
+                        val category = mapImageTypeIdToCategory(serverImage.image_type_id)
+                        val newMetadata = buildString {
+                            appendLine("category=$category")
+                            appendLine("timestamp=$photoTimestamp")
+                            appendLine("server_id=${serverImage.id}")
+                            appendLine("source=local_matched_no_metadata")
+                        }.trimEnd()
+                        metadataFile.writeText(newMetadata)
+                        println("SyncRepository: Created metadata for existing file with server ID: ${serverImage.id}")
+                        
+                        // Make sure it's tracked in pending list
+                        ensureImageInPendingList(photoFile, serverImage, newMetadata)
+                    } catch (e: Exception) {
+                        println("SyncRepository: Failed to create metadata for existing file: ${e.message}")
+                    }
+                    
+                    return true
+                }
+            }
+        }
+        
+        println("SyncRepository: No local duplicate found for server image ${serverImage.id}")
+        return false
+    }
+    
+    private suspend fun ensureImageInPendingList(photoFile: java.io.File, serverImage: ServerImageEntry, metadataContent: String) {
+        // Check if already in pending list
+        val pendingImages = getPendingImageEntries()
+        val alreadyTracked = pendingImages.any { 
+            it.serverId == serverImage.id || it.filePath == photoFile.absolutePath 
+        }
+        
+        if (!alreadyTracked) {
+            val syncEntry = SyncImageEntry(
+                localId = photoFile.absolutePath,
+                serverId = serverImage.id,
+                filePath = photoFile.absolutePath,
+                imageTypeId = serverImage.image_type_id,
+                date = serverImage.date,
+                syncStatus = SyncStatus.SYNCED
+            )
+            addToPendingImageEntries(syncEntry)
+            println("SyncRepository: Added existing local image to sync tracking: ${photoFile.name}")
         }
     }
     
@@ -859,6 +995,27 @@ class SyncRepository(
                 }
                 
                 println("SyncRepository: Parsed server ID: $serverId")
+                
+                // Update local metadata with server ID
+                if (serverId != null) {
+                    try {
+                        val metadataDir = ensureDirectoryExists(context, "photo_metadata")
+                        val metadataFile = java.io.File(metadataDir, "${file.name}.metadata")
+                        
+                        if (metadataFile.exists()) {
+                            val existingMetadata = metadataFile.readText()
+                            // Only add server_id if it's not already there
+                            if (!existingMetadata.contains("server_id=")) {
+                                val updatedMetadata = "$existingMetadata\nserver_id=$serverId\nsource=local_upload"
+                                metadataFile.writeText(updatedMetadata)
+                                println("SyncRepository: Updated local metadata with server ID: $serverId")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        println("SyncRepository: Failed to update metadata with server ID: ${e.message}")
+                    }
+                }
+                
                 Result.success(serverId)
             } else {
                 val errorBody = response.errorBody()?.string()
