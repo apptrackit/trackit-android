@@ -13,9 +13,10 @@ data class SyncMetricEntry(
     val localId: String? = null,
     val serverId: String? = null,
     val metricTypeId: Int,
+    val client_uuid: String? = null,
     val value: Float,
     val date: String, // ISO 8601 format
-    val isAppleHealth: Boolean = false,
+    val source: String? = null,
     val syncStatus: SyncStatus = SyncStatus.PENDING,
     val lastSyncAttempt: Long = 0L,
     val weight: Float? = null,
@@ -45,29 +46,35 @@ enum class SyncStatus {
 
 data class CreateMetricRequest(
     val metric_type_id: Int,
+    val client_uuid: String,
     val value: Float,
-    val date: String,
-    val is_apple_health: Boolean = false
+    val entry_date: String,
+    val source: String? = null
 )
 
 data class UpdateMetricRequest(
-    val value: Float,
-    val date: String,
-    val is_apple_health: Boolean = false
+    val value: Float? = null,
+    val entry_date: String? = null,
+    val source: String? = null
 )
 
 data class MetricResponse(
     val success: Boolean,
     val message: String? = null,
-    val entryId: String? = null
+    val entryId: String? = null,
+    val entry: ServerMetricEntry? = null
 )
 
 data class ServerMetricEntry(
     val id: String,
     val metric_type_id: Int,
+    val client_uuid: String,
     val value: Float,
-    val date: String,
-    val is_apple_health: Boolean
+    val entry_date: String,
+    val source: String?,
+    val version: Int,
+    val created_at: String,
+    val updated_at: String
 )
 
 data class GetMetricsResponse(
@@ -79,7 +86,8 @@ data class GetMetricsResponse(
 data class MetricType(
     val id: Int,
     val name: String,
-    val unit: String
+    val unit: String,
+    val description: String? = null
 )
 
 data class GetMetricTypesResponse(

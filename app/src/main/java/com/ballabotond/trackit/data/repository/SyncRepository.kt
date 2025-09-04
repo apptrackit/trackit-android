@@ -642,7 +642,7 @@ class SyncRepository(
             if (localMetricName != null) {
                 // Parse date string to timestamp
                 val date = try {
-                    dateFormat.parse(serverEntry.date)?.time ?: System.currentTimeMillis()
+                    dateFormat.parse(serverEntry.entry_date)?.time ?: System.currentTimeMillis()
                 } catch (e: Exception) {
                     System.currentTimeMillis()
                 }
@@ -663,10 +663,10 @@ class SyncRepository(
                     
                     // Fallback: Check by value, date, and optional weight/height matching
                     if (pendingEntry.syncStatus == SyncStatus.DELETED_LOCALLY) {
-                        val pendingDate = try {
-                            dateFormat.parse(pendingEntry.date)?.time ?: 0L
-                        } catch (e: Exception) {
-                            0L
+                        val pendingDate = try { 
+                            dateFormat.parse(pendingEntry.date)?.time ?: 0L 
+                        } catch (e: Exception) { 
+                            0L 
                         }
                         
                         val valuesMatch = abs(pendingEntry.value - serverEntry.value) < 0.01f
@@ -713,9 +713,10 @@ class SyncRepository(
                         localId = localId,
                         serverId = serverEntry.id,
                         metricTypeId = serverEntry.metric_type_id,
+                        client_uuid = serverEntry.client_uuid,
                         value = serverEntry.value,
-                        date = serverEntry.date,
-                        isAppleHealth = serverEntry.is_apple_health,
+                        date = serverEntry.entry_date,
+                        source = serverEntry.source,
                         syncStatus = SyncStatus.SYNCED
                     )
                     addToPendingEntries(syncEntry)
@@ -753,9 +754,10 @@ class SyncRepository(
         return try {
             val request = CreateMetricRequest(
                 metric_type_id = entry.metricTypeId,
+                client_uuid = java.util.UUID.randomUUID().toString(), // Always generate new UUID for each upload attempt
                 value = entry.value,
-                date = toIso8601Utc(entry.date.toLongOrNull() ?: System.currentTimeMillis()),
-                is_apple_health = entry.isAppleHealth
+                entry_date = toIso8601Utc(entry.date.toLongOrNull() ?: System.currentTimeMillis()),
+                source = entry.source ?: "manual"
             )
             
             val response = metricsApi.createMetricEntry("Bearer $accessToken", request)
@@ -795,8 +797,10 @@ class SyncRepository(
         val syncEntry = SyncMetricEntry(
             localId = localId,
             metricTypeId = metricTypeId,
+            client_uuid = null, // Will be generated fresh during upload
             value = historyEntry.value,
             date = dateFormat.format(java.util.Date(historyEntry.date)),
+            source = "manual", // or based on some logic
             syncStatus = SyncStatus.PENDING,
             weight = historyEntry.weight,
             height = historyEntry.height
@@ -827,11 +831,15 @@ class SyncRepository(
             savePendingEntries(pendingEntries)
         } else {
             // Entry is not in pending list, create a new deletion entry
+            val localId = "${historyEntry.metricName}_${historyEntry.date}_${historyEntry.value}"
+            
             val deletionEntry = SyncMetricEntry(
                 localId = localId,
                 metricTypeId = metricTypeId,
+                client_uuid = null, // Will be generated fresh during upload
                 value = historyEntry.value,
                 date = dateFormat.format(java.util.Date(historyEntry.date)),
+                source = "manual",
                 syncStatus = SyncStatus.DELETED_LOCALLY,
                 // If we have weight/height info, include it for better matching
                 weight = historyEntry.weight,
