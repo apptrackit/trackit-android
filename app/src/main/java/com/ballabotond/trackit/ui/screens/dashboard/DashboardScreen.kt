@@ -1,12 +1,10 @@
 package com.ballabotond.trackit.ui.screens.dashboard
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.PullRefreshState
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
@@ -29,13 +27,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextOverflow
-import com.ballabotond.trackit.data.model.HistoryEntry
 import com.ballabotond.trackit.ui.components.MetricCardRedesignedWithFaIcon
 import com.ballabotond.trackit.ui.components.RecentMeasurementRow
 import com.ballabotond.trackit.ui.components.SmoothMetricChart
