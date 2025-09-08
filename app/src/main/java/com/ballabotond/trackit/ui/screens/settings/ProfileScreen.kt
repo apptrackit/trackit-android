@@ -122,7 +122,7 @@ fun ProfileScreen(
                 
                 ProfileMenuItem(
                     icon = FeatherIconsCollection.Star,
-                    iconColor = Color(0xFF007AFF),
+                    iconColor = Color(0xFF4CAF50),
                     title = "Theme",
                     onClick = { /* Theme implementation not required */ }
                 )
@@ -131,7 +131,7 @@ fun ProfileScreen(
                 
                 ProfileMenuItem(
                     icon = FeatherIconsCollection.Settings,
-                    iconColor = Color(0xFF007AFF),
+                    iconColor = Color(0xFF4CAF50),
                     title = "Units",
                     onClick = { /* Units implementation not required */ }
                 )
@@ -146,7 +146,7 @@ fun ProfileScreen(
                 
                 ProfileMenuItem(
                     icon = FeatherIconsCollection.Share,
-                    iconColor = Color(0xFF007AFF),
+                    iconColor = Color(0xFF4CAF50),
                     title = "Export Data",
                     onClick = { showExportDialog = true }
                 )
@@ -161,7 +161,7 @@ fun ProfileScreen(
                 
                 ProfileMenuItem(
                     icon = FeatherIconsCollection.Lock,
-                    iconColor = Color(0xFF007AFF),
+                    iconColor = Color(0xFF4CAF50),
                     title = "Privacy Policy",
                     onClick = { /* Privacy policy implementation */ }
                 )
@@ -170,7 +170,7 @@ fun ProfileScreen(
                 
                 ProfileMenuItem(
                     icon = FeatherIconsCollection.Info,
-                    iconColor = Color(0xFF007AFF),
+                    iconColor = Color(0xFF4CAF50),
                     title = "Terms of Service",
                     onClick = { /* Terms of service implementation */ }
                 )
@@ -179,7 +179,7 @@ fun ProfileScreen(
                 
                 ProfileMenuItem(
                     icon = FeatherIconsCollection.Info,
-                    iconColor = Color(0xFF007AFF),
+                    iconColor = Color(0xFF4CAF50),
                     title = "Version",
                     trailing = appVersion,
                     showCopyIcon = true,
@@ -190,7 +190,7 @@ fun ProfileScreen(
                 
                 ProfileMenuItem(
                     icon = FeatherIconsCollection.Build,
-                    iconColor = Color(0xFF007AFF),
+                    iconColor = Color(0xFF4CAF50),
                     title = "Build Number",
                     trailing = buildNumber,
                     showCopyIcon = true,
@@ -201,7 +201,7 @@ fun ProfileScreen(
                 
                 ProfileMenuItem(
                     icon = FeatherIconsCollection.Info,
-                    iconColor = Color(0xFF007AFF),
+                    iconColor = Color(0xFF4CAF50),
                     title = "Full Version",
                     trailing = "$appVersion ($buildNumber)",
                     showCopyIcon = true,
@@ -336,7 +336,7 @@ private fun ProfileMenuItem(
                 Icon(
                     imageVector = Icons.Default.Share,
                     contentDescription = "Copy",
-                    tint = Color(0xFF007AFF),
+                    tint = Color(0xFF4CAF50),
                     modifier = Modifier.size(20.dp)
                 )
             } else if (showArrow) {

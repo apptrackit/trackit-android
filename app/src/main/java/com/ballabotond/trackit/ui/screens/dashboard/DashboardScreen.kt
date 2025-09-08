@@ -226,7 +226,7 @@ fun DashboardScreen(
                                 value = latestWeight?.let { "%.1f".format(it).replace(".0", "") } ?: "5.0",
                                 unit = "kg",
                                 icon = FeatherIconsCollection.Target,
-                                iconColor = Color(0xFF007AFF),
+                                iconColor = Color(0xFF4CAF50),
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToEditMetric("Weight") }
@@ -236,7 +236,7 @@ fun DashboardScreen(
                                 value = latestBodyFat?.let { "%.1f".format(it).replace(".0", "") } ?: "13.4",
                                 unit = "%",
                                 icon = FeatherIconsCollection.User,
-                                iconColor = Color(0xFF30D158),
+                                iconColor = Color(0xFF4CAF50),
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToEditMetric("Body Fat") }
@@ -251,7 +251,7 @@ fun DashboardScreen(
                                 value = if (bmi > 0) "%.1f".format(bmi).replace(".0", "") else "1.6",
                                 unit = "",
                                 icon = FeatherIconsCollection.Activity,
-                                iconColor = Color(0xFFFF9500),
+                                iconColor = Color(0xFF4CAF50),
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToViewBMIHistory() }
@@ -261,7 +261,7 @@ fun DashboardScreen(
                                 value = latestHeight?.let { "%.0f".format(it) } ?: "175.0",
                                 unit = "cm",
                                 icon = FeatherIconsCollection.Ruler,
-                                iconColor = Color(0xFFAF52DE),
+                                iconColor = Color(0xFF4CAF50),
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToEditMetric("Height") }
@@ -369,7 +369,7 @@ fun DashboardScreen(
                         QuickActionCard(
                             title = "Add Metric",
                             icon = FeatherIconsCollection.Ruler,
-                            iconColor = Color(0xFF007AFF),
+                            iconColor = Color(0xFF4CAF50),
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable { showAddMetricPopup = true }
@@ -377,7 +377,7 @@ fun DashboardScreen(
                         QuickActionCard(
                             title = "Add Photo",
                             icon = FeatherIconsCollection.Camera,
-                            iconColor = Color(0xFF30D158),
+                            iconColor = Color(0xFF4CAF50),
                             modifier = Modifier
                                 .weight(1f)
                                 .clickable { onLaunchGallery() }

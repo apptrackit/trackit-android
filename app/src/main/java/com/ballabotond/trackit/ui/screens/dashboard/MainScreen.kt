@@ -151,7 +151,7 @@ fun MainScreen(
                                 ) {
                                     FeatherIcon(
                                         icon = item.icon, 
-                                        tint = if (pagerState.currentPage == index) Color(0xFF34C759) else Color(0xFF8E8E93),
+                                        tint = if (pagerState.currentPage == index) Color(0xFF4CAF50) else Color(0xFF8E8E93),
                                         size = 24.dp
                                     )
                                 }
@@ -161,7 +161,7 @@ fun MainScreen(
                             Text(
                                 text = item.label,
                                 fontSize = 10.sp,
-                                color = if (pagerState.currentPage == index) Color(0xFF34C759) else Color(0xFF8E8E93),
+                                color = if (pagerState.currentPage == index) Color(0xFF4CAF50) else Color(0xFF8E8E93),
                                 fontWeight = if (pagerState.currentPage == index) androidx.compose.ui.text.font.FontWeight.Medium else androidx.compose.ui.text.font.FontWeight.Normal
                             ) 
                         },
@@ -172,8 +172,8 @@ fun MainScreen(
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color(0xFF34C759),
-                            selectedTextColor = Color(0xFF34C759),
+                            selectedIconColor = Color(0xFF4CAF50),
+                            selectedTextColor = Color(0xFF4CAF50),
                             unselectedIconColor = Color(0xFF8E8E93),
                             unselectedTextColor = Color(0xFF8E8E93),
                             indicatorColor = Color.Transparent

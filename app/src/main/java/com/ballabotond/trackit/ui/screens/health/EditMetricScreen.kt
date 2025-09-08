@@ -133,7 +133,7 @@ fun EditMetricScreen(
                         Icon(
                             imageVector = FeatherIconsCollection.Add,
                             contentDescription = "Add Entry",
-                            tint = Color(0xFF2196F3),
+                            tint = Color(0xFF4CAF50),
                             modifier = Modifier.size(24.dp)
                         )
                     }
