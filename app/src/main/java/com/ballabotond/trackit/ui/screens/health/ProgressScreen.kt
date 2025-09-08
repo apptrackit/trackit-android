@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import com.ballabotond.trackit.ui.theme.FeatherIcon
 import com.ballabotond.trackit.ui.theme.IconChoose
 import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
+import com.ballabotond.trackit.ui.components.AddMetricPopup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 
@@ -126,16 +127,35 @@ fun ProgressScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
             ) {
-            // Header with title
-            Text(
-                text = "Progress",
-                color = Color.White,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+            // Header with consistent styling
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 40.dp, bottom = 32.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Progress",
+                    color = Color.White,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                // Add metric button to match other pages
+                IconButton(
+                    onClick = { showAddMetricPopup = true }
+                ) {
+                    Icon(
+                        imageVector = FeatherIconsCollection.Plus,
+                        contentDescription = "Add Metric",
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
 
             // Replace Column with LazyColumn for scrolling
             LazyColumn(
@@ -349,6 +369,15 @@ fun ProgressScreen(
                 modifier = Modifier.align(Alignment.TopCenter),
                 backgroundColor = Color(0xFF333333),
                 contentColor = Color.White
+            )
+        }
+        
+        // Add Metric Popup
+        if (showAddMetricPopup) {
+            AddMetricPopup(
+                onDismiss = { showAddMetricPopup = false },
+                onNavigateToEditMetric = onNavigateToEditMetric,
+                navController = navController
             )
         }
     }

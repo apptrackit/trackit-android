@@ -39,6 +39,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
 
 @Composable
 fun PhotosScreen(
@@ -208,30 +209,28 @@ fun PhotosScreen(
                 .fillMaxSize()
                 .padding(horizontal = 0.dp)
         ) {
-            // Greeting header
+            // Header with consistent styling
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 24.dp, start = 20.dp, end = 20.dp, bottom = 8.dp),
+                    .padding(top = 40.dp, start = 20.dp, end = 20.dp, bottom = 32.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = "Photos",
-                        color = Color.White,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                // Add photo button styled exactly like dashboard
-
+                Text(
+                    text = "Photos",
+                    color = Color.White,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                // Add photo button
                 IconButton(
                     onClick = { galleryLauncher.launch("image/*") }
                 ) {
                     Icon(
-                        painter = painterResource(id = android.R.drawable.ic_input_add),
-                        contentDescription = "Add",
+                        imageVector = FeatherIconsCollection.Plus,
+                        contentDescription = "Add Photo",
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(32.dp)
                     )

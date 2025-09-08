@@ -76,13 +76,21 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             item {
-                // Header with Close button and Account title
+                // Header with consistent styling
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 24.dp, bottom = 32.dp),
+                        .padding(top = 40.dp, bottom = 32.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text(
+                        text = "Account",
+                        color = Color.White,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    
                     // Close button
                     Button(
                         onClick = { navController.popBackStack() },
@@ -100,18 +108,6 @@ fun ProfileScreen(
                             fontWeight = FontWeight.Medium
                         )
                     }
-                    
-                    Spacer(modifier = Modifier.weight(1f))
-                    
-                    // Account title centered
-                    Text(
-                        text = "Account",
-                        color = Color.White,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    
-                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
 

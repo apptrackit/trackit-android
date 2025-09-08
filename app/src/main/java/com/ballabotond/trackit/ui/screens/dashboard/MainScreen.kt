@@ -126,7 +126,7 @@ fun MainScreen(
 
     val pages = listOf(
         NavigationItem(DASHBOARD_ROUTE, FeatherIconsCollection.Home, "Dashboard"),
-        NavigationItem(PROGRESS_ROUTE, FeatherIconsCollection.TrendingUp, "Metrics"),
+        NavigationItem(PROGRESS_ROUTE, FeatherIconsCollection.TrendingUp, "Progress"),
         NavigationItem(PHOTOS_ROUTE, FeatherIconsCollection.Camera, "Photos")
     )
 
