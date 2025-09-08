@@ -34,7 +34,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import com.ballabotond.trackit.ui.theme.IconChoose
-import com.guru.fontawesomecomposelib.FaIcon
+import com.ballabotond.trackit.ui.theme.FeatherIcon
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.ui.res.painterResource
@@ -272,10 +272,10 @@ fun PhotosScreen(
                                 .fillMaxWidth(),
                             contentAlignment = Alignment.Center
                         ) {
-                            FaIcon(
-                                faIcon = icon,
+                            FeatherIcon(
+                                icon = icon,
                                 tint = if (isSelected) color else Color(0xFFAAAAAA),
-                                modifier = Modifier.size(28.dp)
+                                size = 28.dp
                             )
                         }
                         Spacer(modifier = Modifier.height(2.dp))
@@ -421,10 +421,10 @@ fun PhotosScreen(
                                                     ),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                FaIcon(
-                                                    faIcon = icon,
+                                                FeatherIcon(
+                                                    icon = icon,
                                                     tint = color,
-                                                    modifier = Modifier.size(22.dp)
+                                                    size = 22.dp
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Text(

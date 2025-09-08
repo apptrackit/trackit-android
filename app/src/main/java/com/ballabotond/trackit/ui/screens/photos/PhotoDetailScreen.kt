@@ -53,7 +53,7 @@ import android.app.DatePickerDialog
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.zIndex
 import com.ballabotond.trackit.ui.theme.IconChoose
-import com.guru.fontawesomecomposelib.FaIcon
+import com.ballabotond.trackit.ui.theme.FeatherIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -251,10 +251,10 @@ fun PhotoDetailScreen(
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        FaIcon(
-                            faIcon = icon,
+                        FeatherIcon(
+                            icon = icon,
                             tint = Color.White,
-                            modifier = Modifier.size(36.dp)
+                            size = 36.dp
                         )
                     }
                 }
@@ -458,10 +458,10 @@ fun PhotoDetailScreen(
                                     .background(color.copy(alpha = 0.16f), shape = CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                FaIcon(
-                                    faIcon = icon,
+                                FeatherIcon(
+                                    icon = icon,
                                     tint = color,
-                                    modifier = Modifier.size(20.dp) // Bigger icon in 32dp circle
+                                    size = 20.dp // Bigger icon in 32dp circle
                                 )
                             }
                             Text(
@@ -502,10 +502,10 @@ private fun MetricRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        FaIcon(
-            faIcon = icon,
+        FeatherIcon(
+            icon = icon,
             tint = color,
-            modifier = Modifier.size(18.dp) // Bigger icon in row
+            size = 18.dp // Bigger icon in row
         )
         Text(
             text = title,

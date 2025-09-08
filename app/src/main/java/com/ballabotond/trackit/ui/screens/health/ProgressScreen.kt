@@ -22,8 +22,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
+import com.ballabotond.trackit.ui.theme.FeatherIcon
 import com.ballabotond.trackit.ui.theme.IconChoose
+import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 
@@ -376,10 +377,10 @@ private fun MetricRowWithArrow(
                     .background(iconTint.copy(alpha = 0.12f), CircleShape), 
                 contentAlignment = Alignment.Center
             ) {
-                FontAwesomeIcon(
+                FeatherIcon(
                     icon = icon,
                     tint = iconTint,
-                    modifier = Modifier.size(30.dp) // Increased icon size for better proportion
+                    size = 30.dp // Increased icon size for better proportion
                 )
             }
             Spacer(modifier = Modifier.width(12.dp)) // Increased spacing
@@ -401,7 +402,7 @@ private fun MetricRowWithArrow(
             )
             
             Icon(
-                imageVector = Icons.Default.ArrowForward,
+                imageVector = FeatherIconsCollection.ArrowForward,
                 contentDescription = "Edit $title",
                 modifier = Modifier.padding(start = 8.dp),
                 tint = Color.White

@@ -56,7 +56,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     // Third-party libraries
-    implementation("com.github.Gurupreet:FontAwesomeCompose:1.0.0")
+    implementation("br.com.devsrsouza.compose.icons:feather:1.1.0")
     implementation("com.google.accompanist:accompanist-pager:0.32.0")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.32.0")
     implementation("io.coil-kt:coil-compose:2.5.0")

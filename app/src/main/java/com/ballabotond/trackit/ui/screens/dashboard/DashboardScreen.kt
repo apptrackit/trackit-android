@@ -30,11 +30,12 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import com.ballabotond.trackit.data.model.SyncState
-import com.ballabotond.trackit.ui.components.MetricCardRedesignedWithFaIcon
+import com.ballabotond.trackit.ui.components.MetricCardRedesignedWithFeatherIcon
 import com.ballabotond.trackit.ui.components.RecentMeasurementRow
 import com.ballabotond.trackit.ui.components.SmoothMetricChart
 import com.ballabotond.trackit.ui.components.TimeFilterButton
 import com.ballabotond.trackit.ui.theme.IconChoose
+import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -164,7 +165,7 @@ fun DashboardScreen(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Person,
+                                imageVector = FeatherIconsCollection.Person,
                                 contentDescription = "Profile",
                                 tint = Color.White,
                                 modifier = Modifier
@@ -207,7 +208,7 @@ fun DashboardScreen(
                             }
                             IconButton(onClick = { showAddMetricPopup = true }) {
                                 Icon(
-                                    imageVector = Icons.Default.Add,
+                                    imageVector = FeatherIconsCollection.Add,
                                     contentDescription = "Add",
                                     tint = Color.White,
                                     modifier = Modifier.size(24.dp)
@@ -254,7 +255,7 @@ fun DashboardScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            MetricCardRedesignedWithFaIcon(
+                            MetricCardRedesignedWithFeatherIcon(
                                 title = "Weight",
                                 value = formattedWeight,
                                 unit = "kg",
@@ -264,7 +265,7 @@ fun DashboardScreen(
                                     .weight(1f)
                                     .clickable { onNavigateToEditMetric("Weight") }
                             )
-                            MetricCardRedesignedWithFaIcon(
+                            MetricCardRedesignedWithFeatherIcon(
                                 title = "Body Fat",
                                 value = formattedBodyFat,
                                 unit = "%",
@@ -279,7 +280,7 @@ fun DashboardScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            MetricCardRedesignedWithFaIcon(
+                            MetricCardRedesignedWithFeatherIcon(
                                 title = "BMI",
                                 value = formattedBmi,
                                 unit = "",
@@ -289,7 +290,7 @@ fun DashboardScreen(
                                     .weight(1f)
                                     .clickable { onNavigateToViewBMIHistory() }
                             )
-                            MetricCardRedesignedWithFaIcon(
+                            MetricCardRedesignedWithFeatherIcon(
                                 title = "Height",
                                 value = formattedHeight,
                                 unit = "cm",

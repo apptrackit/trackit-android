@@ -10,12 +10,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.ballabotond.trackit.ui.navigation.*
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcons
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
+import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
+import com.ballabotond.trackit.ui.theme.FeatherIcon
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
 import com.google.accompanist.pager.*
-import com.guru.fontawesomecomposelib.FaIconType
+import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.coroutines.launch
 import com.ballabotond.trackit.ui.screens.health.ProgressScreen
 import com.ballabotond.trackit.ui.screens.photos.PhotosScreen
@@ -34,9 +34,9 @@ fun MainScreen(
     val currentRoute = navBackStackEntry?.destination?.route
 
     val pages = listOf(
-        NavigationItem(DASHBOARD_ROUTE, FontAwesomeIcons.Home, "Dashboard"),
-        NavigationItem(PHOTOS_ROUTE, FontAwesomeIcons.Images, "Photos"),
-        NavigationItem(PROGRESS_ROUTE, FontAwesomeIcons.ChartLine, "Progress")
+        NavigationItem(DASHBOARD_ROUTE, FeatherIconsCollection.Home, "Dashboard"),
+        NavigationItem(PHOTOS_ROUTE, FeatherIconsCollection.Camera, "Photos"),
+        NavigationItem(PROGRESS_ROUTE, FeatherIconsCollection.TrendingUp, "Progress")
     )
 
     Scaffold(
@@ -49,10 +49,10 @@ fun MainScreen(
                 pages.forEachIndexed { index, item ->
                     NavigationBarItem(
                         icon = { 
-                            FontAwesomeIcon(
+                            FeatherIcon(
                                 icon = item.icon, 
                                 tint = if (pagerState.currentPage == index) Color(0xFF2196F3) else Color.White,
-                                modifier = Modifier.size(20.dp)  // Adjusted icon size
+                                size = 20.dp  // Adjusted icon size
                             ) 
                         },
                         label = { 
@@ -193,6 +193,6 @@ fun MainScreen(
 
 private data class NavigationItem(
     val route: String,
-    val icon: FaIconType.SolidIcon,
+    val icon: ImageVector,
     val label: String
 )

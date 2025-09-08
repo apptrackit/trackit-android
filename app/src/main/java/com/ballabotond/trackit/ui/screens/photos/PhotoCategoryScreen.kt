@@ -27,7 +27,8 @@ import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
 import java.io.File
 import com.ballabotond.trackit.ui.theme.IconChoose
-import com.guru.fontawesomecomposelib.FaIcon
+import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
+import com.ballabotond.trackit.ui.theme.FeatherIcon
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 
@@ -66,7 +67,7 @@ fun PhotoCategoryScreen(
                 title = { Text("Choose Category") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, "Back")
+                        Icon(FeatherIconsCollection.ArrowBack, "Back")
                     }
                 },
                 actions = {
@@ -78,7 +79,7 @@ fun PhotoCategoryScreen(
                             navController.popBackStack()
                         }
                     ) {
-                        Icon(Icons.Default.Check, "Save")
+                        Icon(FeatherIconsCollection.Check, "Save")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -153,10 +154,10 @@ fun PhotoCategoryScreen(
                                     .background(color, shape = CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                FaIcon(
-                                    faIcon = icon,
+                                FeatherIcon(
+                                    icon = icon,
                                     tint = Color.White,
-                                    modifier = Modifier.size(22.dp) // Bigger icon in circle
+                                    size = 22.dp // Bigger icon in circle
                                 )
                             }
                             Spacer(modifier = Modifier.width(16.dp))

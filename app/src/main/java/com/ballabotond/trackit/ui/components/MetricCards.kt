@@ -14,15 +14,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
-import com.guru.fontawesomecomposelib.FaIconType
+import com.ballabotond.trackit.ui.theme.FeatherIcon
+import androidx.compose.ui.graphics.vector.ImageVector
 
 @Composable
-fun MetricCardRedesignedWithFaIcon(
+fun MetricCardRedesignedWithFeatherIcon(
     title: String,
     value: String,
     unit: String,
-    icon: FaIconType.SolidIcon,
+    icon: ImageVector,
     iconTint: Color,
     modifier: Modifier = Modifier
 ) {
@@ -43,10 +43,9 @@ fun MetricCardRedesignedWithFaIcon(
                     .background(iconTint.copy(alpha = 0.12f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                FontAwesomeIcon(
+                FeatherIcon(
                     icon = icon,
-                    tint = iconTint,
-                    modifier = Modifier.size(20.dp).padding(0.dp) // Remove any implicit padding
+                    tint = Color.White
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))

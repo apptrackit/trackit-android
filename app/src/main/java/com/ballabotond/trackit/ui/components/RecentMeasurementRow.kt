@@ -15,7 +15,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ballabotond.trackit.data.model.HistoryEntry
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
+import com.ballabotond.trackit.ui.theme.FeatherIcon
 import com.ballabotond.trackit.ui.theme.IconChoose
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,12 +39,10 @@ fun RecentMeasurementRow(entry: HistoryEntry, onClick: () -> Unit) {
                 .background(iconAndColor.second.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            FontAwesomeIcon(
+            FeatherIcon(
                 icon = iconAndColor.first,
                 tint = iconAndColor.second,
-                modifier = Modifier
-                    .size(20.dp)
-                    .padding(0.dp)
+                size = 20.dp
             )
         }
         Column(modifier = Modifier.weight(1f)) {

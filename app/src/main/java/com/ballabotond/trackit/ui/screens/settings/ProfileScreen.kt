@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.text.SimpleDateFormat
@@ -120,7 +121,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 ProfileMenuItem(
-                    icon = Icons.Default.Star,
+                    icon = FeatherIconsCollection.Star,
                     iconColor = Color(0xFF007AFF),
                     title = "Theme",
                     onClick = { /* Theme implementation not required */ }
@@ -129,7 +130,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 ProfileMenuItem(
-                    icon = Icons.Default.Settings,
+                    icon = FeatherIconsCollection.Settings,
                     iconColor = Color(0xFF007AFF),
                     title = "Units",
                     onClick = { /* Units implementation not required */ }
@@ -144,7 +145,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 ProfileMenuItem(
-                    icon = Icons.Default.Share,
+                    icon = FeatherIconsCollection.Share,
                     iconColor = Color(0xFF007AFF),
                     title = "Export Data",
                     onClick = { showExportDialog = true }
@@ -159,7 +160,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 ProfileMenuItem(
-                    icon = Icons.Default.Lock,
+                    icon = FeatherIconsCollection.Lock,
                     iconColor = Color(0xFF007AFF),
                     title = "Privacy Policy",
                     onClick = { /* Privacy policy implementation */ }
@@ -168,7 +169,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 ProfileMenuItem(
-                    icon = Icons.Default.Info,
+                    icon = FeatherIconsCollection.Info,
                     iconColor = Color(0xFF007AFF),
                     title = "Terms of Service",
                     onClick = { /* Terms of service implementation */ }
@@ -177,7 +178,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 ProfileMenuItem(
-                    icon = Icons.Default.Info,
+                    icon = FeatherIconsCollection.Info,
                     iconColor = Color(0xFF007AFF),
                     title = "Version",
                     trailing = appVersion,
@@ -188,7 +189,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 ProfileMenuItem(
-                    icon = Icons.Default.Build,
+                    icon = FeatherIconsCollection.Build,
                     iconColor = Color(0xFF007AFF),
                     title = "Build Number",
                     trailing = buildNumber,
@@ -199,7 +200,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 ProfileMenuItem(
-                    icon = Icons.Default.Info,
+                    icon = FeatherIconsCollection.Info,
                     iconColor = Color(0xFF007AFF),
                     title = "Full Version",
                     trailing = "$appVersion ($buildNumber)",
@@ -216,7 +217,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 ProfileMenuItem(
-                    icon = Icons.Default.ExitToApp,
+                    icon = FeatherIconsCollection.ExitToApp,
                     iconColor = Color(0xFFFF3B30),
                     title = "Sign Out",
                     titleColor = Color(0xFFFF3B30),

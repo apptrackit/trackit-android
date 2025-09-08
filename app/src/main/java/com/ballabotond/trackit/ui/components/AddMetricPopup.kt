@@ -18,8 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
+import com.ballabotond.trackit.ui.theme.FeatherIcon
 import com.ballabotond.trackit.ui.theme.IconChoose
+import androidx.compose.ui.graphics.vector.ImageVector
 
 @Composable
 fun AddMetricPopup(
@@ -80,7 +81,7 @@ fun AddMetricPopup(
 @Composable
 private fun MetricOption(
     title: String,
-    icon: com.guru.fontawesomecomposelib.FaIconType.SolidIcon,
+    icon: ImageVector,
     iconTint: Color,
     onClick: () -> Unit
 ) {
@@ -98,10 +99,10 @@ private fun MetricOption(
                 .background(iconTint.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            FontAwesomeIcon(
+            FeatherIcon(
                 icon = icon,
                 tint = iconTint,
-                modifier = Modifier.size(20.dp)
+                size = 20.dp
             )
         }
         

@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.ballabotond.trackit.data.model.HistoryEntry
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
 import com.ballabotond.trackit.utils.formatDate
 import com.ballabotond.trackit.utils.TimeFilter
 import java.text.SimpleDateFormat
@@ -102,7 +103,7 @@ fun EditMetricScreen(
                     ) {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
-                                imageVector = Icons.Default.ArrowBack,
+                                imageVector = FeatherIconsCollection.ArrowBack,
                                 contentDescription = "Back",
                                 tint = Color.White
                             )
@@ -130,7 +131,7 @@ fun EditMetricScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            imageVector = FeatherIconsCollection.Add,
                             contentDescription = "Add Entry",
                             tint = Color(0xFF2196F3),
                             modifier = Modifier.size(24.dp)
@@ -525,7 +526,7 @@ fun HistoryItem(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
+                    imageVector = FeatherIconsCollection.Delete,
                     contentDescription = "Delete",
                     tint = Color.White,
                     modifier = Modifier.size(16.dp)
@@ -556,7 +557,7 @@ fun HistoryItem(
         if (isEditMode) {
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
+                imageVector = FeatherIconsCollection.ChevronRight,
                 contentDescription = "Edit Entry",
                 tint = Color.Gray,
                 modifier = Modifier.clickable { onEdit(entry) }

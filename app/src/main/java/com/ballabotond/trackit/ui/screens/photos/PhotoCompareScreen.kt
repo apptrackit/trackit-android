@@ -38,7 +38,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
 import com.ballabotond.trackit.ui.theme.IconChoose
-import com.guru.fontawesomecomposelib.FaIcon
+import com.ballabotond.trackit.ui.theme.FeatherIcon
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -221,10 +221,10 @@ fun PhotoCompareScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                                 ) {
-                                    FaIcon(
-                                        faIcon = icon1,
+                                    FeatherIcon(
+                                        icon = icon1,
                                         tint = Color.White,
-                                        modifier = Modifier.size(18.dp) // Bigger icon in badge
+                                        size = 18.dp // Bigger icon in badge
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
@@ -292,10 +292,10 @@ fun PhotoCompareScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                                 ) {
-                                    FaIcon(
-                                        faIcon = icon2,
+                                    FeatherIcon(
+                                        icon = icon2,
                                         tint = Color.White,
-                                        modifier = Modifier.size(18.dp) // Bigger icon in badge
+                                        size = 18.dp // Bigger icon in badge
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
@@ -530,13 +530,13 @@ internal fun MetricRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Icon based on metric type
-        FaIcon(
-            faIcon = icon,
+        FeatherIcon(
+            icon = icon,
             tint = color,
-            modifier = Modifier
-                .size(20.dp) // Bigger icon in row
-                .padding(end = 10.dp)
+            size = 20.dp // Bigger icon in row
         )
+        
+        Spacer(modifier = Modifier.width(10.dp))
         
         // Metric name
         Text(

@@ -13,8 +13,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ballabotond.trackit.data.model.SyncState
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
-import com.guru.fontawesomecomposelib.FaIcons
+import com.ballabotond.trackit.ui.theme.FeatherIcon
+import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -87,10 +87,10 @@ fun SyncStatusIndicator(
                     onClick = onRetrySync,
                     colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF4CAF50))
                 ) {
-                    FontAwesomeIcon(
-                        icon = FaIcons.SyncAlt,
+                    FeatherIcon(
+                        icon = FeatherIconsCollection.RefreshCw,
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(16.dp)
+                        size = 16.dp
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Retry", fontSize = 12.sp)

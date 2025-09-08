@@ -19,6 +19,7 @@ import androidx.navigation.NavController
 import com.ballabotond.trackit.ui.components.DatePickerDialog
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import com.ballabotond.trackit.utils.formatDate
+import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +55,7 @@ fun AddMetricDataScreen(
             ) {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = FeatherIconsCollection.ArrowBack,
                         contentDescription = "Back",
                         tint = Color.White
                     )
@@ -114,7 +115,7 @@ fun AddMetricDataScreen(
 
                 IconButton(onClick = { showDatePicker = true }) {
                     Icon(
-                        imageVector = Icons.Default.DateRange,
+                        imageVector = FeatherIconsCollection.DateRange,
                         contentDescription = "Select Date",
                         tint = Color.White
                     )

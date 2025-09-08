@@ -17,9 +17,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
+import com.ballabotond.trackit.ui.theme.FeatherIcon
 import com.ballabotond.trackit.ui.viewmodel.AuthUiState
-import com.guru.fontawesomecomposelib.FaIcons
+import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
 
 @Composable
 fun RegisterScreen(
@@ -77,8 +77,8 @@ fun RegisterScreen(
                 onValueChange = { username = it },
                 label = { Text("Username", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FontAwesomeIcon(
-                        icon = FaIcons.User,
+                    FeatherIcon(
+                        icon = FeatherIconsCollection.User,
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(20.dp)
                     )
@@ -103,8 +103,8 @@ fun RegisterScreen(
                 onValueChange = { email = it },
                 label = { Text("Email", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FontAwesomeIcon(
-                        icon = FaIcons.Envelope,
+                    FeatherIcon(
+                        icon = FeatherIconsCollection.Mail,
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(20.dp)
                     )
@@ -130,18 +130,18 @@ fun RegisterScreen(
                 onValueChange = { password = it },
                 label = { Text("Password", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FontAwesomeIcon(
-                        icon = FaIcons.Lock,
+                    FeatherIcon(
+                        icon = FeatherIconsCollection.Lock,
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(20.dp)
+                        size = 20.dp
                     )
                 },
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
-                        FontAwesomeIcon(
-                            icon = if (showPassword) FaIcons.EyeSlash else FaIcons.Eye,
+                        FeatherIcon(
+                            icon = if (showPassword) FeatherIconsCollection.EyeOff else FeatherIconsCollection.Eye,
                             tint = Color(0xFFAAAAAA),
-                            modifier = Modifier.size(20.dp)
+                            size = 20.dp
                         )
                     }
                 },
@@ -167,18 +167,18 @@ fun RegisterScreen(
                 onValueChange = { confirmPassword = it },
                 label = { Text("Confirm Password", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FontAwesomeIcon(
-                        icon = FaIcons.Lock,
+                    FeatherIcon(
+                        icon = FeatherIconsCollection.Lock,
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(20.dp)
+                        size = 20.dp
                     )
                 },
                 trailingIcon = {
                     IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
-                        FontAwesomeIcon(
-                            icon = if (showConfirmPassword) FaIcons.EyeSlash else FaIcons.Eye,
+                        FeatherIcon(
+                            icon = if (showConfirmPassword) FeatherIconsCollection.EyeOff else FeatherIconsCollection.Eye,
                             tint = Color(0xFFAAAAAA),
-                            modifier = Modifier.size(20.dp)
+                            size = 20.dp
                         )
                     }
                 },
