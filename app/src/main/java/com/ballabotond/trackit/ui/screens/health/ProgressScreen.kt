@@ -161,7 +161,7 @@ fun ProgressScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                contentPadding = PaddingValues(top = 8.dp, bottom = 104.dp) // Added bottom padding for navigation bar
             ) {
                 // BODY MEASUREMENTS Section
                 item {
