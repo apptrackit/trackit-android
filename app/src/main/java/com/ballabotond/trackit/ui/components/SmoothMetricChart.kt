@@ -56,43 +56,10 @@ fun SmoothMetricChart(history: List<HistoryEntry>, unit: String, modifier: Modif
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 45.dp, end = 10.dp, top = 10.dp, bottom = 25.dp)
+                .padding(8.dp)
         ) {
             val width = size.width
             val height = size.height
-            
-            // Draw y-axis grid lines and labels
-            val ySteps = 4
-            for (i in 0..ySteps) {
-                val y = height - (i.toFloat() / ySteps.toFloat() * height)
-                
-                // Draw horizontal grid line
-                drawLine(
-                    color = Color(0xFF333333),
-                    start = Offset(0f, y),
-                    end = Offset(width, y),
-                    strokeWidth = 1.dp.toPx()
-                )
-                
-                // Calculate and draw the value for this grid line
-                val value = paddedMin + (i.toFloat() / ySteps.toFloat() * valueRange)
-                val formattedValue = String.format("%.1f", value).let { 
-                    if (it.endsWith(".0")) it.substring(0, it.length - 2) else it 
-                }
-                
-                drawContext.canvas.nativeCanvas.apply {
-                    drawText(
-                        formattedValue,
-                        -40.dp.toPx(),
-                        y + 4.dp.toPx(),
-                        android.graphics.Paint().apply {
-                            color = android.graphics.Color.GRAY
-                            textSize = 8.sp.toPx()
-                            textAlign = android.graphics.Paint.Align.RIGHT
-                        }
-                    )
-                }
-            }
             
             // Draw smooth path
             if (sortedHistory.size > 1) {
@@ -143,34 +110,6 @@ fun SmoothMetricChart(history: List<HistoryEntry>, unit: String, modifier: Modif
                     end = Offset(width, y),
                     strokeWidth = 2.dp.toPx()
                 )
-            }
-            
-            // Draw x-axis date labels
-            if (sortedHistory.size > 1) {
-                val dateFormat = SimpleDateFormat("d", Locale.getDefault())
-                val labelPositions = if (sortedHistory.size <= 5) {
-                    sortedHistory.indices.toList()
-                } else {
-                    listOf(0, sortedHistory.size / 2, sortedHistory.lastIndex)
-                }
-                
-                labelPositions.forEach { index ->
-                    val x = index * width / (sortedHistory.size - 1)
-                    val date = Date(sortedHistory[index].date)
-                    
-                    drawContext.canvas.nativeCanvas.apply {
-                        drawText(
-                            dateFormat.format(date),
-                            x,
-                            height + 20.dp.toPx(),
-                            android.graphics.Paint().apply {
-                                color = android.graphics.Color.GRAY
-                                textSize = 8.sp.toPx()
-                                textAlign = android.graphics.Paint.Align.CENTER
-                            }
-                        )
-                    }
-                }
             }
         }
     }

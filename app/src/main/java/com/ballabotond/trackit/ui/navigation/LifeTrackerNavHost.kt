@@ -278,8 +278,8 @@ fun LifeTrackerNavHost(
                     navController = navController,
                     healthViewModel = viewModel,
                     photoViewModel = photoViewModel,
-                    mainPhotoUri = mainUri,
-                    comparePhotoUri = compareUri
+                    mainPhotoId = mainUri,
+                    comparePhotoId = compareUri
                 )
             }
         }

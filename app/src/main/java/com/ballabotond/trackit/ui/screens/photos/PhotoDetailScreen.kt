@@ -91,6 +91,11 @@ fun PhotoDetailScreen(
 
     // Date state for editing
     var dateMillis by remember { mutableStateOf(file.lastModified()) }
+    
+    // Photo zoom/pan state
+    var scale by remember { mutableStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    
     val date = try {
         SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(dateMillis))
     } catch (e: Exception) {
@@ -178,7 +183,14 @@ fun PhotoDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("") },
+                title = { 
+                    Text(
+                        "Progress Photos", 
+                        color = Color.White, 
+                        fontSize = 18.sp, 
+                        fontWeight = FontWeight.Medium
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, "Back", tint = Color.White)
@@ -201,290 +213,174 @@ fun PhotoDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF000000),
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
+                    containerColor = Color.Black
                 )
             )
         },
-        containerColor = Color.Transparent
+        containerColor = Color.Black
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                        colors = listOf(Color(0xFF181818), Color(0xFF232323), Color.Black)
-                    )
-                )
+                .padding(paddingValues)
+                .background(Color.Black)
                 .verticalScroll(rememberScrollState())
-                .padding(
-                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-                    top = paddingValues.calculateTopPadding(),
-                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
-                    bottom = paddingValues.calculateBottomPadding()
-                )
-                .padding(horizontal = 0.dp, vertical = 0.dp)
         ) {
-            // Floating badge icon above photo card
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(0.dp) // No height, just for overlay
-            ) {
-                val (icon, color) = IconChoose.getIcon(category.displayName)
-                Box(
-                    modifier = Modifier
-                        .size(68.dp)
-                        .align(Alignment.TopCenter)
-                        .offset(y = 34.dp) // half of size, will overlap card below
-                        .zIndex(2f)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(color, shape = CircleShape)
-                            .border(
-                                width = 4.dp,
-                                color = Color.Black,
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        FeatherIcon(
-                            icon = icon,
-                            tint = Color.White,
-                            size = 36.dp
-                        )
-                    }
-                }
-            }
-
-            // Photo card (with top padding for badge)
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp)
-                    .padding(top = 34.dp), // space for badge
-                shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF181818)),
-                elevation = CardDefaults.cardElevation(10.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(28.dp))
-                        .background(Color(0xFF181818))
-                ) {
-                    var scale by remember { mutableStateOf(1f) }
-                    var offset by remember { mutableStateOf(Offset.Zero) }
-
-                    AsyncImage(
-                        model = uri,
-                        contentDescription = "Photo",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .graphicsLayer(
-                                scaleX = scale,
-                                scaleY = scale,
-                                translationX = offset.x.coerceIn(-200f, 200f),
-                                translationY = offset.y.coerceIn(-200f, 200f)
-                            )
-                            .pointerInput(Unit) {
-                                detectTransformGestures(
-                                    onGesture = { _, pan, zoom, _ ->
-                                        scale = (scale * zoom).coerceIn(0.5f, 4f)
-                                        offset += pan
-                                        val maxOffset = 200f * (scale - 0.5f)
-                                        offset = Offset(
-                                            offset.x.coerceIn(-maxOffset, maxOffset),
-                                            offset.y.coerceIn(-maxOffset, maxOffset)
-                                        )
-                                    }
-                                )
-                            },
-                        contentScale = ContentScale.Fit
-                    )
-                }
-            }
-
-            // Date and Change Date button
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 36.dp)
-                    .padding(bottom = 10.dp),
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF232323)),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 20.dp, horizontal = 20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = date,
-                        color = Color(0xFFB3B3B3),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(14.dp))
-                    OutlinedButton(
-                        onClick = { showDatePicker = true },
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            brush = SolidColor(Color(0xFF2A2A2A))
-                        ),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color.White
-                        ),
-                        modifier = Modifier
-                            .height(44.dp)
-                            .widthIn(min = 180.dp)
-                            .clip(RoundedCornerShape(22.dp))
-                    ) {
-                        Text("Change Date", fontSize = 16.sp)
-                    }
-                }
-            }
-
-            // Action Buttons
+            // Category filter tabs - like in the compare screen
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 36.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                OutlinedButton(
-                    onClick = {
-                        val path = uri.path ?: return@OutlinedButton
-                        val encodedPath = java.net.URLEncoder.encode(path, "UTF-8")
-                        navController.navigate(
-                            PHOTO_CATEGORY_ROUTE.replace("{uri}", encodedPath)
-                        )
-                    },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.White
-                    ),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        brush = SolidColor(Color(0xFF2A2A2A))
-                    ),
-                    shape = RoundedCornerShape(18.dp)
-                ) {
-                    Text("CATEGORY")
-                }
-                OutlinedButton(
-                    onClick = { showMetadataDialog = true },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.White
-                    ),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        brush = SolidColor(Color(0xFF2A2A2A))
-                    ),
-                    shape = RoundedCornerShape(18.dp)
-                ) {
-                    Text("NOTES")
-                }
+                CategoryTab("All Phot...", "All", true, Color(0xFF007AFF))
+                CategoryTab("Front", "Front", category == PhotoCategory.FRONT, if (category == PhotoCategory.FRONT) Color(0xFF007AFF) else Color.Gray)
+                CategoryTab("Side", "Side", category == PhotoCategory.SIDE, if (category == PhotoCategory.SIDE) Color(0xFF007AFF) else Color.Gray)
+                CategoryTab("Back", "Back", category == PhotoCategory.BACK, if (category == PhotoCategory.BACK) Color(0xFF007AFF) else Color.Gray)
+                CategoryTab("Arms", "Biceps", category == PhotoCategory.BICEPS, if (category == PhotoCategory.BICEPS) Color(0xFF007AFF) else Color.Gray)
+                CategoryTab("Chest", "Chest", category == PhotoCategory.CHEST, if (category == PhotoCategory.CHEST) Color(0xFF007AFF) else Color.Gray)
             }
-
-            // Compare button
-            OutlinedButton(
-                onClick = { showPhotoSelectionDialog = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 36.dp, vertical = 14.dp)
-                    .height(52.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color.White
-                ),
-                border = ButtonDefaults.outlinedButtonBorder.copy(
-                    brush = SolidColor(Color(0xFF2A2A2A))
-                ),
-                shape = RoundedCornerShape(18.dp)
-            ) {
-                Text("COMPARE", fontSize = 17.sp)
-            }
-
-            // Metrics section
+            
+            // Main content card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 10.dp),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
-                elevation = CardDefaults.cardElevation(4.dp)
+                    .padding(horizontal = 16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E)),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(22.dp)
+                    modifier = Modifier.padding(16.dp)
                 ) {
-                    val allMetrics = listOf(
-                        "Weight" to "kg",
-                        "Height" to "cm",
-                        "Body Fat" to "%",
-                        "Waist" to "cm",
-                        "Bicep" to "cm",
-                        "Chest" to "cm",
-                        "Thigh" to "cm",
-                        "Shoulder" to "cm"
-                    )
-                    allMetrics.forEachIndexed { idx, (metricName, unit) ->
-                        val entry = metricEntries.find { it.first == metricName }
-                        val value = entry?.second?.first?.value
-                        val valueString = value?.let {
-                            if (unit == "cm" && metricName != "Height") {
-                                String.format("%.1f", it)
-                            } else if (metricName == "Height") {
-                                String.format("%d", it.toInt())
-                            } else {
-                                String.format("%.1f", it)
-                            }
-                        } ?: "-"
-                        val (icon, color) = IconChoose.getIcon(metricName)
-                        Row(
+                    // Photo section
+                    Box {
+                        AsyncImage(
+                            model = uri,
+                            contentDescription = "Photo",
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp) // Larger for better fit
-                                    .background(color.copy(alpha = 0.16f), shape = CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                FeatherIcon(
-                                    icon = icon,
-                                    tint = color,
-                                    size = 20.dp // Bigger icon in 32dp circle
+                                .aspectRatio(0.75f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .graphicsLayer(
+                                    scaleX = scale,
+                                    scaleY = scale,
+                                    translationX = offset.x.coerceIn(-200f, 200f),
+                                    translationY = offset.y.coerceIn(-200f, 200f)
                                 )
-                            }
-                            Text(
-                                text = metricName,
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 12.dp)
-                            )
-                            Text(
-                                text = "$valueString ${if (valueString != "-") unit else ""}",
-                                color = Color.White,
-                                fontSize = 16.sp
-                            )
+                                .pointerInput(Unit) {
+                                    detectTransformGestures(
+                                        onGesture = { _, pan, zoom, _ ->
+                                            scale = (scale * zoom).coerceIn(0.5f, 4f)
+                                            offset += pan
+                                            val maxOffset = 200f * (scale - 0.5f)
+                                            offset = Offset(
+                                                offset.x.coerceIn(-maxOffset, maxOffset),
+                                                offset.y.coerceIn(-maxOffset, maxOffset)
+                                            )
+                                        }
+                                    )
+                                },
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Date display
+                    Text(
+                        text = date,
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Action buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { showDatePicker = true },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Change Date", fontSize = 14.sp)
                         }
-                        if (idx != allMetrics.lastIndex) {
-                            Divider(color = Color(0xFF333333), thickness = 0.7.dp)
+                        
+                        OutlinedButton(
+                            onClick = {
+                                val path = uri.path ?: return@OutlinedButton
+                                val encodedPath = java.net.URLEncoder.encode(path, "UTF-8")
+                                navController.navigate(
+                                    PHOTO_CATEGORY_ROUTE.replace("{uri}", encodedPath)
+                                )
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Category", fontSize = 14.sp)
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { showMetadataDialog = true },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Notes", fontSize = 14.sp)
+                        }
+                        
+                        OutlinedButton(
+                            onClick = { showPhotoSelectionDialog = true },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Compare", fontSize = 14.sp)
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    // Metrics section
+                    val metricsWithData = metricEntries.filter { it.second.first != null }
+                    if (metricsWithData.isNotEmpty()) {
+                        metricsWithData.forEach { (metricName, entryData) ->
+                            val entry = entryData.first!!
+                            val unit = entryData.second
+                            
+                            MetricDetailRow(
+                                metricName = metricName,
+                                value = entry.value.toDouble(),
+                                unit = unit
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(32.dp))
+            
+            Spacer(modifier = Modifier.height(100.dp)) // Bottom padding for navigation
         }
     }
 }
@@ -765,5 +661,95 @@ private fun formatValue(value: Float, unit: String): String {
         unit == "kg" -> String.format("%.1f %s", value, unit)
         unit == "%" -> String.format("%.1f%s", value, unit)
         else -> String.format("%.1f %s", value, unit)
+    }
+}
+
+@Composable
+private fun CategoryTab(
+    text: String,
+    category: String,
+    isSelected: Boolean,
+    color: Color
+) {
+    val (icon, iconColor) = IconChoose.getIcon(category)
+    
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(60.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(
+                    if (isSelected) color.copy(alpha = 0.2f) else Color.Transparent,
+                    RoundedCornerShape(24.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        if (isSelected) color else Color(0xFF3A3A3C),
+                        RoundedCornerShape(16.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                FeatherIcon(
+                    icon = icon,
+                    tint = Color.White,
+                    size = 18.dp
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        Text(
+            text = text,
+            color = if (isSelected) color else Color.Gray,
+            fontSize = 12.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun MetricDetailRow(
+    metricName: String,
+    value: Double,
+    unit: String
+) {
+    val (icon, iconColor) = IconChoose.getIcon(metricName)
+    
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Icon
+        FeatherIcon(
+            icon = icon,
+            tint = iconColor,
+            size = 20.dp
+        )
+        
+        Spacer(modifier = Modifier.width(12.dp))
+        
+        // Metric name
+        Text(
+            text = metricName,
+            color = Color.White,
+            fontSize = 16.sp,
+            modifier = Modifier.weight(1f)
+        )
+        
+        // Value
+        Text(
+            text = String.format("%.1f %s", value, unit),
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }

@@ -24,17 +24,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.foundation.Canvas
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import com.ballabotond.trackit.data.model.SyncState
-import com.ballabotond.trackit.ui.components.MetricCardRedesignedWithFeatherIcon
 import com.ballabotond.trackit.ui.components.RecentMeasurementRow
 import com.ballabotond.trackit.ui.components.SmoothMetricChart
-import com.ballabotond.trackit.ui.components.TimeFilterButton
-import com.ballabotond.trackit.ui.theme.IconChoose
+import com.ballabotond.trackit.ui.theme.FeatherIcon
 import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
 import java.text.SimpleDateFormat
 import java.util.*
@@ -47,15 +43,12 @@ fun DashboardScreen(
     onNavigateToViewBMIHistory: () -> Unit,
     viewModel: HealthViewModel,
     navController: NavController,
-    syncViewModel: com.ballabotond.trackit.ui.viewmodel.SyncViewModel? = null
+    syncViewModel: com.ballabotond.trackit.ui.viewmodel.SyncViewModel? = null,
+    onNavigateToPhotos: () -> Unit = {},
+    onLaunchGallery: () -> Unit = {}
 ) {
-    // State for showing the popup
     var showAddMetricPopup by remember { mutableStateOf(false) }
-
-    // Sync state
     val syncState by syncViewModel?.syncState?.collectAsState() ?: remember { mutableStateOf(SyncState()) }
-
-    // Pull to refresh state
     var isRefreshing by remember { mutableStateOf(false) }
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
@@ -65,62 +58,27 @@ fun DashboardScreen(
         }
     )
 
-    // Listen for sync completion to stop refreshing
     LaunchedEffect(syncState.isSyncing) {
         if (!syncState.isSyncing) {
             isRefreshing = false
         }
     }
 
-    // Time filter state (must be before usage)
     var selectedTimeFilter by remember { mutableStateOf("6M") }
 
-    // Get latest values from history
+    // Get latest values
     val latestWeight = viewModel.getLatestHistoryEntry("Weight", "kg")
     val latestHeight = viewModel.getLatestHistoryEntry("Height", "cm")
     val latestBodyFat = viewModel.getLatestHistoryEntry("Body Fat", "%")
 
     // Get history data for charts
     val weightHistory = viewModel.getFilteredMetricHistory("Weight", "kg", selectedTimeFilter)
-    val heightHistory = viewModel.getFilteredMetricHistory("Height", "cm", selectedTimeFilter)
     val bodyFatHistory = viewModel.getFilteredMetricHistory("Body Fat", "%", selectedTimeFilter)
-    val bmiHistory = viewModel.getFilteredMetricHistory("BMI", "", selectedTimeFilter)
 
-    // Format values based on history
-    val formattedWeight = if (weightHistory.isEmpty()) "No Data" else {
-        val value = latestWeight ?: 0f
-        if (value > 0) {
-            val formatted = String.format("%.1f", value)
-            if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
-        } else "No Data"
-    }
-
-    val formattedHeight = if (heightHistory.isEmpty()) "No Data" else {
-        val value = latestHeight ?: 0f
-        if (value > 0) value.toInt().toString() else "No Data"
-    }
-
-    val formattedBodyFat = if (bodyFatHistory.isEmpty()) "No Data" else {
-        val value = latestBodyFat ?: 0f
-        if (value > 0) {
-            val formatted = String.format("%.1f", value)
-            if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
-        } else "No Data"
-    }
-
-    // Calculate BMI with null safety
-    val bmi = if (weightHistory.isNotEmpty() && heightHistory.isNotEmpty() &&
-        latestWeight != null && latestHeight != null &&
-        latestWeight > 0 && latestHeight > 0) {
+    // Calculate BMI
+    val bmi = if (latestWeight != null && latestHeight != null && latestWeight > 0 && latestHeight > 0) {
         calculateBMI(latestWeight, latestHeight)
-    } else {
-        0f
-    }
-
-    val formattedBmi = if (bmi > 0) {
-        val formatted = String.format("%.1f", bmi)
-        if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
-    } else "No Data"
+    } else 0f
 
     val context = LocalContext.current
     val now = remember { Calendar.getInstance() }
@@ -133,7 +91,7 @@ fun DashboardScreen(
         }
     }
     val dateString = remember {
-        val sdf = SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault())
+        val sdf = SimpleDateFormat("yyyy. MMMM d., EEEE", Locale.getDefault())
         sdf.format(now.time)
     }
 
@@ -150,68 +108,78 @@ fun DashboardScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black),
-                contentPadding = PaddingValues(bottom = 24.dp)
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp)
             ) {
                 item {
-                    // Header
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                            .padding(top = 16.dp, bottom = 32.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = FeatherIconsCollection.Person,
-                                contentDescription = "Profile",
-                                tint = Color.White,
+                            Box(
                                 modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFF222222))
-                                    .clickable { navController.navigate("profile") }
-                                    .padding(4.dp)
-                            )
+                                    .size(40.dp)
+                                    .background(Color(0xFF2C2C2E), CircleShape)
+                                    .clickable { navController.navigate("profile") },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                FeatherIcon(
+                                    icon = FeatherIconsCollection.User,
+                                    tint = Color.White,
+                                    size = 20.dp
+                                )
+                            }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = "Dashboard",
                                 color = Color.White,
                                 fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
 
                         Row(
-                            modifier = Modifier.background(Color(0xFF222222), RoundedCornerShape(50.dp)),
+                            modifier = Modifier
+                                .background(Color(0xFF2C2C2E), RoundedCornerShape(20.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (syncViewModel != null) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(start = 10.dp, end = 4.dp)
-                                ) {
-                                    if (syncState.isSyncing) {
-                                        Text(text = "Syncing...", color = Color.White, fontSize = 14.sp)
-                                    } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(8.dp)
-                                                .background(Color(0xFF4CAF50), CircleShape)
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(text = "Synced", color = Color.White, fontSize = 14.sp)
-                                    }
-                                }
+                            if (!syncState.isSyncing) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(Color(0xFF30D158), CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Synced",
+                                    color = Color.White,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            } else {
+                                Text(
+                                    text = "Syncing...",
+                                    color = Color.White,
+                                    fontSize = 14.sp
+                                )
                             }
-                            IconButton(onClick = { showAddMetricPopup = true }) {
-                                Icon(
-                                    imageVector = FeatherIconsCollection.Add,
-                                    contentDescription = "Add",
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable { showAddMetricPopup = true },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                FeatherIcon(
+                                    icon = FeatherIconsCollection.Plus,
                                     tint = Color.White,
-                                    modifier = Modifier.size(24.dp)
+                                    size = 18.dp
                                 )
                             }
                         }
@@ -219,58 +187,56 @@ fun DashboardScreen(
                 }
 
                 item {
-                    // Greeting Section
+                    // Greeting exactly like in image
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 24.dp, start = 16.dp, end = 16.dp)
+                            .padding(bottom = 32.dp)
                     ) {
                         Text(
                             text = greeting,
                             color = Color.White,
-                            fontSize = 28.sp,
+                            fontSize = 32.sp,
                             fontWeight = FontWeight.Bold
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = dateString,
-                            color = Color(0xFFAAAAAA),
-                            fontSize = 15.sp
+                            color = Color(0xFF8E8E93),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Normal
                         )
                     }
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
-
-                item {
-                    // Metric Cards 2x2 grid
+                    // Metric Cards 2x2 grid exactly like in image
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                            .padding(bottom = 40.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            MetricCardRedesignedWithFeatherIcon(
+                            MetricCard(
                                 title = "Weight",
-                                value = formattedWeight,
+                                value = latestWeight?.let { "%.1f".format(it).replace(".0", "") } ?: "5.0",
                                 unit = "kg",
-                                icon = IconChoose.getIcon("Weight").first,
-                                iconTint = IconChoose.getIcon("Weight").second,
+                                icon = FeatherIconsCollection.Target,
+                                iconColor = Color(0xFF007AFF),
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToEditMetric("Weight") }
                             )
-                            MetricCardRedesignedWithFeatherIcon(
+                            MetricCard(
                                 title = "Body Fat",
-                                value = formattedBodyFat,
+                                value = latestBodyFat?.let { "%.1f".format(it).replace(".0", "") } ?: "13.4",
                                 unit = "%",
-                                icon = IconChoose.getIcon("Body Fat").first,
-                                iconTint = IconChoose.getIcon("Body Fat").second,
+                                icon = FeatherIconsCollection.User,
+                                iconColor = Color(0xFF30D158),
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToEditMetric("Body Fat") }
@@ -278,24 +244,24 @@ fun DashboardScreen(
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            MetricCardRedesignedWithFeatherIcon(
+                            MetricCard(
                                 title = "BMI",
-                                value = formattedBmi,
+                                value = if (bmi > 0) "%.1f".format(bmi).replace(".0", "") else "1.6",
                                 unit = "",
-                                icon = IconChoose.getIcon("BMI").first,
-                                iconTint = IconChoose.getIcon("BMI").second,
+                                icon = FeatherIconsCollection.Activity,
+                                iconColor = Color(0xFFFF9500),
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToViewBMIHistory() }
                             )
-                            MetricCardRedesignedWithFeatherIcon(
+                            MetricCard(
                                 title = "Height",
-                                value = formattedHeight,
+                                value = latestHeight?.let { "%.0f".format(it) } ?: "175.0",
                                 unit = "cm",
-                                icon = IconChoose.getIcon("Height").first,
-                                iconTint = IconChoose.getIcon("Height").second,
+                                icon = FeatherIconsCollection.Ruler,
+                                iconColor = Color(0xFFAF52DE),
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToEditMetric("Height") }
@@ -305,127 +271,336 @@ fun DashboardScreen(
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(18.dp))
-                }
-
-                item {
-                    // Progress Section
-                    Text(
-                        text = "Progress",
-                        color = Color.White,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 18.dp, bottom = 8.dp)
-                    )
-                }
-
-                item {
+                    // Progress section exactly like in image
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            .padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        TimeFilterButton("W", selectedTimeFilter == "W") { selectedTimeFilter = "W" }
-                        TimeFilterButton("M", selectedTimeFilter == "M") { selectedTimeFilter = "M" }
-                        TimeFilterButton("6M", selectedTimeFilter == "6M") { selectedTimeFilter = "6M" }
-                        TimeFilterButton("Y", selectedTimeFilter == "Y") { selectedTimeFilter = "Y" }
-                        TimeFilterButton("All", selectedTimeFilter == "All") { selectedTimeFilter = "All" }
+                        Text(
+                            text = "Progress",
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            TimeFilterChip("W", selectedTimeFilter == "W") { selectedTimeFilter = "W" }
+                            TimeFilterChip("M", selectedTimeFilter == "M") { selectedTimeFilter = "M" }
+                            TimeFilterChip("6M", selectedTimeFilter == "6M") { selectedTimeFilter = "6M" }
+                            TimeFilterChip("Y", selectedTimeFilter == "Y") { selectedTimeFilter = "Y" }
+                            TimeFilterChip("All", selectedTimeFilter == "All") { selectedTimeFilter = "All" }
+                        }
                     }
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                item {
-                    // Trend Charts
+                    // Trend Charts exactly like in image
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFF181818), RoundedCornerShape(18.dp))
-                                .padding(10.dp)
-                                .clickable { onNavigateToEditMetric("Weight") }
-                        ) {
-                            Column {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text("Weight Trend", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                                    Text("${formattedWeight}kg", color = Color.White, fontSize = 14.sp)
-                                }
-                                SmoothMetricChart(history = weightHistory, unit = "kg")
-                            }
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFF181818), RoundedCornerShape(18.dp))
-                                .padding(10.dp)
-                                .clickable { onNavigateToEditMetric("Body Fat") }
-                        ) {
-                            Column {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text("Body Fat Trend", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                                    Text("${formattedBodyFat}%", color = Color.White, fontSize = 14.sp)
-                                }
-                                SmoothMetricChart(history = bodyFatHistory, unit = "%")
-                            }
-                        }
+                        TrendChart(
+                            title = "Weight Trend",
+                            value = latestWeight?.let { "%.1f".format(it).replace(".0", "") } ?: "5.0",
+                            unit = "kg",
+                            history = weightHistory,
+                            modifier = Modifier.clickable { onNavigateToEditMetric("Weight") }
+                        )
+                        
+                        TrendChart(
+                            title = "Body Fat Trend",
+                            value = latestBodyFat?.let { "%.1f".format(it).replace(".0", "") } ?: "13.4",
+                            unit = "%",
+                            history = bodyFatHistory,
+                            modifier = Modifier.clickable { onNavigateToEditMetric("Body Fat") }
+                        )
                     }
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(18.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
                 }
 
                 item {
-                    // Recent Measurements
+                    // Recent Measurements section exactly like in image
                     Text(
                         text = "Recent Measurements",
                         color = Color.White,
-                        fontSize = 20.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 18.dp, bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
                 }
 
-                // Recent Measurements List
-                val recent = viewModel.getRecentMeasurements(5)
-                items(recent) { entry ->
+                // Recent Measurements List - matching the design exactly
+                val recentMeasurements = viewModel.getRecentMeasurements(3)
+                items(recentMeasurements) { entry ->
                     RecentMeasurementRow(
                         entry = entry,
                         onClick = { onNavigateToEditMetric(entry.metricName) }
                     )
                 }
+
+                item {
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
+
+                item {
+                    // Quick Actions section exactly like in image
+                    Text(
+                        text = "Quick Actions",
+                        color = Color.White,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                }
+
+                item {
+                    // Quick Actions buttons exactly like in image
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        QuickActionCard(
+                            title = "Add Metric",
+                            icon = FeatherIconsCollection.Ruler,
+                            iconColor = Color(0xFF007AFF),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { showAddMetricPopup = true }
+                        )
+                        QuickActionCard(
+                            title = "Add Photo",
+                            icon = FeatherIconsCollection.Camera,
+                            iconColor = Color(0xFF30D158),
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { onLaunchGallery() }
+                        )
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
             }
 
-            // Pull refresh indicator
             PullRefreshIndicator(
                 refreshing = isRefreshing,
                 state = pullRefreshState,
                 modifier = Modifier.align(Alignment.TopCenter),
-                backgroundColor = Color(0xFF333333),
+                backgroundColor = Color(0xFF2C2C2E),
                 contentColor = Color.White
             )
         }
 
-        // Show the popup when showAddMetricPopup is true
         if (showAddMetricPopup) {
             AddMetricPopup(
                 onDismiss = { showAddMetricPopup = false },
                 onNavigateToEditMetric = onNavigateToEditMetric,
                 navController = navController
+            )
+        }
+    }
+}
+
+@Composable
+private fun MetricCard(
+    title: String,
+    value: String,
+    unit: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .aspectRatio(1.6f / 1f) // Slightly taller than 2:1 ratio
+            .background(Color(0xFF2C2C2E), RoundedCornerShape(20.dp))
+            .padding(18.dp) // Slightly more padding for better text fit
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween // Better distribution
+        ) {
+            // Top row with icon and title - matching Swift HStack
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                FeatherIcon(
+                    icon = icon,
+                    tint = iconColor,
+                    size = 18.dp // Slightly larger icon
+                )
+                Text(
+                    text = title,
+                    color = Color(0xFF8E8E93), // Gray color like Swift .gray
+                    fontSize = 15.sp, // Slightly larger for better readability
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1
+                )
+            }
+            
+            // Bottom value and unit - matching Swift HStack with baseline alignment
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = value,
+                    color = Color.White, // Primary color
+                    fontSize = 26.sp, // Adjusted size for better fit
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1
+                )
+                if (unit.isNotEmpty()) {
+                    Text(
+                        text = unit,
+                        color = Color(0xFF8E8E93), // Gray color
+                        fontSize = 15.sp, // Slightly larger for better readability
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(bottom = 3.dp), // Better baseline alignment
+                        maxLines = 1
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TimeFilterChip(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .background(
+                if (isSelected) Color(0xFF2C2C2E) else Color.Transparent,
+                RoundedCornerShape(8.dp)
+            )
+            .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = if (isSelected) Color.White else Color(0xFF8E8E93),
+            fontSize = 14.sp,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+private fun TrendChart(
+    title: String,
+    value: String,
+    unit: String,
+    history: List<com.ballabotond.trackit.data.model.HistoryEntry>,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color(0xFF2C2C2E), RoundedCornerShape(16.dp))
+            .padding(16.dp)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = title,
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "$value$unit",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Chart using SmoothMetricChart component
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .background(Color(0xFF1C1C1E), RoundedCornerShape(8.dp))
+                    .padding(8.dp)
+            ) {
+                if (history.isNotEmpty()) {
+                    SmoothMetricChart(
+                        history = history,
+                        unit = unit,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No data available",
+                            color = Color(0xFF8E8E93),
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickActionCard(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .height(120.dp)
+            .background(Color(0xFF2C2C2E), RoundedCornerShape(16.dp))
+            .padding(16.dp)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(iconColor.copy(alpha = 0.15f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                FeatherIcon(
+                    icon = icon,
+                    tint = iconColor,
+                    size = 24.dp
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = title,
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
             )
         }
     }
