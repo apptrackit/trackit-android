@@ -54,6 +54,7 @@ object FeatherIconsCollection {
     val Build = FeatherIcons.Tool
     val ExitToApp = FeatherIcons.LogOut
     val UserCheck = FeatherIcons.UserCheck
+    val Close = FeatherIcons.X
 }
 
 @Composable

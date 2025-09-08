@@ -173,7 +173,9 @@ fun DashboardScreen(
                             Box(
                                 modifier = Modifier
                                     .size(24.dp)
-                                    .clickable { showAddMetricPopup = true },
+                                    .clickable { 
+                                        navController.navigate("add_metric_data/Weight/kg/Weight")
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 FeatherIcon(
