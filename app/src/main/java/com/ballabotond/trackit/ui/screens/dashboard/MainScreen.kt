@@ -5,28 +5,54 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.ballabotond.trackit.data.model.PhotoCategory
-import com.ballabotond.trackit.ui.navigation.*
-import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
-import com.ballabotond.trackit.ui.theme.FeatherIcon
-import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
-import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
-import com.google.accompanist.pager.*
-import androidx.compose.ui.graphics.vector.ImageVector
-import kotlinx.coroutines.launch
+import com.ballabotond.trackit.ui.navigation.DASHBOARD_ROUTE
+import com.ballabotond.trackit.ui.navigation.PHOTOS_ROUTE
+import com.ballabotond.trackit.ui.navigation.PROGRESS_ROUTE
 import com.ballabotond.trackit.ui.screens.health.ProgressScreen
 import com.ballabotond.trackit.ui.screens.photos.PhotosScreen
+import com.ballabotond.trackit.ui.theme.AppIcon
+import com.ballabotond.trackit.ui.theme.AppIcons
+import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
+import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -125,9 +151,9 @@ fun MainScreen(
     }
 
     val pages = listOf(
-        NavigationItem(DASHBOARD_ROUTE, FeatherIconsCollection.Home, "Dashboard"),
-        NavigationItem(PROGRESS_ROUTE, FeatherIconsCollection.TrendingUp, "Progress"),
-        NavigationItem(PHOTOS_ROUTE, FeatherIconsCollection.Camera, "Photos")
+        NavigationItem(DASHBOARD_ROUTE, AppIcons.Home, "Dashboard"),
+        NavigationItem(PROGRESS_ROUTE, AppIcons.TrendingUp, "Progress"),
+        NavigationItem(PHOTOS_ROUTE, AppIcons.Camera, "Photos")
     )
 
     Scaffold(
@@ -149,7 +175,7 @@ fun MainScreen(
                                         .padding(8.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    FeatherIcon(
+                                    AppIcon(
                                         icon = item.icon, 
                                         tint = if (pagerState.currentPage == index) Color(0xFF4CAF50) else Color(0xFF8E8E93),
                                         size = 24.dp

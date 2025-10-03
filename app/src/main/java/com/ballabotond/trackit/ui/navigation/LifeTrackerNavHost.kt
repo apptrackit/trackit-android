@@ -1,6 +1,10 @@
 package com.ballabotond.trackit.ui.navigation
 
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,15 +22,13 @@ import com.ballabotond.trackit.ui.screens.health.EditMetricDataScreen
 import com.ballabotond.trackit.ui.screens.health.EditMetricScreen
 import com.ballabotond.trackit.ui.screens.health.ViewBMIHistoryScreen
 import com.ballabotond.trackit.ui.screens.health.ViewCalculatedHistoryScreen
-import com.ballabotond.trackit.ui.screens.photos.*
+import com.ballabotond.trackit.ui.screens.photos.PhotoCategoryScreen
+import com.ballabotond.trackit.ui.screens.photos.PhotoCompareScreen
+import com.ballabotond.trackit.ui.screens.photos.PhotoDetailScreen
 import com.ballabotond.trackit.ui.screens.settings.ProfileScreen
 import com.ballabotond.trackit.ui.viewmodel.AuthViewModel
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 
 @Composable
 fun LifeTrackerNavHost(

@@ -1,14 +1,38 @@
 package com.ballabotond.trackit.ui.screens.health
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.PullRefreshState
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,18 +40,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.ballabotond.trackit.ui.components.AddMetricPopup
+import com.ballabotond.trackit.ui.theme.AppIcon
+import com.ballabotond.trackit.ui.theme.AppIcons
+import com.ballabotond.trackit.ui.theme.IconChoose
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import com.ballabotond.trackit.utils.calculateBMI
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.LazyColumn
-import com.ballabotond.trackit.ui.theme.FeatherIcon
-import com.ballabotond.trackit.ui.theme.IconChoose
-import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
-import com.ballabotond.trackit.ui.components.AddMetricPopup
-import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.CircleShape
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -149,7 +167,7 @@ fun ProgressScreen(
                     onClick = { showAddMetricPopup = true }
                 ) {
                     Icon(
-                        imageVector = FeatherIconsCollection.Plus,
+                        imageVector = AppIcons.Plus,
                         contentDescription = "Add Metric",
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(32.dp)
@@ -406,7 +424,7 @@ private fun MetricRowWithArrow(
                     .background(iconTint.copy(alpha = 0.12f), CircleShape), 
                 contentAlignment = Alignment.Center
             ) {
-                FeatherIcon(
+                AppIcon(
                     icon = icon,
                     tint = iconTint,
                     size = 30.dp // Increased icon size for better proportion
@@ -419,7 +437,7 @@ private fun MetricRowWithArrow(
                 fontSize = 16.sp
             )
         }
-        
+
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -429,9 +447,9 @@ private fun MetricRowWithArrow(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Icon(
-                imageVector = FeatherIconsCollection.ArrowForward,
+                imageVector = AppIcons.ArrowForward,
                 contentDescription = "Edit $title",
                 modifier = Modifier.padding(start = 8.dp),
                 tint = Color.White

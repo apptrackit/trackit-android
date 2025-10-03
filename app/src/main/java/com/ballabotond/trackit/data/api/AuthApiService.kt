@@ -1,8 +1,18 @@
 package com.ballabotond.trackit.data.api
 
-import com.ballabotond.trackit.data.model.*
+import com.ballabotond.trackit.data.model.LoginRequest
+import com.ballabotond.trackit.data.model.LoginResponse
+import com.ballabotond.trackit.data.model.LogoutRequest
+import com.ballabotond.trackit.data.model.LogoutResponse
+import com.ballabotond.trackit.data.model.RefreshTokenRequest
+import com.ballabotond.trackit.data.model.RefreshTokenResponse
+import com.ballabotond.trackit.data.model.RegisterRequest
+import com.ballabotond.trackit.data.model.RegisterResponse
 import retrofit2.Response
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.POST
 
 interface AuthApiService {
     @POST("auth/login")

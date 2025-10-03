@@ -3,7 +3,11 @@ package com.ballabotond.trackit.ui.viewmodel
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.ExifInterface
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -21,11 +25,9 @@ import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
-import java.util.*
-import android.media.ExifInterface
-import android.os.Handler
-import android.os.Looper
-import android.widget.Toast
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 /**
  * ViewModel responsible for managing photos and their metadata.

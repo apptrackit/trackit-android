@@ -55,8 +55,11 @@ dependencies {
     implementation(libs.androidx.foundation)
     implementation(libs.androidx.navigation.compose)
 
+    // --- Icon Libraries ---
+    // Provides the extended set of official Google Material Icons.
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
+
     // Third-party libraries
-    implementation("br.com.devsrsouza.compose.icons:feather:1.1.0")
     implementation("com.google.accompanist:accompanist-pager:0.32.0")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.32.0")
     implementation("io.coil-kt:coil-compose:2.5.0")
@@ -64,19 +67,19 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.core)
-    
+
     // Pull to refresh
     implementation("androidx.compose.material:material:1.5.4")
-    
+
     // Network
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-    
+
     // Shared Preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")
-    
+
     // Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 

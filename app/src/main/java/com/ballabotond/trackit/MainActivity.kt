@@ -14,8 +14,8 @@ import androidx.navigation.compose.rememberNavController
 import com.ballabotond.trackit.data.repository.AuthRepository
 import com.ballabotond.trackit.data.repository.MetricsRepository
 import com.ballabotond.trackit.data.repository.SyncRepository
-import com.ballabotond.trackit.ui.theme.LifeTrackerTheme
 import com.ballabotond.trackit.ui.navigation.LifeTrackerNavHost
+import com.ballabotond.trackit.ui.theme.LifeTrackerTheme
 import com.ballabotond.trackit.ui.viewmodel.AuthViewModel
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel

@@ -1,9 +1,9 @@
 package com.ballabotond.trackit.data.repository
 
 import android.content.Context
+import androidx.core.content.edit
 import com.ballabotond.trackit.data.model.HealthMetrics
 import com.ballabotond.trackit.data.model.HistoryEntry
-import androidx.core.content.edit
 
 class MetricsRepository(private val context: Context) {
 

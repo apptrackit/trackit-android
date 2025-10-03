@@ -1,12 +1,30 @@
 package com.ballabotond.trackit.ui.screens.auth
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,9 +35,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ballabotond.trackit.ui.theme.FeatherIcon
+import com.ballabotond.trackit.ui.theme.AppIcon
+import com.ballabotond.trackit.ui.theme.AppIcons
 import com.ballabotond.trackit.ui.viewmodel.AuthUiState
-import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
 
 @Composable
 fun RegisterScreen(
@@ -77,8 +95,8 @@ fun RegisterScreen(
                 onValueChange = { username = it },
                 label = { Text("Username", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FeatherIcon(
-                        icon = FeatherIconsCollection.User,
+                    AppIcon(
+                        icon = AppIcons.User,
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(20.dp)
                     )
@@ -103,8 +121,8 @@ fun RegisterScreen(
                 onValueChange = { email = it },
                 label = { Text("Email", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FeatherIcon(
-                        icon = FeatherIconsCollection.Mail,
+                    AppIcon(
+                        icon = AppIcons.Mail,
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(20.dp)
                     )
@@ -130,16 +148,16 @@ fun RegisterScreen(
                 onValueChange = { password = it },
                 label = { Text("Password", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FeatherIcon(
-                        icon = FeatherIconsCollection.Lock,
+                    AppIcon(
+                        icon = AppIcons.Lock,
                         tint = Color(0xFF4CAF50),
                         size = 20.dp
                     )
                 },
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
-                        FeatherIcon(
-                            icon = if (showPassword) FeatherIconsCollection.EyeOff else FeatherIconsCollection.Eye,
+                        AppIcon(
+                            icon = if (showPassword) AppIcons.EyeOff else AppIcons.Eye,
                             tint = Color(0xFFAAAAAA),
                             size = 20.dp
                         )
@@ -167,16 +185,16 @@ fun RegisterScreen(
                 onValueChange = { confirmPassword = it },
                 label = { Text("Confirm Password", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FeatherIcon(
-                        icon = FeatherIconsCollection.Lock,
+                    AppIcon(
+                        icon = AppIcons.Lock,
                         tint = Color(0xFF4CAF50),
                         size = 20.dp
                     )
                 },
                 trailingIcon = {
                     IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
-                        FeatherIcon(
-                            icon = if (showConfirmPassword) FeatherIconsCollection.EyeOff else FeatherIconsCollection.Eye,
+                        AppIcon(
+                            icon = if (showConfirmPassword) AppIcons.EyeOff else AppIcons.Eye,
                             tint = Color(0xFFAAAAAA),
                             size = 20.dp
                         )

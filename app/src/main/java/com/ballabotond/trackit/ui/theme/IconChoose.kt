@@ -1,44 +1,48 @@
 package com.ballabotond.trackit.ui.theme
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import compose.icons.FeatherIcons
-import compose.icons.feathericons.*
 
 class IconChoose {
     companion object {
         fun getIcon(iconName: String): Pair<ImageVector, Color> {
+            val defaultColor = Color(0xFF4CAF50)
+
             return when (iconName) {
-                // Metrics
-                "Weight" -> Pair(FeatherIcons.Target, Color(0xFF4CAF50))  // Using Target as weight alternative
-                "Body Fat" -> Pair(FeatherIcons.Percent, Color(0xFF4CAF50))
-                "Height" -> Pair(FeatherIcons.Move, Color(0xFF4CAF50))     // Using Move as ruler alternative
-                "Chest" -> Pair(FeatherIcons.User, Color(0xFF4CAF50))
-                "Waist" -> Pair(FeatherIcons.Target, Color(0xFF4CAF50))
-                "Bicep", "Biceps" -> Pair(FeatherIcons.Activity, Color(0xFF4CAF50))
-                "Thigh" -> Pair(FeatherIcons.Users, Color(0xFF4CAF50))
-                "Shoulder" -> Pair(FeatherIcons.User, Color(0xFF4CAF50))
-                "BMI" -> Pair(FeatherIcons.User, Color(0xFF4CAF50))
-                "Lean Body Mass" -> Pair(FeatherIcons.Heart, Color(0xFF4CAF50))
-                "Fat Mass" -> Pair(FeatherIcons.Target, Color(0xFF4CAF50))  // Using Target as scale alternative
-                "Fat-Free Mass Index" -> Pair(FeatherIcons.TrendingUp, Color(0xFF4CAF50))
-                "Basal Metabolic Rate", "BMR"-> Pair(FeatherIcons.Zap, Color(0xFF4CAF50))  // Using Zap as flame alternative
-                "Body Surface Area" -> Pair(FeatherIcons.Move, Color(0xFF4CAF50))   // Using Move as ruler alternative
+                "Weight" -> Pair(Icons.Default.Scale, defaultColor)
+                "Body Fat" -> Pair(Icons.Default.Percent, defaultColor)
+                "Height" -> Pair(Icons.Default.Height, defaultColor)
+                "Chest" -> Pair(Icons.Default.Favorite, defaultColor)
+                "Waist" -> Pair(Icons.Default.SquareFoot, defaultColor)
+                "Bicep", "Biceps" -> Pair(Icons.Default.FitnessCenter, defaultColor)
+                "Thigh" -> Pair(Icons.Default.DirectionsRun, defaultColor)
+                "Shoulder" -> Pair(Icons.Default.AccessibilityNew, defaultColor)
+                "BMI" -> Pair(Icons.Default.Scale, defaultColor)
+                "Lean Body Mass" -> Pair(Icons.Default.AccessibilityNew, defaultColor)
+                "Fat Mass" -> Pair(Icons.Default.MonitorWeight, defaultColor)
+                "Fat-Free Mass Index" -> Pair(Icons.Default.TrendingUp, defaultColor)
+                "Basal Metabolic Rate", "BMR" -> Pair(Icons.Default.LocalFireDepartment, defaultColor)
+                "Body Surface Area" -> Pair(Icons.Default.Person, defaultColor)
+
                 // Auth Icons
-                "User" -> Pair(FeatherIcons.User, Color(0xFF4CAF50))
-                "Lock" -> Pair(FeatherIcons.Lock, Color(0xFF4CAF50))
-                "Eye" -> Pair(FeatherIcons.Eye, Color(0xFF4CAF50))
-                "EyeSlash" -> Pair(FeatherIcons.EyeOff, Color(0xFF4CAF50))
-                "Envelope" -> Pair(FeatherIcons.Mail, Color(0xFF4CAF50))
-                "SyncAlt" -> Pair(FeatherIcons.RefreshCw, Color(0xFF4CAF50))
+                "User" -> Pair(Icons.Default.Person, defaultColor)
+                "Lock" -> Pair(Icons.Default.Lock, defaultColor)
+                "Eye" -> Pair(Icons.Default.Visibility, defaultColor)
+                "EyeSlash" -> Pair(Icons.Default.VisibilityOff, defaultColor)
+                "Envelope" -> Pair(Icons.Default.Email, defaultColor)
+                "SyncAlt" -> Pair(Icons.Default.Sync, defaultColor)
+
                 // Photo Categories
-                "Front" -> Pair(FeatherIcons.User, Color(0xFF4CAF50))
-                "Back" -> Pair(FeatherIcons.Users, Color(0xFF4CAF50))
-                "Side" -> Pair(FeatherIcons.UserCheck, Color(0xFF4CAF50))
-                "Legs" -> Pair(FeatherIcons.Activity, Color(0xFF4CAF50))
-                "Full Body" -> Pair(FeatherIcons.User, Color(0xFF4CAF50))
-                "Other" -> Pair(FeatherIcons.Image, Color(0xFF4CAF50))
-                else -> Pair(FeatherIcons.HelpCircle, Color(0xFF4CAF50))
+                "Front" -> Pair(Icons.Default.CameraFront, defaultColor)
+                "Back" -> Pair(Icons.Default.CameraRear, defaultColor)
+                "Side" -> Pair(Icons.Default.Camera, defaultColor)
+                "Legs" -> Pair(Icons.Default.DirectionsRun, defaultColor)
+                "Full Body" -> Pair(Icons.Default.Person, defaultColor)
+                "Other" -> Pair(Icons.Default.Image, defaultColor)
+
+                else -> Pair(Icons.Default.Help, defaultColor)
             }
         }
     }

@@ -4,12 +4,24 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.ballabotond.trackit.data.api.MetricsApiService
 import com.ballabotond.trackit.data.api.ImagesApiService
-import com.ballabotond.trackit.data.model.*
+import com.ballabotond.trackit.data.api.MetricsApiService
+import com.ballabotond.trackit.data.model.CreateMetricRequest
+import com.ballabotond.trackit.data.model.HistoryEntry
+import com.ballabotond.trackit.data.model.MetricResponse
+import com.ballabotond.trackit.data.model.ServerImageEntry
+import com.ballabotond.trackit.data.model.ServerMetricEntry
+import com.ballabotond.trackit.data.model.SyncImageEntry
+import com.ballabotond.trackit.data.model.SyncMetricEntry
+import com.ballabotond.trackit.data.model.SyncState
+import com.ballabotond.trackit.data.model.SyncStatus
 import com.ballabotond.trackit.data.network.NetworkModule
+import com.ballabotond.trackit.utils.toIso8601Utc
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -22,7 +34,6 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import kotlin.math.abs
-import com.ballabotond.trackit.utils.toIso8601Utc
 
 private val Context.syncDataStore: DataStore<Preferences> by preferencesDataStore(name = "sync_prefs")
 

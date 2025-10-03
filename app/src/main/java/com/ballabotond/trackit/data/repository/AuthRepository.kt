@@ -2,15 +2,25 @@ package com.ballabotond.trackit.data.repository
 
 import android.content.Context
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.ballabotond.trackit.data.api.AuthApiService
-import com.ballabotond.trackit.data.model.*
+import com.ballabotond.trackit.data.model.LoginRequest
+import com.ballabotond.trackit.data.model.LoginResponse
+import com.ballabotond.trackit.data.model.LogoutRequest
+import com.ballabotond.trackit.data.model.RefreshTokenRequest
+import com.ballabotond.trackit.data.model.RegisterRequest
+import com.ballabotond.trackit.data.model.RegisterResponse
+import com.ballabotond.trackit.data.model.User
 import com.ballabotond.trackit.data.network.NetworkModule
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import java.util.*
+import java.util.UUID
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "auth_prefs")
 

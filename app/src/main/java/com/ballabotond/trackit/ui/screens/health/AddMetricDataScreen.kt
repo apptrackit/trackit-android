@@ -3,14 +3,41 @@ package com.ballabotond.trackit.ui.screens.health
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,13 +49,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
-import com.ballabotond.trackit.ui.theme.FeatherIconsCollection
-import com.ballabotond.trackit.ui.theme.FeatherIcon
-import com.ballabotond.trackit.ui.theme.IconChoose
 import com.ballabotond.trackit.ui.components.DatePickerDialog
+import com.ballabotond.trackit.ui.theme.AppIcon
+import com.ballabotond.trackit.ui.theme.AppIcons
+import com.ballabotond.trackit.ui.theme.IconChoose
+import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun AddMetricDataScreen(
@@ -83,8 +112,8 @@ fun AddMetricDataScreen(
                         .clickable { navController.popBackStack() },
                     contentAlignment = Alignment.Center
                 ) {
-                    FeatherIcon(
-                        icon = FeatherIconsCollection.Close,
+                    AppIcon(
+                        icon = AppIcons.Close,
                         tint = Color.White,
                         size = 20.dp
                     )
@@ -112,8 +141,8 @@ fun AddMetricDataScreen(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    FeatherIcon(
-                        icon = FeatherIconsCollection.Check,
+                    AppIcon(
+                        icon = AppIcons.Check,
                         tint = Color.White,
                         size = 20.dp
                     )
@@ -138,7 +167,7 @@ fun AddMetricDataScreen(
                         .background(Color(0xFF2A2A2A)),
                     contentAlignment = Alignment.Center
                 ) {
-                    FeatherIcon(
+                    AppIcon(
                         icon = icon,
                         tint = iconTint,
                         size = 60.dp
@@ -186,7 +215,7 @@ fun AddMetricDataScreen(
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            FeatherIcon(
+                            AppIcon(
                                 icon = metricIcon,
                                 tint = if (isSelected) Color.White else metricIconTint,
                                 size = 24.dp

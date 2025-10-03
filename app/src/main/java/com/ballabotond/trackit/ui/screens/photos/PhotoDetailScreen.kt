@@ -1,11 +1,27 @@
 package com.ballabotond.trackit.ui.screens.photos
 
+//import androidx.compose.material.icons.filled.Compare
+import android.app.DatePickerDialog
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -15,45 +31,58 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-//import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.ballabotond.trackit.data.model.HistoryEntry
 import com.ballabotond.trackit.data.model.Photo
 import com.ballabotond.trackit.data.model.PhotoCategory
 import com.ballabotond.trackit.data.model.PhotoMetadata
 import com.ballabotond.trackit.ui.navigation.PHOTO_CATEGORY_ROUTE
+import com.ballabotond.trackit.ui.theme.AppIcon
+import com.ballabotond.trackit.ui.theme.IconChoose
 import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
-import android.util.Log
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.graphics.graphicsLayer
-import com.ballabotond.trackit.data.model.HistoryEntry
-import android.app.DatePickerDialog
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.zIndex
-import com.ballabotond.trackit.ui.theme.IconChoose
-import com.ballabotond.trackit.ui.theme.FeatherIcon
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -398,7 +427,7 @@ private fun MetricRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        FeatherIcon(
+        AppIcon(
             icon = icon,
             tint = color,
             size = 18.dp // Bigger icon in row
@@ -695,7 +724,7 @@ private fun CategoryTab(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                FeatherIcon(
+                AppIcon(
                     icon = icon,
                     tint = Color.White,
                     size = 18.dp
@@ -728,7 +757,7 @@ private fun MetricDetailRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Icon
-        FeatherIcon(
+        AppIcon(
             icon = icon,
             tint = iconColor,
             size = 20.dp
