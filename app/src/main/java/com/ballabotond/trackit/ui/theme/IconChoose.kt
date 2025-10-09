@@ -1,44 +1,56 @@
 package com.ballabotond.trackit.ui.theme
 
 import androidx.compose.ui.graphics.Color
-import com.guru.fontawesomecomposelib.FaIconType
-import com.guru.fontawesomecomposelib.FaIcons
 
-class IconChoose {
-    companion object {
-        fun getIcon(iconName: String): Pair<FaIconType.SolidIcon, Color> {
-            return when (iconName) {
-                // Metrics
-                "Weight" -> Pair(FaIcons.Weight, Color(0xFF2196F3))
-                "Body Fat" -> Pair(FaIcons.Percent, Color(0xFF4CAF50))
-                "Height" -> Pair(FaIcons.RulerVertical, Color(0xFF9C27B0))
-                "Chest" -> Pair(FaIcons.Male, Color(0xFFFF9800))
-                "Waist" -> Pair(FaIcons.Tape, Color(0xFF00BCD4))
-                "Bicep", "Biceps" -> Pair(FaIcons.Dumbbell, Color(0xFFFF5722))
-                "Thigh" -> Pair(FaIcons.Child, Color(0xFF00BCD4))
-                "Shoulder" -> Pair(FaIcons.Male, Color(0xFFFF9800))
-                "BMI" -> Pair(FaIcons.User, Color(0xFFFF9800))
-                "Lean Body Mass" -> Pair(FaIcons.Heartbeat, Color(0xFF4CAF50))
-                "Fat Mass" -> Pair(FaIcons.Weight, Color(0xFFB71C1C))
-                "Fat-Free Mass Index" -> Pair(FaIcons.ChartLine, Color(0xFF2196F3))
-                "Basal Metabolic Rate", "BMR"-> Pair(FaIcons.Fire, Color(0xFFFF5722))
-                "Body Surface Area" -> Pair(FaIcons.RulerCombined, Color(0xFF00BCD4))
-                // Auth Icons
-                "User" -> Pair(FaIcons.User, Color(0xFF4CAF50))
-                "Lock" -> Pair(FaIcons.Lock, Color(0xFF4CAF50))
-                "Eye" -> Pair(FaIcons.Eye, Color(0xFFAAAAAA))
-                "EyeSlash" -> Pair(FaIcons.EyeSlash, Color(0xFFAAAAAA))
-                "Envelope" -> Pair(FaIcons.Envelope, Color(0xFF4CAF50))
-                "SyncAlt" -> Pair(FaIcons.SyncAlt, Color(0xFF4CAF50))
-                // Photo Categories
-                "Front" -> Pair(FaIcons.User, Color(0xFF2196F3))
-                "Back" -> Pair(FaIcons.UserAlt, Color(0xFF4CAF50))
-                "Side" -> Pair(FaIcons.UserAltSlash, Color(0xFFFF9800))
-                "Legs" -> Pair(FaIcons.Running, Color(0xFF00BCD4))
-                "Full Body" -> Pair(FaIcons.Male, Color(0xFF9C27B0))
-                "Other" -> Pair(FaIcons.Image, Color(0xFFAAAAAA))
-                else -> Pair(FaIcons.QuestionCircle, Color(0xFFAAAAAA))
-            }
+/**
+ * A centralized utility to provide visual properties (icon and color) for different metrics.
+ * This object maps a metric's string name to its corresponding Material Symbols icon name
+ * and a designated theme color.
+ */
+object IconChoose {
+    /**
+     * Returns a Pair containing the Material Symbols icon name (String) and a Color
+     * for a given metric or UI element name.
+     *
+     * @param name The name of the metric (e.g., "Weight", "BMI") or UI element ("User", "Lock").
+     * @return A Pair where the first element is the icon name string and the second is the Color.
+     */
+    fun getVisuals(name: String): Pair<String, Color> {
+        return when (name) {
+            // Metrics
+            "Weight" -> Pair("weight", Color(0xFF2196F3))
+            "Body Fat" -> Pair("percent", Color(0xFF4CAF50))
+            "Height" -> Pair("straighten", Color(0xFF9C27B0)) // "straighten" is the M3 ruler icon
+            "Chest" -> Pair("man", Color(0xFFFF9800)) // "man" or "person" are good general body icons
+            "Waist" -> Pair("square_foot", Color(0xFF00BCD4)) // "square_foot" looks like a tape measure
+            "Bicep", "Biceps" -> Pair("fitness_center", Color(0xFFFF5722)) // M3 dumbbell icon
+            "Thigh" -> Pair("accessibility_new", Color(0xFF00BCD4)) // A good generic body part icon
+            "Shoulder" -> Pair("man", Color(0xFFFF9800))
+            "BMI" -> Pair("calculate", Color(0xFFFF9800)) // "calculate" is great for BMI
+            "Lean Body Mass" -> Pair("cardiology", Color(0xFF4CAF50)) // "cardiology" is a heart with a line
+            "Fat Mass" -> Pair("weight_gradient", Color(0xFFB71C1C))
+            "Fat-Free Mass Index" -> Pair("analytics", Color(0xFF2196F3)) // "analytics" or "monitoring"
+            "Basal Metabolic Rate", "BMR" -> Pair("whatshot", Color(0xFFFF5722)) // "whatshot" is the M3 fire icon
+            "Body Surface Area" -> Pair("texture", Color(0xFF00BCD4)) // "texture" represents surface
+
+            // Auth Icons
+            "User" -> Pair("person", Color(0xFF4CAF50))
+            "Lock" -> Pair("lock", Color(0xFF4CAF50))
+            "Eye" -> Pair("visibility", Color(0xFFAAAAAA))
+            "EyeSlash" -> Pair("visibility_off", Color(0xFFAAAAAA))
+            "Envelope" -> Pair("mail", Color(0xFF4CAF50)) // "mail" is the M3 equivalent
+            "SyncAlt" -> Pair("sync", Color(0xFF4CAF50))
+
+            // Photo Categories
+            "Front" -> Pair("person", Color(0xFF2196F3))
+            "Back" -> Pair("person", Color(0xFF4CAF50))
+            "Side" -> Pair("person", Color(0xFFFF9800))
+            "Legs" -> Pair("directions_walk", Color(0xFF00BCD4)) // "directions_walk" for legs/running
+            "Full Body" -> Pair("body_system", Color(0xFF9C27B0))
+            "Other" -> Pair("image", Color(0xFFAAAAAA))
+
+            // Default fallback icon
+            else -> Pair("help_outline", Color(0xFFAAAAAA)) // "help_outline" is the M3 question mark
         }
     }
 }

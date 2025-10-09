@@ -1,6 +1,5 @@
 package com.ballabotond.trackit.ui.screens.auth
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,9 +16,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
+// --- CHANGE 1: Import our new AppIcon ---
+import com.ballabotond.trackit.ui.common.AppIcon
 import com.ballabotond.trackit.ui.viewmodel.AuthUiState
-import com.guru.fontawesomecomposelib.FaIcons
 
 @Composable
 fun RegisterScreen(
@@ -34,15 +33,15 @@ fun RegisterScreen(
     var confirmPassword by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
     var showConfirmPassword by remember { mutableStateOf(false) }
-    
+
     val passwordsMatch = password == confirmPassword
-    val isFormValid = username.isNotBlank() && 
-                     email.isNotBlank() && 
-                     password.isNotBlank() && 
-                     confirmPassword.isNotBlank() && 
-                     passwordsMatch &&
-                     email.contains("@")
-    
+    val isFormValid = username.isNotBlank() &&
+            email.isNotBlank() &&
+            password.isNotBlank() &&
+            confirmPassword.isNotBlank() &&
+            passwordsMatch &&
+            email.contains("@")
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = Color.Black
@@ -62,7 +61,7 @@ fun RegisterScreen(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
+
             Text(
                 text = "Create your account to get started.",
                 color = Color(0xFFAAAAAA),
@@ -70,17 +69,19 @@ fun RegisterScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
-            
+
             // Username Field
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
                 label = { Text("Username", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FontAwesomeIcon(
-                        icon = FaIcons.User,
+                    // --- CHANGE 2: Replace with AppIcon ---
+                    AppIcon(
+                        iconName = "person", // M3 equivalent for User
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
+                        contentDescription = "Username Icon"
                     )
                 },
                 colors = OutlinedTextFieldDefaults.colors(
@@ -96,17 +97,19 @@ fun RegisterScreen(
                     .padding(bottom = 16.dp),
                 singleLine = true
             )
-            
+
             // Email Field
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FontAwesomeIcon(
-                        icon = FaIcons.Envelope,
+                    // --- CHANGE 3: Replace with AppIcon ---
+                    AppIcon(
+                        iconName = "mail", // M3 equivalent for Envelope
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
+                        contentDescription = "Email Icon"
                     )
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -123,25 +126,28 @@ fun RegisterScreen(
                     .padding(bottom = 16.dp),
                 singleLine = true
             )
-            
+
             // Password Field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FontAwesomeIcon(
-                        icon = FaIcons.Lock,
+                    // --- CHANGE 4: Replace with AppIcon ---
+                    AppIcon(
+                        iconName = "lock",
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
+                        contentDescription = "Password Icon"
                     )
                 },
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
-                        FontAwesomeIcon(
-                            icon = if (showPassword) FaIcons.EyeSlash else FaIcons.Eye,
+                        AppIcon(
+                            iconName = if (showPassword) "visibility_off" else "visibility",
                             tint = Color(0xFFAAAAAA),
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
+                            contentDescription = if (showPassword) "Hide Password" else "Show Password"
                         )
                     }
                 },
@@ -160,25 +166,28 @@ fun RegisterScreen(
                     .padding(bottom = 16.dp),
                 singleLine = true
             )
-            
+
             // Confirm Password Field
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
                 label = { Text("Confirm Password", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FontAwesomeIcon(
-                        icon = FaIcons.Lock,
+                    // --- CHANGE 5: Replace with AppIcon ---
+                    AppIcon(
+                        iconName = "lock",
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
+                        contentDescription = "Confirm Password Icon"
                     )
                 },
                 trailingIcon = {
                     IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
-                        FontAwesomeIcon(
-                            icon = if (showConfirmPassword) FaIcons.EyeSlash else FaIcons.Eye,
+                        AppIcon(
+                            iconName = if (showConfirmPassword) "visibility_off" else "visibility",
                             tint = Color(0xFFAAAAAA),
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
+                            contentDescription = if (showConfirmPassword) "Hide Password" else "Show Password"
                         )
                     }
                 },
@@ -197,7 +206,7 @@ fun RegisterScreen(
                     .padding(bottom = 8.dp),
                 singleLine = true
             )
-            
+
             // Password match indicator
             if (confirmPassword.isNotEmpty() && !passwordsMatch) {
                 Text(

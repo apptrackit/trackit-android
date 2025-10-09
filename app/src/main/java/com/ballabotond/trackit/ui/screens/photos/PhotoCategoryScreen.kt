@@ -27,7 +27,8 @@ import com.ballabotond.trackit.ui.viewmodel.HealthViewModel
 import com.ballabotond.trackit.ui.viewmodel.PhotoViewModel
 import java.io.File
 import com.ballabotond.trackit.ui.theme.IconChoose
-import com.guru.fontawesomecomposelib.FaIcon
+// --- CHANGE 1: Import the new AppIcon ---
+import com.ballabotond.trackit.ui.common.AppIcon
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 
@@ -41,7 +42,6 @@ fun PhotoCategoryScreen(
 ) {
     val context = LocalContext.current
 
-    // Decode the URL-encoded path
     val decodedPath = try {
         java.net.URLDecoder.decode(photoUri, "UTF-8")
     } catch (e: Exception) {
@@ -51,12 +51,10 @@ fun PhotoCategoryScreen(
     val file = File(decodedPath)
     val uri = Uri.fromFile(file)
 
-    // Load photos to get current category
     LaunchedEffect(Unit) {
         photoViewModel.loadPhotos(context)
     }
 
-    // Find the photo in the loaded photos
     val photo = photoViewModel.photos.find { it.filePath == decodedPath }
     var selectedCategory by remember { mutableStateOf(photo?.category ?: PhotoCategory.OTHER) }
 
@@ -97,7 +95,6 @@ fun PhotoCategoryScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            // Display the photo
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,14 +119,14 @@ fun PhotoCategoryScreen(
                 modifier = Modifier.padding(bottom = 12.dp, top = 2.dp)
             )
 
-            // Category selection, visually rich
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
             ) {
                 items(PhotoCategory.values()) { category ->
-                    val (icon, color) = IconChoose.getIcon(category.displayName)
+                    // --- CHANGE 2: Use getVisuals() and destructure correctly ---
+                    val (iconName, color) = IconChoose.getVisuals(category.displayName)
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -149,14 +146,16 @@ fun PhotoCategoryScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp) // Larger circle
+                                    .size(36.dp)
                                     .background(color, shape = CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                FaIcon(
-                                    faIcon = icon,
+                                // --- CHANGE 3: Replace FaIcon with AppIcon ---
+                                AppIcon(
+                                    iconName = iconName,
                                     tint = Color.White,
-                                    modifier = Modifier.size(22.dp) // Bigger icon in circle
+                                    modifier = Modifier.size(22.dp),
+                                    contentDescription = "${category.displayName} icon"
                                 )
                             }
                             Spacer(modifier = Modifier.width(16.dp))

@@ -34,7 +34,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import com.ballabotond.trackit.ui.theme.IconChoose
-import com.guru.fontawesomecomposelib.FaIcon
+import com.ballabotond.trackit.ui.common.AppIcon
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.ui.res.painterResource
@@ -252,10 +252,10 @@ fun PhotosScreen(
             ) {
                 categories.forEach { (label, category) ->
                     val isSelected = actualPhotoViewModel.selectedCategory == category
-                    val (icon, color) = if (category == null)
-                        IconChoose.getIcon("Other")
+                    val (iconName, color) = if (category == null)
+                        IconChoose.getVisuals("Other")
                     else
-                        IconChoose.getIcon(category.displayName)
+                        IconChoose.getVisuals(category.displayName)
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -272,10 +272,11 @@ fun PhotosScreen(
                                 .fillMaxWidth(),
                             contentAlignment = Alignment.Center
                         ) {
-                            FaIcon(
-                                faIcon = icon,
+                            AppIcon(
+                                iconName = iconName,
                                 tint = if (isSelected) color else Color(0xFFAAAAAA),
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(28.dp),
+                                contentDescription = label
                             )
                         }
                         Spacer(modifier = Modifier.height(2.dp))
@@ -346,7 +347,7 @@ fun PhotosScreen(
                                         "MMM dd, yyyy",
                                         Locale.getDefault()
                                     ).format(Date(file.lastModified()))
-                                    val (icon, color) = IconChoose.getIcon(photo.category.displayName)
+                                    val (iconName, color) = IconChoose.getVisuals(photo.category.displayName)
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -421,10 +422,11 @@ fun PhotosScreen(
                                                     ),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                FaIcon(
-                                                    faIcon = icon,
+                                                AppIcon(
+                                                    iconName = iconName,
                                                     tint = color,
-                                                    modifier = Modifier.size(22.dp)
+                                                    modifier = Modifier.size(22.dp),
+                                                    contentDescription = photo.category.displayName
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Text(

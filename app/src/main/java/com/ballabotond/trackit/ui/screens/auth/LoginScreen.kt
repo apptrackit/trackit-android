@@ -1,6 +1,5 @@
 package com.ballabotond.trackit.ui.screens.auth
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,10 +16,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
-import com.ballabotond.trackit.ui.theme.IconChoose
+// --- CHANGE 1: Import our new AppIcon ---
+import com.ballabotond.trackit.ui.common.AppIcon
 import com.ballabotond.trackit.ui.viewmodel.AuthUiState
-import com.guru.fontawesomecomposelib.FaIcons
 
 @Composable
 fun LoginScreen(
@@ -32,7 +30,7 @@ fun LoginScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
-    
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = Color.Black
@@ -52,7 +50,7 @@ fun LoginScreen(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
+
             Text(
                 text = "Welcome back! Sign in to continue.",
                 color = Color(0xFFAAAAAA),
@@ -60,17 +58,19 @@ fun LoginScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
-            
+
             // Username Field
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
                 label = { Text("Username", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FontAwesomeIcon(
-                        icon = FaIcons.User,
+                    // --- CHANGE 2: Replace with AppIcon ---
+                    AppIcon(
+                        iconName = "person", // M3 equivalent for User
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
+                        contentDescription = "Username Icon"
                     )
                 },
                 colors = OutlinedTextFieldDefaults.colors(
@@ -86,25 +86,30 @@ fun LoginScreen(
                     .padding(bottom = 16.dp),
                 singleLine = true
             )
-            
+
             // Password Field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password", color = Color(0xFFAAAAAA)) },
                 leadingIcon = {
-                    FontAwesomeIcon(
-                        icon = FaIcons.Lock,
+                    // --- CHANGE 3: Replace with AppIcon ---
+                    AppIcon(
+                        iconName = "lock", // M3 equivalent for Lock
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
+                        contentDescription = "Password Icon"
                     )
                 },
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
-                        FontAwesomeIcon(
-                            icon = if (showPassword) FaIcons.EyeSlash else FaIcons.Eye,
+                        // --- CHANGE 4: Replace with AppIcon ---
+                        AppIcon(
+                            // M3 equivalents for Eye and EyeSlash
+                            iconName = if (showPassword) "visibility_off" else "visibility",
                             tint = Color(0xFFAAAAAA),
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
+                            contentDescription = if (showPassword) "Hide Password" else "Show Password"
                         )
                     }
                 },
@@ -123,7 +128,7 @@ fun LoginScreen(
                     .padding(bottom = 24.dp),
                 singleLine = true
             )
-            
+
             // Error Message
             if (uiState.errorMessage != null) {
                 Text(
@@ -133,7 +138,7 @@ fun LoginScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
-            
+
             // Login Button
             Button(
                 onClick = {
@@ -166,9 +171,9 @@ fun LoginScreen(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // Register Link
             Row(
                 horizontalArrangement = Arrangement.Center,

@@ -15,15 +15,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ballabotond.trackit.data.model.HistoryEntry
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
+// --- CHANGE 1: Import our new AppIcon ---
+import com.ballabotond.trackit.ui.common.AppIcon
 import com.ballabotond.trackit.ui.theme.IconChoose
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
 fun RecentMeasurementRow(entry: HistoryEntry, onClick: () -> Unit) {
-    val iconAndColor = IconChoose.getIcon(entry.metricName)
+    // --- CHANGE 2: Use getVisuals() and destructure into clear variable names ---
+    val (iconName, iconColor) = IconChoose.getVisuals(entry.metricName)
     val dateFormat = SimpleDateFormat("MMM d, yyyy 'at' HH:mm", Locale.getDefault())
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -36,15 +39,16 @@ fun RecentMeasurementRow(entry: HistoryEntry, onClick: () -> Unit) {
             modifier = Modifier
                 .padding(12.dp)
                 .size(28.dp)
-                .background(iconAndColor.second.copy(alpha = 0.12f), CircleShape),
+                // Use the new iconColor variable
+                .background(iconColor.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            FontAwesomeIcon(
-                icon = iconAndColor.first,
-                tint = iconAndColor.second,
-                modifier = Modifier
-                    .size(20.dp)
-                    .padding(0.dp)
+            // --- CHANGE 3: Replace FontAwesomeIcon with AppIcon ---
+            AppIcon(
+                iconName = iconName,
+                tint = iconColor,
+                modifier = Modifier.size(20.dp),
+                contentDescription = "${entry.metricName} icon"
             )
         }
         Column(modifier = Modifier.weight(1f)) {

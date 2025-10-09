@@ -53,7 +53,7 @@ import android.app.DatePickerDialog
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.zIndex
 import com.ballabotond.trackit.ui.theme.IconChoose
-import com.guru.fontawesomecomposelib.FaIcon
+import com.ballabotond.trackit.ui.common.AppIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,12 +142,12 @@ fun PhotoDetailScreen(
         val history = healthViewModel.getMetricHistory(metric, unit)
         val entriesBeforePhoto = history.filter { it.date <= photoDate }
         val latestEntry = entriesBeforePhoto.maxByOrNull { it.date }
-        
+
         Log.d("PhotoMetrics", "Metric: $metric, Found entries: ${entriesBeforePhoto.size}, Latest: ${latestEntry?.value}")
-        
+
         metric to (latestEntry to unit)
     }
-    
+
     if (metricEntries.isEmpty()) {
         Log.d("PhotoMetrics", "No metrics found for photo date ${Date(photoDate)}")
     } else {
@@ -232,7 +232,7 @@ fun PhotoDetailScreen(
                     .fillMaxWidth()
                     .height(0.dp) // No height, just for overlay
             ) {
-                val (icon, color) = IconChoose.getIcon(category.displayName)
+                val (iconName, color) = IconChoose.getVisuals(category.displayName)
                 Box(
                     modifier = Modifier
                         .size(68.dp)
@@ -251,10 +251,11 @@ fun PhotoDetailScreen(
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        FaIcon(
-                            faIcon = icon,
+                        AppIcon(
+                            iconName = iconName,
                             tint = Color.White,
-                            modifier = Modifier.size(36.dp)
+                            modifier = Modifier.size(36.dp),
+                            contentDescription = category.displayName
                         )
                     }
                 }
@@ -445,7 +446,7 @@ fun PhotoDetailScreen(
                                 String.format("%.1f", it)
                             }
                         } ?: "-"
-                        val (icon, color) = IconChoose.getIcon(metricName)
+                        val (iconName, color) = IconChoose.getVisuals(metricName)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -458,10 +459,11 @@ fun PhotoDetailScreen(
                                     .background(color.copy(alpha = 0.16f), shape = CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
-                                FaIcon(
-                                    faIcon = icon,
+                                AppIcon(
+                                    iconName = iconName,
                                     tint = color,
-                                    modifier = Modifier.size(20.dp) // Bigger icon in 32dp circle
+                                    modifier = Modifier.size(20.dp),
+                                    contentDescription = "$metricName icon"
                                 )
                             }
                             Text(
@@ -494,7 +496,7 @@ private fun MetricRow(
     title: String,
     value: String
 ) {
-    val (icon, color) = IconChoose.getIcon(title)
+    val (iconName, color) = IconChoose.getVisuals(title)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -502,10 +504,11 @@ private fun MetricRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        FaIcon(
-            faIcon = icon,
+        AppIcon(
+            iconName = iconName,
             tint = color,
-            modifier = Modifier.size(18.dp) // Bigger icon in row
+            modifier = Modifier.size(18.dp),
+            contentDescription = "$title icon"
         )
         Text(
             text = title,
@@ -681,7 +684,7 @@ private fun MetadataDialog(
                         )
                     }
                 }
-                
+
                 // Notes input
                 TextField(
                     value = notes,
@@ -700,7 +703,7 @@ private fun MetadataDialog(
                         unfocusedIndicatorColor = Color(0xFF2A2A2A)
                     )
                 )
-                
+
                 // Save button
                 OutlinedButton(
                     onClick = {
@@ -708,7 +711,7 @@ private fun MetadataDialog(
                         val newMetadata = PhotoMetadata(
                             notes = notes
                         )
-                        
+
                         photoViewModel.updatePhotoMetadata(context, photo, newMetadata)
                         onDismiss()
                     },
@@ -745,10 +748,10 @@ private fun MetricsSection(
             "Thigh" to "cm",
             "Shoulder" to "cm"
         )
-        
+
         allMetrics.forEach { (metricName, unit) ->
             val entry = metricEntries.find { it.first == metricName }
-            
+
             MetricRow(
                 title = metricName,
                 value = entry?.second?.first?.value?.let { formatValue(it, unit) } ?: "-"

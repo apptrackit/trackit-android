@@ -13,8 +13,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ballabotond.trackit.data.model.SyncState
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
-import com.guru.fontawesomecomposelib.FaIcons
+// --- CHANGE 1: Import our new AppIcon ---
+import com.ballabotond.trackit.ui.common.AppIcon
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -52,9 +52,9 @@ fun SyncStatusIndicator(
                             shape = CircleShape
                         )
                 )
-                
+
                 Spacer(modifier = Modifier.width(8.dp))
-                
+
                 Column {
                     Text(
                         text = when {
@@ -68,7 +68,7 @@ fun SyncStatusIndicator(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
-                    
+
                     if (syncState.lastSyncTimestamp > 0) {
                         val lastSyncTime = SimpleDateFormat("HH:mm", Locale.getDefault())
                             .format(Date(syncState.lastSyncTimestamp))
@@ -80,23 +80,25 @@ fun SyncStatusIndicator(
                     }
                 }
             }
-            
+
             // Action button
             if (syncState.failedUploads > 0 || (!syncState.isOnline && syncState.pendingUploads > 0)) {
                 TextButton(
                     onClick = onRetrySync,
                     colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF4CAF50))
                 ) {
-                    FontAwesomeIcon(
-                        icon = FaIcons.SyncAlt,
+                    // --- CHANGE 2: Replace FontAwesomeIcon with AppIcon ---
+                    AppIcon(
+                        iconName = "sync", // From FaIcons.SyncAlt
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(16.dp),
+                        contentDescription = "Retry Sync"
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Retry", fontSize = 12.sp)
                 }
             }
-            
+
             // Pending/Failed counts
             if (syncState.pendingUploads > 0 || syncState.failedUploads > 0) {
                 Row {

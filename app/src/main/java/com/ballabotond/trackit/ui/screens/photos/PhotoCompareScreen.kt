@@ -38,7 +38,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
 import com.ballabotond.trackit.ui.theme.IconChoose
-import com.guru.fontawesomecomposelib.FaIcon
+import com.ballabotond.trackit.ui.common.AppIcon
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -210,7 +210,7 @@ fun PhotoCompareScreen(
                             modifier = Modifier.weight(1f),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            val (icon1, color1) = IconChoose.getIcon(leftCategory.displayName)
+                            val (iconName1, color1) = IconChoose.getVisuals(leftCategory.displayName)
                             Surface(
                                 shape = RoundedCornerShape(14.dp),
                                 color = color1.copy(alpha = 0.92f),
@@ -221,10 +221,11 @@ fun PhotoCompareScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                                 ) {
-                                    FaIcon(
-                                        faIcon = icon1,
+                                    AppIcon(
+                                        iconName = iconName1,
                                         tint = Color.White,
-                                        modifier = Modifier.size(18.dp) // Bigger icon in badge
+                                        modifier = Modifier.size(18.dp),
+                                        contentDescription = leftCategory.displayName
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
@@ -281,7 +282,7 @@ fun PhotoCompareScreen(
                             modifier = Modifier.weight(1f),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            val (icon2, color2) = IconChoose.getIcon(rightCategory.displayName)
+                            val (iconName2, color2) = IconChoose.getVisuals(rightCategory.displayName)
                             Surface(
                                 shape = RoundedCornerShape(14.dp),
                                 color = color2.copy(alpha = 0.92f),
@@ -292,10 +293,11 @@ fun PhotoCompareScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                                 ) {
-                                    FaIcon(
-                                        faIcon = icon2,
+                                    AppIcon(
+                                        iconName = iconName2,
                                         tint = Color.White,
-                                        modifier = Modifier.size(18.dp) // Bigger icon in badge
+                                        modifier = Modifier.size(18.dp),
+                                        contentDescription = rightCategory.displayName
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
                                     Text(
@@ -522,7 +524,7 @@ internal fun MetricRow(
     afterValue: Float?,
     unit: String
 ) {
-    val (icon, color) = IconChoose.getIcon(metricName)
+    val (iconName, color) = IconChoose.getVisuals(metricName)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -530,12 +532,13 @@ internal fun MetricRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Icon based on metric type
-        FaIcon(
-            faIcon = icon,
+        AppIcon(
+            iconName = iconName,
             tint = color,
             modifier = Modifier
-                .size(20.dp) // Bigger icon in row
-                .padding(end = 10.dp)
+                .size(20.dp)
+                .padding(end = 10.dp), // Apply padding directly
+            contentDescription = "$metricName icon"
         )
         
         // Metric name

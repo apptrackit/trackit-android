@@ -14,15 +14,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
-import com.guru.fontawesomecomposelib.FaIconType
+// --- CHANGE 1: Import our new AppIcon ---
+import com.ballabotond.trackit.ui.common.AppIcon
 
 @Composable
-fun MetricCardRedesignedWithFaIcon(
+// --- CHANGE 2: Renamed function and updated icon parameter ---
+fun MetricCard(
     title: String,
     value: String,
     unit: String,
-    icon: FaIconType.SolidIcon,
+    iconName: String, // Changed type to String
     iconTint: Color,
     modifier: Modifier = Modifier
 ) {
@@ -43,10 +44,12 @@ fun MetricCardRedesignedWithFaIcon(
                     .background(iconTint.copy(alpha = 0.12f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                FontAwesomeIcon(
-                    icon = icon,
+                // --- CHANGE 3: Replaced FontAwesomeIcon with AppIcon ---
+                AppIcon(
+                    iconName = iconName,
                     tint = iconTint,
-                    modifier = Modifier.size(20.dp).padding(0.dp) // Remove any implicit padding
+                    modifier = Modifier.size(20.dp),
+                    contentDescription = "$title icon"
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
@@ -60,14 +63,13 @@ fun MetricCardRedesignedWithFaIcon(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
-                
-                // Different display style for "No Data" versus actual measurements
+
                 if (value == "No Data") {
                     Text(
                         text = value,
-                        color = Color(0xFF666666), // Darker gray for "No Data"
-                        fontSize = 16.sp, // Smaller font size
-                        fontWeight = FontWeight.Normal // Not bold
+                        color = Color(0xFF666666),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal
                     )
                 } else {
                     Row(verticalAlignment = Alignment.Bottom) {

@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import com.ballabotond.trackit.ui.theme.FontAwesomeIcon
 import com.ballabotond.trackit.ui.theme.IconChoose
+import com.ballabotond.trackit.ui.common.AppIcon // Correct import
 
 @Composable
 fun AddMetricPopup(
@@ -45,7 +45,7 @@ fun AddMetricPopup(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
                 )
-                
+
                 Divider(color = Color(0xFF333333), thickness = 1.dp)
 
                 val metrics = listOf(
@@ -59,19 +59,19 @@ fun AddMetricPopup(
                     "Shoulder"
                 )
                 metrics.forEach { metric ->
-                    val (icon, iconTint) = IconChoose.getIcon(metric)
+                    // Renamed 'icon' to 'iconName' for clarity
+                    val (iconName, iconTint) = IconChoose.getVisuals(metric)
                     MetricOption(
                         title = metric,
-                        icon = icon,
+                        // Pass the iconName string
+                        iconName = iconName,
                         iconTint = iconTint,
-                        onClick = { 
+                        onClick = {
                             onNavigateToEditMetric(metric)
                             onDismiss()
                         }
                     )
                 }
-                
-                // Removed Custom Measurement section
             }
         }
     }
@@ -80,7 +80,7 @@ fun AddMetricPopup(
 @Composable
 private fun MetricOption(
     title: String,
-    icon: com.guru.fontawesomecomposelib.FaIconType.SolidIcon,
+    iconName: String,
     iconTint: Color,
     onClick: () -> Unit
 ) {
@@ -98,13 +98,15 @@ private fun MetricOption(
                 .background(iconTint.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            FontAwesomeIcon(
-                icon = icon,
+            // --- CHANGE 2: The parameter is now correctly a String ---
+            AppIcon(
+                iconName = iconName,
                 tint = iconTint,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
+                contentDescription = "$title icon"
             )
         }
-        
+
         // Title
         Text(
             text = title,

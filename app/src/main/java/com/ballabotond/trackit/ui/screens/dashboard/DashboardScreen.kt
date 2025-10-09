@@ -30,7 +30,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import com.ballabotond.trackit.data.model.SyncState
-import com.ballabotond.trackit.ui.components.MetricCardRedesignedWithFaIcon
+// --- CHANGE 1: Import the new MetricCard ---
+import com.ballabotond.trackit.ui.components.MetricCard
 import com.ballabotond.trackit.ui.components.RecentMeasurementRow
 import com.ballabotond.trackit.ui.components.SmoothMetricChart
 import com.ballabotond.trackit.ui.components.TimeFilterButton
@@ -71,7 +72,7 @@ fun DashboardScreen(
         }
     }
 
-    // Time filter state (must be before usage)
+    // Time filter state
     var selectedTimeFilter by remember { mutableStateOf("6M") }
 
     // Get latest values from history
@@ -83,45 +84,18 @@ fun DashboardScreen(
     val weightHistory = viewModel.getFilteredMetricHistory("Weight", "kg", selectedTimeFilter)
     val heightHistory = viewModel.getFilteredMetricHistory("Height", "cm", selectedTimeFilter)
     val bodyFatHistory = viewModel.getFilteredMetricHistory("Body Fat", "%", selectedTimeFilter)
-    val bmiHistory = viewModel.getFilteredMetricHistory("BMI", "", selectedTimeFilter)
 
-    // Format values based on history
-    val formattedWeight = if (weightHistory.isEmpty()) "No Data" else {
-        val value = latestWeight ?: 0f
-        if (value > 0) {
-            val formatted = String.format("%.1f", value)
-            if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
-        } else "No Data"
-    }
+    // Format values
+    val formattedWeight = if (weightHistory.isEmpty()) "No Data" else String.format("%.1f", latestWeight ?: 0f).removeSuffix(".0")
+    val formattedHeight = if (heightHistory.isEmpty()) "No Data" else (latestHeight?.toInt()?.toString() ?: "No Data")
+    val formattedBodyFat = if (bodyFatHistory.isEmpty()) "No Data" else String.format("%.1f", latestBodyFat ?: 0f).removeSuffix(".0")
 
-    val formattedHeight = if (heightHistory.isEmpty()) "No Data" else {
-        val value = latestHeight ?: 0f
-        if (value > 0) value.toInt().toString() else "No Data"
-    }
-
-    val formattedBodyFat = if (bodyFatHistory.isEmpty()) "No Data" else {
-        val value = latestBodyFat ?: 0f
-        if (value > 0) {
-            val formatted = String.format("%.1f", value)
-            if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
-        } else "No Data"
-    }
-
-    // Calculate BMI with null safety
-    val bmi = if (weightHistory.isNotEmpty() && heightHistory.isNotEmpty() &&
-        latestWeight != null && latestHeight != null &&
-        latestWeight > 0 && latestHeight > 0) {
+    // Calculate BMI
+    val bmi = if (latestWeight != null && latestHeight != null && latestWeight > 0 && latestHeight > 0) {
         calculateBMI(latestWeight, latestHeight)
-    } else {
-        0f
-    }
+    } else 0f
+    val formattedBmi = if (bmi > 0) String.format("%.1f", bmi).removeSuffix(".0") else "No Data"
 
-    val formattedBmi = if (bmi > 0) {
-        val formatted = String.format("%.1f", bmi)
-        if (formatted.endsWith(".0")) formatted.substring(0, formatted.length - 2) else formatted
-    } else "No Data"
-
-    val context = LocalContext.current
     val now = remember { Calendar.getInstance() }
     val greeting = remember {
         val hour = now.get(Calendar.HOUR_OF_DAY)
@@ -132,8 +106,7 @@ fun DashboardScreen(
         }
     }
     val dateString = remember {
-        val sdf = SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault())
-        sdf.format(now.time)
+        SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault()).format(now.time)
     }
 
     Surface(
@@ -224,17 +197,8 @@ fun DashboardScreen(
                             .fillMaxWidth()
                             .padding(top = 24.dp, start = 16.dp, end = 16.dp)
                     ) {
-                        Text(
-                            text = greeting,
-                            color = Color.White,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = dateString,
-                            color = Color(0xFFAAAAAA),
-                            fontSize = 15.sp
-                        )
+                        Text(text = greeting, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                        Text(text = dateString, color = Color(0xFFAAAAAA), fontSize = 15.sp)
                     }
                 }
 
@@ -243,7 +207,7 @@ fun DashboardScreen(
                 }
 
                 item {
-                    // Metric Cards 2x2 grid
+                    // --- ENTIRE METRIC CARDS SECTION IS REPLACED ---
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -254,22 +218,25 @@ fun DashboardScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            MetricCardRedesignedWithFaIcon(
+                            val (weightIconName, weightIconColor) = IconChoose.getVisuals("Weight")
+                            MetricCard(
                                 title = "Weight",
                                 value = formattedWeight,
                                 unit = "kg",
-                                icon = IconChoose.getIcon("Weight").first,
-                                iconTint = IconChoose.getIcon("Weight").second,
+                                iconName = weightIconName,
+                                iconTint = weightIconColor,
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToEditMetric("Weight") }
                             )
-                            MetricCardRedesignedWithFaIcon(
+
+                            val (bodyFatIconName, bodyFatIconColor) = IconChoose.getVisuals("Body Fat")
+                            MetricCard(
                                 title = "Body Fat",
                                 value = formattedBodyFat,
                                 unit = "%",
-                                icon = IconChoose.getIcon("Body Fat").first,
-                                iconTint = IconChoose.getIcon("Body Fat").second,
+                                iconName = bodyFatIconName,
+                                iconTint = bodyFatIconColor,
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToEditMetric("Body Fat") }
@@ -279,22 +246,25 @@ fun DashboardScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            MetricCardRedesignedWithFaIcon(
+                            val (bmiIconName, bmiIconColor) = IconChoose.getVisuals("BMI")
+                            MetricCard(
                                 title = "BMI",
                                 value = formattedBmi,
                                 unit = "",
-                                icon = IconChoose.getIcon("BMI").first,
-                                iconTint = IconChoose.getIcon("BMI").second,
+                                iconName = bmiIconName,
+                                iconTint = bmiIconColor,
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToViewBMIHistory() }
                             )
-                            MetricCardRedesignedWithFaIcon(
+
+                            val (heightIconName, heightIconColor) = IconChoose.getVisuals("Height")
+                            MetricCard(
                                 title = "Height",
                                 value = formattedHeight,
                                 unit = "cm",
-                                icon = IconChoose.getIcon("Height").first,
-                                iconTint = IconChoose.getIcon("Height").second,
+                                iconName = heightIconName,
+                                iconTint = heightIconColor,
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onNavigateToEditMetric("Height") }
@@ -308,21 +278,12 @@ fun DashboardScreen(
                 }
 
                 item {
-                    // Progress Section
-                    Text(
-                        text = "Progress",
-                        color = Color.White,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 18.dp, bottom = 8.dp)
-                    )
+                    Text("Progress", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 18.dp, bottom = 8.dp))
                 }
 
                 item {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         TimeFilterButton("W", selectedTimeFilter == "W") { selectedTimeFilter = "W" }
@@ -338,19 +299,12 @@ fun DashboardScreen(
                 }
 
                 item {
-                    // Trend Charts
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFF181818), RoundedCornerShape(18.dp))
-                                .padding(10.dp)
-                                .clickable { onNavigateToEditMetric("Weight") }
+                            modifier = Modifier.fillMaxWidth().background(Color(0xFF181818), RoundedCornerShape(18.dp)).padding(10.dp).clickable { onNavigateToEditMetric("Weight") }
                         ) {
                             Column {
                                 Row(
@@ -364,11 +318,7 @@ fun DashboardScreen(
                             }
                         }
                         Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFF181818), RoundedCornerShape(18.dp))
-                                .padding(10.dp)
-                                .clickable { onNavigateToEditMetric("Body Fat") }
+                            modifier = Modifier.fillMaxWidth().background(Color(0xFF181818), RoundedCornerShape(18.dp)).padding(10.dp).clickable { onNavigateToEditMetric("Body Fat") }
                         ) {
                             Column {
                                 Row(
@@ -389,17 +339,9 @@ fun DashboardScreen(
                 }
 
                 item {
-                    // Recent Measurements
-                    Text(
-                        text = "Recent Measurements",
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 18.dp, bottom = 8.dp)
-                    )
+                    Text("Recent Measurements", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 18.dp, bottom = 8.dp))
                 }
 
-                // Recent Measurements List
                 val recent = viewModel.getRecentMeasurements(5)
                 items(recent) { entry ->
                     RecentMeasurementRow(
@@ -409,7 +351,6 @@ fun DashboardScreen(
                 }
             }
 
-            // Pull refresh indicator
             PullRefreshIndicator(
                 refreshing = isRefreshing,
                 state = pullRefreshState,
@@ -419,7 +360,6 @@ fun DashboardScreen(
             )
         }
 
-        // Show the popup when showAddMetricPopup is true
         if (showAddMetricPopup) {
             AddMetricPopup(
                 onDismiss = { showAddMetricPopup = false },
@@ -429,4 +369,3 @@ fun DashboardScreen(
         }
     }
 }
-
