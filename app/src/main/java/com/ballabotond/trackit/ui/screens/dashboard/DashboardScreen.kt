@@ -53,7 +53,11 @@ fun DashboardScreen(
     var showAddMetricPopup by remember { mutableStateOf(false) }
 
     // Sync state
-    val syncState by syncViewModel?.syncState?.collectAsState() ?: remember { mutableStateOf(SyncState()) }
+    val syncState by syncViewModel?.syncState?.collectAsState() ?: remember {
+        mutableStateOf(
+            SyncState()
+        )
+    }
 
     // Pull to refresh state
     var isRefreshing by remember { mutableStateOf(false) }
@@ -86,14 +90,20 @@ fun DashboardScreen(
     val bodyFatHistory = viewModel.getFilteredMetricHistory("Body Fat", "%", selectedTimeFilter)
 
     // Format values
-    val formattedWeight = if (weightHistory.isEmpty()) "No Data" else String.format("%.1f", latestWeight ?: 0f).removeSuffix(".0")
-    val formattedHeight = if (heightHistory.isEmpty()) "No Data" else (latestHeight?.toInt()?.toString() ?: "No Data")
-    val formattedBodyFat = if (bodyFatHistory.isEmpty()) "No Data" else String.format("%.1f", latestBodyFat ?: 0f).removeSuffix(".0")
+    val formattedWeight =
+        if (weightHistory.isEmpty()) "No Data" else String.format("%.1f", latestWeight ?: 0f)
+            .removeSuffix(".0")
+    val formattedHeight =
+        if (heightHistory.isEmpty()) "No Data" else (latestHeight?.toInt()?.toString() ?: "No Data")
+    val formattedBodyFat =
+        if (bodyFatHistory.isEmpty()) "No Data" else String.format("%.1f", latestBodyFat ?: 0f)
+            .removeSuffix(".0")
 
     // Calculate BMI
-    val bmi = if (latestWeight != null && latestHeight != null && latestWeight > 0 && latestHeight > 0) {
-        calculateBMI(latestWeight, latestHeight)
-    } else 0f
+    val bmi =
+        if (latestWeight != null && latestHeight != null && latestWeight > 0 && latestHeight > 0) {
+            calculateBMI(latestWeight, latestHeight)
+        } else 0f
     val formattedBmi = if (bmi > 0) String.format("%.1f", bmi).removeSuffix(".0") else "No Data"
 
     val now = remember { Calendar.getInstance() }
@@ -157,7 +167,10 @@ fun DashboardScreen(
                         }
 
                         Row(
-                            modifier = Modifier.background(Color(0xFF222222), RoundedCornerShape(50.dp)),
+                            modifier = Modifier.background(
+                                Color(0xFF222222),
+                                RoundedCornerShape(50.dp)
+                            ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             if (syncViewModel != null) {
@@ -166,7 +179,11 @@ fun DashboardScreen(
                                     modifier = Modifier.padding(start = 10.dp, end = 4.dp)
                                 ) {
                                     if (syncState.isSyncing) {
-                                        Text(text = "Syncing...", color = Color.White, fontSize = 14.sp)
+                                        Text(
+                                            text = "Syncing...",
+                                            color = Color.White,
+                                            fontSize = 14.sp
+                                        )
                                     } else {
                                         Box(
                                             modifier = Modifier
@@ -197,7 +214,12 @@ fun DashboardScreen(
                             .fillMaxWidth()
                             .padding(top = 24.dp, start = 16.dp, end = 16.dp)
                     ) {
-                        Text(text = greeting, color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = greeting,
+                            color = Color.White,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                         Text(text = dateString, color = Color(0xFFAAAAAA), fontSize = 15.sp)
                     }
                 }
@@ -278,19 +300,37 @@ fun DashboardScreen(
                 }
 
                 item {
-                    Text("Progress", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 18.dp, bottom = 8.dp))
+                    Text(
+                        "Progress",
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 18.dp, bottom = 8.dp)
+                    )
                 }
 
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        TimeFilterButton("W", selectedTimeFilter == "W") { selectedTimeFilter = "W" }
-                        TimeFilterButton("M", selectedTimeFilter == "M") { selectedTimeFilter = "M" }
-                        TimeFilterButton("6M", selectedTimeFilter == "6M") { selectedTimeFilter = "6M" }
-                        TimeFilterButton("Y", selectedTimeFilter == "Y") { selectedTimeFilter = "Y" }
-                        TimeFilterButton("All", selectedTimeFilter == "All") { selectedTimeFilter = "All" }
+                        TimeFilterButton("W", selectedTimeFilter == "W") {
+                            selectedTimeFilter = "W"
+                        }
+                        TimeFilterButton("M", selectedTimeFilter == "M") {
+                            selectedTimeFilter = "M"
+                        }
+                        TimeFilterButton("6M", selectedTimeFilter == "6M") {
+                            selectedTimeFilter = "6M"
+                        }
+                        TimeFilterButton("Y", selectedTimeFilter == "Y") {
+                            selectedTimeFilter = "Y"
+                        }
+                        TimeFilterButton("All", selectedTimeFilter == "All") {
+                            selectedTimeFilter = "All"
+                        }
                     }
                 }
 
@@ -300,33 +340,61 @@ fun DashboardScreen(
 
                 item {
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Box(
-                            modifier = Modifier.fillMaxWidth().background(Color(0xFF181818), RoundedCornerShape(18.dp)).padding(10.dp).clickable { onNavigateToEditMetric("Weight") }
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF181818), RoundedCornerShape(18.dp))
+                                .padding(10.dp)
+                                .clickable { onNavigateToEditMetric("Weight") }
                         ) {
                             Column {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("Weight Trend", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                                    Text("${formattedWeight}kg", color = Color.White, fontSize = 14.sp)
+                                    Text(
+                                        "Weight Trend",
+                                        color = Color.White,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        "${formattedWeight}kg",
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
                                 }
                                 SmoothMetricChart(history = weightHistory, unit = "kg")
                             }
                         }
                         Box(
-                            modifier = Modifier.fillMaxWidth().background(Color(0xFF181818), RoundedCornerShape(18.dp)).padding(10.dp).clickable { onNavigateToEditMetric("Body Fat") }
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF181818), RoundedCornerShape(18.dp))
+                                .padding(10.dp)
+                                .clickable { onNavigateToEditMetric("Body Fat") }
                         ) {
                             Column {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("Body Fat Trend", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                                    Text("${formattedBodyFat}%", color = Color.White, fontSize = 14.sp)
+                                    Text(
+                                        "Body Fat Trend",
+                                        color = Color.White,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        "${formattedBodyFat}%",
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
                                 }
                                 SmoothMetricChart(history = bodyFatHistory, unit = "%")
                             }
@@ -339,7 +407,13 @@ fun DashboardScreen(
                 }
 
                 item {
-                    Text("Recent Measurements", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 18.dp, bottom = 8.dp))
+                    Text(
+                        "Recent Measurements",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 18.dp, bottom = 8.dp)
+                    )
                 }
 
                 val recent = viewModel.getRecentMeasurements(5)

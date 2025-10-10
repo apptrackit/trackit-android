@@ -26,7 +26,7 @@ object IconChoose {
             "Bicep", "Biceps" -> Pair("fitness_center", Color(0xFFFF5722)) // M3 dumbbell icon
             "Thigh" -> Pair("accessibility_new", Color(0xFF00BCD4)) // A good generic body part icon
             "Shoulder" -> Pair("man", Color(0xFFFF9800))
-            "BMI" -> Pair("calculate", Color(0xFFFF9800)) // "calculate" is great for BMI
+            "BMI" -> Pair("bar_chart_4_bars", Color(0xFFFF9800))
             "Lean Body Mass" -> Pair("cardiology", Color(0xFF4CAF50)) // "cardiology" is a heart with a line
             "Fat Mass" -> Pair("weight_gradient", Color(0xFFB71C1C))
             "Fat-Free Mass Index" -> Pair("analytics", Color(0xFF2196F3)) // "analytics" or "monitoring"

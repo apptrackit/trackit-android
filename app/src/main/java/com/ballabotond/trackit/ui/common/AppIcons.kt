@@ -26,7 +26,7 @@ fun AppIcon(
     iconName: String,
     modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current,
-    contentDescription: String? = null
+    contentDescription: String? = null,
 ) {
     Text(
         modifier = modifier,
