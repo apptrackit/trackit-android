@@ -169,7 +169,6 @@ private fun MetricRowWithArrow(
     unit: String,
     onClick: () -> Unit
 ) {
-    // --- CHANGE 2: Use getVisuals() and destructure into the correct variable names ---
     val (iconName, iconTint) = IconChoose.getVisuals(title)
     Row(
         modifier = Modifier
@@ -180,21 +179,16 @@ private fun MetricRowWithArrow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(28.dp)
-                    .background(iconTint.copy(alpha = 0.12f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                // --- CHANGE 3: Replace FontAwesomeIcon with AppIcon ---
-                AppIcon(
-                    iconName = iconName,
-                    tint = iconTint,
-                    modifier = Modifier.size(20.dp), // Adjusted size to fit well
-                    contentDescription = "$title icon"
-                )
-            }
-            Spacer(modifier = Modifier.width(12.dp))
+            // THE BOX IS REMOVED. WE USE AppIcon DIRECTLY.
+            AppIcon(
+                iconName = iconName,
+                tint = iconTint,
+                modifier = Modifier.size(24.dp), // A slightly larger size for better alignment
+                contentDescription = "$title icon"
+            )
+
+            Spacer(modifier = Modifier.width(16.dp)) // Increased spacing for a cleaner look
+
             Text(
                 text = title,
                 color = Color.White,

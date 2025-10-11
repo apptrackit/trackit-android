@@ -4,9 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,7 +14,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ballabotond.trackit.data.model.HistoryEntry
-// --- CHANGE 1: Import our new AppIcon ---
 import com.ballabotond.trackit.ui.common.AppIcon
 import com.ballabotond.trackit.ui.theme.IconChoose
 import java.text.SimpleDateFormat
@@ -23,55 +21,57 @@ import java.util.*
 
 @Composable
 fun RecentMeasurementRow(entry: HistoryEntry, onClick: () -> Unit) {
-    // --- CHANGE 2: Use getVisuals() and destructure into clear variable names ---
     val (iconName, iconColor) = IconChoose.getVisuals(entry.metricName)
-    val dateFormat = SimpleDateFormat("MMM d, yyyy 'at' HH:mm", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("MMM dd, yyyy 'at' HH:mm", Locale.getDefault())
+
+    // --- THIS IS THE CORRECTED FORMATTING LOGIC ---
+    // It formats the number to one decimal place and removes ".0" if it's a whole number.
+    val formattedValue = String.format("%.1f", entry.value).let {
+        if (it.endsWith(".0")) it.substring(0, it.length - 2) else it
+    }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp)
-            .background(Color(0xFF181818), RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
+            // Removed the old background and adjusted padding to match the new style
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .padding(12.dp)
-                .size(28.dp)
-                // Use the new iconColor variable
-                .background(iconColor.copy(alpha = 0.12f), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            // --- CHANGE 3: Replace FontAwesomeIcon with AppIcon ---
-            AppIcon(
-                iconName = iconName,
-                tint = iconColor,
-                modifier = Modifier.size(20.dp),
-                contentDescription = "${entry.metricName} icon"
-            )
-        }
+        // This Box creates the new circular background for the icon
+
+        AppIcon(
+            iconName = iconName, tint = iconColor, // The icon itself has the full color
+            modifier = Modifier.size(24.dp), contentDescription = "${entry.metricName} icon"
+        )
+
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        // Column for the metric name and date
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = entry.metricName,
                 color = Color.White,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Bold // Title is now bold
             )
             Text(
                 text = dateFormat.format(Date(entry.date)),
-                color = Color(0xFFAAAAAA),
-                fontSize = 13.sp,
+                color = Color.Gray, // Use a standard gray for subtitles
+                fontSize = 14.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
+
+        // The formatted value and unit text on the right
         Text(
-            text = "${entry.value} ${entry.unit}",
+            text = "$formattedValue ${entry.unit}",
             color = Color.White,
             fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(end = 16.dp)
+            fontWeight = FontWeight.Medium, // Use Medium weight for the value
+            modifier = Modifier.padding(start = 16.dp)
         )
     }
 }
