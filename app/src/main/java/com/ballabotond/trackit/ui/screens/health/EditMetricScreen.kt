@@ -488,8 +488,8 @@ fun MetricHistoryChart(history: List<HistoryEntry>, unit: String) {
                                 when {
                                     position < 0.2f -> Alignment.CenterStart
                                     position > 0.8f -> Alignment.CenterEnd
-                                    position < 0.4f -> Alignment.Start
-                                    position > 0.6f -> Alignment.End
+                                    position < 0.4f -> Alignment.CenterStart
+                                    position > 0.6f -> Alignment.CenterEnd
                                     else -> Alignment.Center
                                 } as Alignment
                             )
