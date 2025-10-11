@@ -33,6 +33,7 @@ import com.ballabotond.trackit.data.model.SyncState
 // --- CHANGE 1: Import the new MetricCard ---
 import com.ballabotond.trackit.ui.components.MetricCard
 import com.ballabotond.trackit.ui.components.RecentMeasurementRow
+import com.ballabotond.trackit.ui.components.SegmentedControl
 import com.ballabotond.trackit.ui.components.SmoothMetricChart
 import com.ballabotond.trackit.ui.components.TimeFilterButton
 import com.ballabotond.trackit.ui.theme.IconChoose
@@ -300,39 +301,35 @@ fun DashboardScreen(
                 }
 
                 item {
-                    Text(
-                        "Progress",
-                        color = Color.White,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 18.dp, bottom = 8.dp)
-                    )
-                }
-
-                item {
+                    // This Row holds the "Progress" title and the new SegmentedControl
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            .padding(start = 18.dp, end = 16.dp, bottom = 8.dp, top = 18.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        TimeFilterButton("W", selectedTimeFilter == "W") {
-                            selectedTimeFilter = "W"
-                        }
-                        TimeFilterButton("M", selectedTimeFilter == "M") {
-                            selectedTimeFilter = "M"
-                        }
-                        TimeFilterButton("6M", selectedTimeFilter == "6M") {
-                            selectedTimeFilter = "6M"
-                        }
-                        TimeFilterButton("Y", selectedTimeFilter == "Y") {
-                            selectedTimeFilter = "Y"
-                        }
-                        TimeFilterButton("All", selectedTimeFilter == "All") {
-                            selectedTimeFilter = "All"
+                        // Title on the left
+                        Text(
+                            text = "Progress",
+                            color = Color.White,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f) // Give the title flexible space
+                        )
+
+                        // --- THIS IS THE NEW COMPONENT ---
+                        // It takes up about 60% of the screen width for better proportions
+                        Box(modifier = Modifier.fillMaxWidth(0.6f)) {
+                            SegmentedControl(
+                                items = listOf("W", "M", "6M", "Y", "All"),
+                                selectedItem = selectedTimeFilter,
+                                onItemClick = { newFilter -> selectedTimeFilter = newFilter }
+                            )
                         }
                     }
                 }
+
 
                 item {
                     Spacer(modifier = Modifier.height(8.dp))

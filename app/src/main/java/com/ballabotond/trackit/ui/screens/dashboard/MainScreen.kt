@@ -31,8 +31,9 @@ fun MainScreen(
 
     val pages = listOf(
         NavigationItem(DASHBOARD_ROUTE, "home", "Dashboard"),
-        NavigationItem(PHOTOS_ROUTE, "photo_library", "Photos"),
-        NavigationItem(PROGRESS_ROUTE, "monitoring", "Progress")
+        NavigationItem(PROGRESS_ROUTE, "monitoring", "Progress"),
+                NavigationItem(PHOTOS_ROUTE, "photo_library", "Photos")
+
     )
 
     // This state helps sync the bottom bar with page swipes
