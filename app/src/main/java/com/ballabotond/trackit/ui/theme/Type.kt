@@ -8,19 +8,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.ballabotond.trackit.R
 
-// Define the FontFamily for the Material Symbols font
-val materialSymbols = FontFamily(
+// Define a font family for the OUTLINED style
+val materialSymbolsOutlined = FontFamily(
     Font(R.font.material_symbols_outlined, FontWeight.Normal)
 )
 
-// Default Typography setup (can remain as it was)
+// Define a font family for the FILLED style
+val materialSymbolsFilled = FontFamily(
+    Font(R.font.material_symbols_filled, FontWeight.Normal)
+)
+
+// Your default Typography (can be left as is)
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        fontSize = 16.sp
     )
     /* Other text styles */
 )
